@@ -25,8 +25,28 @@ st.set_page_config(
 # Custom CSS for branding — dark theme, shared palette from scripts/branding.py
 st.markdown(f"""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Montserrat:wght@700;800&display=swap');
+
     * {{
         font-family: {b.FONT_STACK};
+    }}
+
+    .fm-wordmark {{
+        font-family: {b.DISPLAY_FONT_STACK};
+        font-weight: 800;
+        font-size: 3.2rem;
+        letter-spacing: 4px;
+        text-align: center;
+        color: {b.TEXT_PRIMARY};
+        margin: 0.5rem 0 0 0;
+    }}
+
+    .fm-tagline {{
+        text-align: center;
+        font-style: italic;
+        color: {b.ACCENT};
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
     }}
 
     .stMetric {{
@@ -101,12 +121,11 @@ def prepare_dataframe(events):
 
 
 def render_header():
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        st.image(str(Path(__file__).parent / "Frontier_Mercator_Logo.jpg"), width=90)
-    with col2:
-        st.markdown("### **FRONTIER MERCATOR**")
-        st.markdown("*Intelligence for the Frontier*")
+    _, center, _ = st.columns([1, 2, 1])
+    with center:
+        st.image(str(Path(__file__).parent / "Frontier_Mercator_Logo.jpg"), width=140)
+    st.markdown('<div class="fm-wordmark">FRONTIER MERCATOR</div>', unsafe_allow_html=True)
+    st.markdown('<div class="fm-tagline">Intelligence for the Frontier</div>', unsafe_allow_html=True)
     st.markdown('<div class="header-line"></div>', unsafe_allow_html=True)
 
 
@@ -141,7 +160,7 @@ core_regions = sorted(df.loc[df.get('in_core_mandate', True) == True, 'region'].
 extended_regions = sorted(set(all_regions) - set(core_regions))
 
 include_extended = st.sidebar.checkbox(
-    "Include extended monitoring (Europe, Middle East, Global)", value=False,
+    "Include extended monitoring (Europe, Middle East, Global)", value=True,
 )
 default_regions = all_regions if include_extended else core_regions
 

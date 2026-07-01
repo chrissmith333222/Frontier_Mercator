@@ -33,7 +33,17 @@ HIGH = "#FFB03B"
 MEDIUM = "#9B8CFF"
 LOW = "#2ED8A0"
 
-FONT_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+# Body font: Bahnschrift is Chris's pick (bundled with Windows) — listed first
+# so Windows visitors get it natively. 'Barlow Semi Condensed' (loaded from
+# Google Fonts in dashboard.py) is a close free lookalike for Mac/Linux/mobile
+# visitors who don't have Bahnschrift installed, so the site doesn't silently
+# fall back to a generic default on non-Windows machines.
+FONT_STACK = "'Bahnschrift', 'Barlow Semi Condensed', 'Segoe UI', Roboto, Arial, sans-serif"
+
+# Display font for the big "FRONTIER MERCATOR" wordmark — geometric, wide,
+# bold caps to match the logo's lettering. Montserrat (Google Fonts) is the
+# closest widely-available free match.
+DISPLAY_FONT_STACK = "'Montserrat', 'Bahnschrift', 'Segoe UI', Arial, sans-serif"
 
 
 def severity_color(score: float) -> str:
