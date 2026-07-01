@@ -46,7 +46,11 @@
     },
     "region": {
       "type": "string",
-      "description": "MERIDIAN macro-region, e.g. 'West Africa', 'Andean Region', 'Southern Cone'. Mapped from country during normalization."
+      "description": "MERIDIAN macro-region, e.g. 'West Africa', 'Andean Region', 'Southern Cone'. Also covers extended-monitoring regions outside the core mandate (e.g. 'Europe', 'Middle East', 'Global / Other Monitoring'). Mapped from country during normalization."
+    },
+    "in_core_mandate": {
+      "type": "boolean",
+      "description": "True if this event is in MERIDIAN's core Africa/Latin America investment mandate. False for extended/global monitoring events (Europe, Middle East, elsewhere) kept for episodic global-context reporting but excluded from core country/regional briefs by default."
     },
     "latitude": { "type": ["number", "null"] },
     "longitude": { "type": ["number", "null"] },

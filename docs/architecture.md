@@ -11,6 +11,15 @@ relationship reasoning. Backs an investment strategy + geopolitical consulting p
 Investment philosophy: maximize returns while aligning with US strategic interests; higher
 risk tolerance for VC/PE, frontier startups, and development finance.
 
+**Global monitoring scope (added 2026-07-01):** given the interconnected nature of markets
+and security, ingestion also tracks Europe and the Middle East ("extended monitoring"), and
+retains any other country as "Global / Other Monitoring" rather than discarding it. Every
+normalized event carries an `in_core_mandate` boolean. Country/Sub-Regional/Regional briefs
+and the main dashboard view stay filtered to `in_core_mandate=True` (Africa/LatAm) by default;
+extended/global events are ingested and tagged now, with episodic one-off reports on
+non-mandate countries/regions planned as a future surface (see Build Phases, step 8) once they
+cross an interest threshold (e.g. a major conflict, election, or market shock).
+
 ## The Loop (4 layers, continuously running)
 
 ```

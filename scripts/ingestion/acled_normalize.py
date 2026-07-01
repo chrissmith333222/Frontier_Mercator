@@ -82,6 +82,35 @@ COUNTRY_TO_MERIDIAN_REGION = {
     "Jamaica": "Central America & Caribbean",
 }
 
+# Extended monitoring: Europe + Middle East, per Chris's direction (2026-07-01)
+# that MERIDIAN should track global developments for episodic/one-off reports,
+# while core country/regional briefs stay scoped to Africa/LatAm. Not
+# exhaustive — covers the major countries in these two regions. Anything not
+# in this dict either falls back to "Global / Other Monitoring" (still kept,
+# for occasional global-context signal) rather than being dropped, since
+# ACLED's country field is a plain name we can always display even without a
+# curated region bucket.
+EXTENDED_COUNTRY_TO_REGION = {
+    # Europe
+    "United Kingdom": "Europe", "France": "Europe", "Germany": "Europe", "Italy": "Europe",
+    "Spain": "Europe", "Portugal": "Europe", "Netherlands": "Europe", "Belgium": "Europe",
+    "Sweden": "Europe", "Norway": "Europe", "Denmark": "Europe", "Finland": "Europe",
+    "Poland": "Europe", "Czech Republic": "Europe", "Slovakia": "Europe", "Hungary": "Europe",
+    "Romania": "Europe", "Bulgaria": "Europe", "Greece": "Europe", "Ukraine": "Europe",
+    "Belarus": "Europe", "Russia": "Europe", "Moldova": "Europe", "Austria": "Europe",
+    "Switzerland": "Europe", "Croatia": "Europe", "Serbia": "Europe",
+    "Bosnia and Herzegovina": "Europe", "Ireland": "Europe",
+    # Middle East
+    "Iraq": "Middle East", "Iran": "Middle East", "Syria": "Middle East", "Lebanon": "Middle East",
+    "Jordan": "Middle East", "Israel": "Middle East", "Saudi Arabia": "Middle East",
+    "Yemen": "Middle East", "Turkey": "Middle East", "Kuwait": "Middle East",
+    "Bahrain": "Middle East", "Qatar": "Middle East", "United Arab Emirates": "Middle East",
+    "Oman": "Middle East", "Palestine": "Middle East", "Afghanistan": "Middle East",
+    "Pakistan": "Middle East",
+}
+
+GLOBAL_OTHER_REGION = "Global / Other Monitoring"
+
 
 def compute_severity_score(event: dict) -> float:
     """
@@ -147,19 +176,31 @@ def make_meridian_event_id(source: str, source_event_id: str) -> str:
 
 def normalize_acled_event(raw_event: dict) -> dict | None:
     """Maps a single raw ACLED record into the MERIDIAN normalized_event schema.
-    Returns None if the event's country falls outside MERIDIAN's Africa/LatAm
-    mandate. ACLED's API-side region filter has proven unreliable in practice
-    (fetches have returned Turkey, Ukraine, Iran, etc. despite region params),
-    so this mandate check is the authoritative filter — every event must clear
-    it before being normalized, matching the convention used in
-    gdelt_normalize.py."""
+    Returns None only if the record has no usable country at all (malformed).
+    Core-mandate countries (Africa/LatAm) get their curated region; Europe/
+    Middle East countries get the extended-monitoring region; everything else
+    still gets kept, tagged region="Global / Other Monitoring", in_core_mandate
+    False — for episodic global-context reporting, per Chris's direction
+    (2026-07-01) that MERIDIAN should track global developments even though
+    core briefs stay scoped to Africa/LatAm. (ACLED's API-side region filter
+    has also proven unreliable in practice — Turkey/Ukraine/Iran have come
+    back despite region params — so we no longer rely on it; this mandate
+    tagging is authoritative, same convention as gdelt_normalize.py.)"""
     country = raw_event.get("country", "")
     source_event_id = raw_event.get("event_id_cnty", "")
     event_type = raw_event.get("event_type", "")
 
-    if country not in COUNTRY_TO_MERIDIAN_REGION:
+    if not country:
         return None
-    region = COUNTRY_TO_MERIDIAN_REGION[country]
+    if country in COUNTRY_TO_MERIDIAN_REGION:
+        region = COUNTRY_TO_MERIDIAN_REGION[country]
+        in_core_mandate = True
+    elif country in EXTENDED_COUNTRY_TO_REGION:
+        region = EXTENDED_COUNTRY_TO_REGION[country]
+        in_core_mandate = False
+    else:
+        region = GLOBAL_OTHER_REGION
+        in_core_mandate = False
 
     try:
         lat = float(raw_event["latitude"]) if raw_event.get("latitude") not in (None, "") else None
@@ -181,6 +222,7 @@ def normalize_acled_event(raw_event: dict) -> dict | None:
         "iso3": raw_event.get("iso3"),
         "admin1": raw_event.get("admin1"),
         "region": region,
+        "in_core_mandate": in_core_mandate,
         "latitude": lat,
         "longitude": lon,
         "event_category": EVENT_TYPE_MAP.get(event_type, "other"),

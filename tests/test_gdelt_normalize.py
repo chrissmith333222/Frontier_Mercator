@@ -67,7 +67,20 @@ NON_MANDATE_EVENT = {
     "SQLDATE": "20260101",
     "EventRootCode": "19",
     "GoldsteinScale": "-10.0",
-    "ActionGeo_CountryCode": "US",  # outside MERIDIAN's Africa/LatAm mandate
+    "ActionGeo_CountryCode": "US",  # outside both the core mandate and extended monitoring
+}
+
+# Extended-monitoring event (France) — in core mandate=False, region=Europe.
+EXTENDED_EVENT = {
+    "GLOBALEVENTID": "3333333333",
+    "SQLDATE": "20260601",
+    "Actor1Name": "FRANCE",
+    "Actor2Name": "PROTESTERS",
+    "EventRootCode": "14",
+    "GoldsteinScale": "-5.0",
+    "ActionGeo_CountryCode": "FR",
+    "ActionGeo_Lat": "48.8566",
+    "ActionGeo_Long": "2.3522",
 }
 
 MALFORMED_EVENT = {
@@ -88,7 +101,17 @@ def test_basic_field_mapping():
     assert result["iso3"] == "MLI"
     assert result["event_date"] == "2026-06-15"
     assert result["event_category"] == "conflict"
+    assert result["in_core_mandate"] is True
     print("✓ test_basic_field_mapping passed")
+
+
+def test_extended_monitoring_country():
+    result = normalize_gdelt_event(EXTENDED_EVENT)
+    assert result is not None
+    assert result["country"] == "France"
+    assert result["region"] == "Europe"
+    assert result["in_core_mandate"] is False
+    print("✓ test_extended_monitoring_country passed")
 
 
 def test_region_mapping():

@@ -15,3 +15,6 @@ data/
 
 # OS
 .DS_Store
+
+# Personal/reference docs, not project code
+*.docx

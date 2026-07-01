@@ -35,7 +35,12 @@ from datetime import datetime, timedelta, timezone
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import requests
-from scripts.lib.gdelt_geo import MERIDIAN_FIPS_CODES
+from scripts.lib.gdelt_geo import MERIDIAN_FIPS_CODES, EXTENDED_FIPS_CODES
+
+# Fetch keeps both the core Africa/LatAm mandate and the extended Europe/
+# Middle East monitoring list — normalize_gdelt_event tags each record with
+# in_core_mandate so downstream reports can filter appropriately.
+TRACKED_FIPS_CODES = MERIDIAN_FIPS_CODES | EXTENDED_FIPS_CODES
 
 GDELT_BASE_URL = "http://data.gdeltproject.org/gdeltv2"
 LAST_UPDATE_URL = f"{GDELT_BASE_URL}/lastupdate.txt"
@@ -121,7 +126,7 @@ def fetch_recent_events(hours_back: int = 24, max_files: int | None = None) -> l
                         if len(row) != len(GDELT_EVENT_COLUMNS):
                             continue
                         record = dict(zip(GDELT_EVENT_COLUMNS, row))
-                        if record.get("ActionGeo_CountryCode") in MERIDIAN_FIPS_CODES:
+                        if record.get("ActionGeo_CountryCode") in TRACKED_FIPS_CODES:
                             matched_events.append(record)
             files_fetched += 1
         except (requests.RequestException, zipfile.BadZipFile) as e:
@@ -129,7 +134,8 @@ def fetch_recent_events(hours_back: int = 24, max_files: int | None = None) -> l
             print(f"WARNING: skipped GDELT file {ts}: {e}", file=sys.stderr)
 
     print(f"GDELT fetch complete: {files_fetched} files pulled, {files_skipped} skipped, "
-          f"{len(matched_events)} mandate-country events matched.", file=sys.stderr)
+          f"{len(matched_events)} tracked-country events matched (core mandate + extended monitoring).",
+          file=sys.stderr)
 
     return matched_events
 

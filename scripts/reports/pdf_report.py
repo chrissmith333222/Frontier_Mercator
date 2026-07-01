@@ -7,6 +7,10 @@ tool/codename ("Parallax") appears anywhere in the output — these are the
 client-facing deliverable, and should read like a professional research
 product, not a dev tool export.
 
+Dark theme, matching the dashboard (see scripts/branding.py for the shared
+palette) — Chris wants the dark, Bloomberg-terminal-adjacent identity to
+carry through to the printed/downloaded reports, not just the site.
+
 Current version is data-driven (quantified event/severity statistics computed
 directly from normalized ACLED/GDELT records). It does NOT yet include Claude-
 generated narrative analysis (investment recommendations, forecasts) — that
@@ -32,43 +36,46 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable,
 )
 
+from scripts import branding as b
+
 LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "Frontier_Mercator_Logo.jpg"
 
-# Brand palette — must match dashboard.py and DASHBOARD_README.md exactly.
-NAVY = colors.HexColor("#091E42")
-SLATE = colors.HexColor("#505F79")
-LIGHT_BG = colors.HexColor("#F5F7FA")
-BORDER = colors.HexColor("#DEEBF7")
-CRITICAL = colors.HexColor("#AE2A19")
-HIGH = colors.HexColor("#974F0C")
-MEDIUM = colors.HexColor("#5E4DB2")
-LOW = colors.HexColor("#216E4E")
+# Pull the shared palette (defined once in scripts/branding.py) into reportlab colors.
+PAGE_BG = colors.HexColor(b.BG)
+PANEL = colors.HexColor(b.PANEL)
+BORDER = colors.HexColor(b.BORDER)
+NAVY = colors.HexColor(b.NAVY)
+ACCENT = colors.HexColor(b.ACCENT)
+TEXT_PRIMARY = colors.HexColor(b.TEXT_PRIMARY)
+TEXT_MUTED = colors.HexColor(b.TEXT_MUTED)
+CRITICAL = colors.HexColor(b.CRITICAL)
+HIGH = colors.HexColor(b.HIGH)
+MEDIUM = colors.HexColor(b.MEDIUM)
+LOW = colors.HexColor(b.LOW)
 
 STYLES = getSampleStyleSheet()
 TITLE_STYLE = ParagraphStyle(
-    "BriefTitle", parent=STYLES["Title"], textColor=NAVY, fontSize=20, spaceAfter=4,
+    "BriefTitle", parent=STYLES["Title"], textColor=TEXT_PRIMARY, fontSize=20, spaceAfter=4,
 )
 SUBTITLE_STYLE = ParagraphStyle(
-    "BriefSubtitle", parent=STYLES["Normal"], textColor=SLATE, fontSize=11, spaceAfter=12,
+    "BriefSubtitle", parent=STYLES["Normal"], textColor=ACCENT, fontSize=11, spaceAfter=12,
 )
 SECTION_STYLE = ParagraphStyle(
-    "SectionHeader", parent=STYLES["Heading2"], textColor=NAVY, fontSize=13,
+    "SectionHeader", parent=STYLES["Heading2"], textColor=TEXT_PRIMARY, fontSize=13,
     spaceBefore=14, spaceAfter=6,
 )
 BODY_STYLE = ParagraphStyle(
-    "Body", parent=STYLES["Normal"], fontSize=9.5, textColor=colors.HexColor("#1A1A1A"),
-    leading=13,
+    "Body", parent=STYLES["Normal"], fontSize=9.5, textColor=TEXT_PRIMARY, leading=13,
 )
 DISCLAIMER_STYLE = ParagraphStyle(
-    "Disclaimer", parent=STYLES["Normal"], fontSize=7.5, textColor=SLATE, leading=10,
+    "Disclaimer", parent=STYLES["Normal"], fontSize=7.5, textColor=TEXT_MUTED, leading=10,
 )
 CELL_STYLE = ParagraphStyle(
-    "TableCell", parent=STYLES["Normal"], fontSize=7.5, leading=9.5,
-    textColor=colors.HexColor("#1A1A1A"),
+    "TableCell", parent=STYLES["Normal"], fontSize=7.5, leading=9.5, textColor=TEXT_PRIMARY,
 )
 CELL_HEADER_STYLE = ParagraphStyle(
     "TableCellHeader", parent=STYLES["Normal"], fontSize=7.5, leading=9.5,
-    textColor=colors.white, fontName="Helvetica-Bold",
+    textColor=TEXT_PRIMARY, fontName="Helvetica-Bold",
 )
 
 
@@ -82,14 +89,13 @@ def _severity_color(score: float):
     return LOW
 
 
-def _severity_label(score: float) -> str:
-    if score >= 7:
-        return "Critical"
-    if score >= 5:
-        return "High"
-    if score >= 3:
-        return "Medium"
-    return "Low"
+def _paint_dark_background(canvas, doc):
+    """Fills the full page with the brand dark background before anything else
+    is drawn, so the report reads as a dark-themed product end to end."""
+    canvas.saveState()
+    canvas.setFillColor(PAGE_BG)
+    canvas.rect(0, 0, doc.pagesize[0], doc.pagesize[1], stroke=0, fill=1)
+    canvas.restoreState()
 
 
 def _header_flowables(title: str, subtitle: str) -> list:
@@ -99,11 +105,11 @@ def _header_flowables(title: str, subtitle: str) -> list:
         flowables.append(Spacer(1, 8))
     flowables.append(Paragraph(title, TITLE_STYLE))
     flowables.append(Paragraph(subtitle, SUBTITLE_STYLE))
-    flowables.append(HRFlowable(width="100%", thickness=2, color=SLATE, spaceAfter=10))
+    flowables.append(HRFlowable(width="100%", thickness=2, color=ACCENT, spaceAfter=10))
     return flowables
 
 
-def _summary_table(df_scope: pd.DataFrame) -> Table:
+def _summary_table(df_scope: pd.DataFrame) -> tuple[Table, str]:
     total_events = len(df_scope)
     critical = int((df_scope["severity_score"] >= 7).sum())
     high = int(((df_scope["severity_score"] >= 5) & (df_scope["severity_score"] < 7)).sum())
@@ -121,9 +127,9 @@ def _summary_table(df_scope: pd.DataFrame) -> Table:
     table = Table(data, colWidths=[1.5 * inch] * 5)
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), NAVY),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("BACKGROUND", (0, 1), (-1, 1), LIGHT_BG),
-        ("TEXTCOLOR", (0, 1), (-1, 1), NAVY),
+        ("TEXTCOLOR", (0, 0), (-1, 0), TEXT_PRIMARY),
+        ("BACKGROUND", (0, 1), (-1, 1), PANEL),
+        ("TEXTCOLOR", (0, 1), (-1, 1), TEXT_PRIMARY),
         ("FONTSIZE", (0, 0), (-1, -1), 8.5),
         ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
@@ -154,14 +160,14 @@ def _events_table(df_scope: pd.DataFrame, limit: int = 15) -> Table:
         ])
     table = Table(rows, colWidths=[0.8 * inch, 0.8 * inch, 1.1 * inch, 0.4 * inch, 2.9 * inch], repeatRows=1)
     style = [
-        ("BACKGROUND", (0, 0), (-1, 0), SLATE),
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
         ("LEFTPADDING", (0, 0), (-1, -1), 5),
         ("RIGHTPADDING", (0, 0), (-1, -1), 5),
         ("GRID", (0, 0), (-1, -1), 0.4, BORDER),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, LIGHT_BG]),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [PAGE_BG, PANEL]),
     ]
     table.setStyle(TableStyle(style))
     return table
@@ -207,7 +213,7 @@ def _build_pdf(title: str, subtitle: str, df_scope: pd.DataFrame) -> bytes:
 
     story.extend(_footer_flowables())
 
-    doc.build(story)
+    doc.build(story, onFirstPage=_paint_dark_background, onLaterPages=_paint_dark_background)
     return buffer.getvalue()
 
 

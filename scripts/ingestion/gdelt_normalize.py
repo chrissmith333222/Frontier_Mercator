@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from scripts.lib.gdelt_geo import lookup_country
+from scripts.lib.gdelt_geo import lookup_any_country
 
 # CAMEO EventRootCode -> MERIDIAN's coarse event_category.
 # GDELT's own taxonomy (CAMEO 1.1b3) is far more granular (20 root codes,
@@ -87,13 +87,14 @@ def extract_actors(record: dict) -> list[dict]:
 
 def normalize_gdelt_event(record: dict) -> dict | None:
     """Maps a single raw GDELT record into the MERIDIAN normalized_event schema.
-    Returns None if the event's location doesn't resolve to a MERIDIAN mandate
-    country (shouldn't happen post-fetch-filtering, but defensive here too)."""
+    Returns None if the event's location doesn't resolve to either the core
+    Africa/LatAm mandate or the extended Europe/Middle East monitoring list
+    (shouldn't happen post-fetch-filtering, but defensive here too)."""
     fips_code = record.get("ActionGeo_CountryCode", "")
-    geo = lookup_country(fips_code)
+    geo = lookup_any_country(fips_code)
     if geo is None:
         return None
-    country, iso3, region = geo
+    country, iso3, region, in_core_mandate = geo
 
     source_event_id = record.get("GLOBALEVENTID", "")
     root_code = record.get("EventRootCode", "")
@@ -123,6 +124,7 @@ def normalize_gdelt_event(record: dict) -> dict | None:
         "iso3": iso3,
         "admin1": record.get("ActionGeo_ADM1Code"),
         "region": region,
+        "in_core_mandate": in_core_mandate,
         "latitude": lat,
         "longitude": lon,
         "event_category": EVENT_ROOT_CODE_MAP.get(root_code, "other"),

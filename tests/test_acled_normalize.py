@@ -61,14 +61,29 @@ SAMPLE_PROTEST_EVENT = {
     "source": "El Tiempo",
 }
 
-MALFORMED_EVENT = {
+UNLISTED_COUNTRY_EVENT = {
     "event_id_cnty": "XXX00000",
     "event_date": "2026-01-01",
     "event_type": "Battles",
-    "country": "Nowhereland",  # not in COUNTRY_TO_MERIDIAN_REGION — should still work, just flagged
+    "country": "Nowhereland",  # not in any region dict — should fall back to Global/Other, not drop
     "latitude": "not-a-number",  # should be handled gracefully, not crash
     "longitude": "",
     "fatalities": "not-a-number",
+}
+
+NO_COUNTRY_EVENT = {
+    "event_id_cnty": "YYY00000",
+    "event_date": "2026-01-01",
+    "event_type": "Battles",
+    "country": "",  # genuinely malformed — no usable location at all
+}
+
+EXTENDED_COUNTRY_EVENT = {
+    "event_id_cnty": "TUR00001",
+    "event_date": "2026-02-01",
+    "event_type": "Riots",
+    "country": "Turkey",
+    "fatalities": "0",
 }
 
 
@@ -80,6 +95,7 @@ def test_basic_field_mapping():
     assert result["event_date"] == "2026-06-15"
     assert result["event_category"] == "conflict"
     assert result["event_subtype"] == "Battles"
+    assert result["in_core_mandate"] is True
     print("✓ test_basic_field_mapping passed")
 
 
@@ -92,14 +108,30 @@ def test_region_mapping():
     print("✓ test_region_mapping passed")
 
 
-def test_unmapped_country_returns_none():
-    # "Nowhereland" is outside MERIDIAN's Africa/LatAm mandate, so the event
-    # should be dropped (return None) rather than included with a placeholder
-    # region — ACLED's API-side region filter isn't reliable, so this mandate
-    # check is the real gate. See normalize_acled_event's docstring.
-    result = normalize_acled_event(MALFORMED_EVENT)
+def test_unlisted_country_falls_back_to_global_monitoring():
+    # "Nowhereland" isn't in the core mandate or extended-monitoring dicts, but
+    # should still be kept (not dropped) as episodic global-context signal.
+    result = normalize_acled_event(UNLISTED_COUNTRY_EVENT)
+    assert result is not None
+    assert result["region"] == "Global / Other Monitoring"
+    assert result["in_core_mandate"] is False
+    assert result["latitude"] is None  # bad input handled gracefully
+    assert result["fatalities"] is None
+    print("✓ test_unlisted_country_falls_back_to_global_monitoring passed")
+
+
+def test_extended_monitoring_country():
+    result = normalize_acled_event(EXTENDED_COUNTRY_EVENT)
+    assert result is not None
+    assert result["region"] == "Middle East"
+    assert result["in_core_mandate"] is False
+    print("✓ test_extended_monitoring_country passed")
+
+
+def test_no_country_returns_none():
+    result = normalize_acled_event(NO_COUNTRY_EVENT)
     assert result is None
-    print("✓ test_unmapped_country_returns_none passed")
+    print("✓ test_no_country_returns_none passed")
 
 
 def test_severity_scoring():
