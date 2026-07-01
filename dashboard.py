@@ -290,51 +290,11 @@ def render_conflict_dashboard(df_filtered):
     with col5:
         st.metric("Total Fatalities", f"{int(df_filtered['fatalities'].fillna(0).sum()):,}")
 
-    map_tab, analytics_tab, critical_tab = st.tabs(["Severity Map", "Analytics", "Critical Events"])
-
-    with map_tab:
-        st.markdown("#### Event Severity Map")
-        MAX_MAP_MARKERS = 2000
-        map_events = df_filtered
-        if len(df_filtered) > MAX_MAP_MARKERS:
-            map_events = df_filtered.sort_values("severity_score", ascending=False).head(MAX_MAP_MARKERS)
-            st.markdown(
-                f"Satellite basemap, full-color severity markers. Showing the {MAX_MAP_MARKERS:,} "
-                f"highest-severity of {len(df_filtered):,} matching events (Folium can't render "
-                f"tens of thousands of markers without hanging the browser)."
-            )
-        else:
-            st.markdown("Satellite basemap, full-color severity markers.")
-
-        m = folium.Map(location=[-5, 20], zoom_start=3, tiles=None)
-        folium.TileLayer(
-            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            attr="Esri World Imagery", name="Satellite", overlay=False, control=False,
-        ).add_to(m)
-        folium.TileLayer(
-            tiles="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",
-            attr="CartoDB", name="Labels", overlay=True, control=False,
-        ).add_to(m)
-
-        for _, event in map_events.iterrows():
-            if pd.notna(event['latitude']) and pd.notna(event['longitude']):
-                severity = event['severity_score']
-                color = b.severity_color(severity)
-                popup_text = (
-                    f"<b>{event['country']}</b> — {event['event_date']}<br>"
-                    f"<b>Type:</b> {event['event_category']}<br>"
-                    f"<b>Severity:</b> {severity:.1f}/10<br>"
-                    f"<b>Summary:</b> {str(event['narrative_summary'])[:100]}...<br>"
-                )
-                folium.CircleMarker(
-                    location=[event['latitude'], event['longitude']],
-                    radius=5 + (severity / 2),
-                    popup=folium.Popup(popup_text, max_width=300),
-                    color=color, fill=True, fillColor=color,
-                    fillOpacity=0.85, weight=1, opacity=0.9,
-                ).add_to(m)
-
-        st_folium(m, width=1200, height=600)
+    analytics_tab, critical_tab = st.tabs(["Analytics", "Critical Events"])
+    # No separate map here by design -- the map lives once, at the bottom of
+    # the page (Unified Intelligence Map), covering conflict/economic/news
+    # together with a type toggle. Keeping a second map in this tab would
+    # just be a redundant, conflict-only duplicate of it.
 
     with analytics_tab:
         col1, col2 = st.columns(2)
