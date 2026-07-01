@@ -9,6 +9,7 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
 from pathlib import Path
 
 from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief
@@ -25,20 +26,50 @@ st.set_page_config(
 # Custom CSS for branding — dark theme, shared palette from scripts/branding.py
 st.markdown(f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Montserrat:wght@700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Exo+2:ital,wght@0,700;0,800;1,700;1,800&display=swap');
 
     * {{
         font-family: {b.FONT_STACK};
     }}
 
+    .fm-header-block {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin: 0.5rem 0 0 0;
+    }}
+
+    .fm-logo-img {{
+        display: block;
+        margin: 0 auto;
+    }}
+
+    .fm-wordmark-row {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.9rem;
+        margin-top: 0.75rem;
+    }}
+
+    .fm-emblem {{
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+    }}
+
     .fm-wordmark {{
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 800;
+        font-style: italic;
         font-size: 3.2rem;
-        letter-spacing: 4px;
+        letter-spacing: 3px;
         text-align: center;
         color: {b.TEXT_PRIMARY};
-        margin: 0.5rem 0 0 0;
+        transform: skew(-3deg);
+        margin: 0;
     }}
 
     .fm-tagline {{
@@ -120,13 +151,97 @@ def prepare_dataframe(events):
     return df
 
 
+@st.cache_data
+def _load_base64(path: str) -> str:
+    import base64
+    return base64.b64encode(Path(path).read_bytes()).decode("ascii")
+
+
+@st.cache_data
+def _load_text(path: str) -> str:
+    return Path(path).read_text(encoding="utf-8")
+
+
 def render_header():
-    _, center, _ = st.columns([1, 2, 1])
-    with center:
-        st.image(str(Path(__file__).parent / "Frontier_Mercator_Logo.jpg"), width=140)
-    st.markdown('<div class="fm-wordmark">FRONTIER MERCATOR</div>', unsafe_allow_html=True)
-    st.markdown('<div class="fm-tagline">Intelligence for the Frontier</div>', unsafe_allow_html=True)
+    """Logo, emblem, and wordmark built as one flex-centered HTML block --
+    plain Streamlit columns/st.image don't guarantee true centering, hence
+    the raw HTML here instead."""
+    logo_b64 = _load_base64(str(Path(__file__).parent / "Frontier_Mercator_Logo.jpg"))
+    emblem_svg = _load_text(str(Path(__file__).parent / "static" / "fm_emblem.svg"))
+
+    st.markdown(
+        f"""
+        <div class="fm-header-block">
+            <img class="fm-logo-img" width="140"
+                 src="data:image/jpeg;base64,{logo_b64}" alt="Frontier Mercator logo" />
+            <div class="fm-wordmark-row">
+                <span class="fm-emblem">{emblem_svg}</span>
+                <span class="fm-wordmark">FRONTIER MERCATOR</span>
+            </div>
+            <div class="fm-tagline">Intelligence for the Frontier</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown('<div class="header-line"></div>', unsafe_allow_html=True)
+
+
+def render_video_hero():
+    """Full-width, continuously-rotating video background sitting directly
+    beneath the header, with the tagline overlaid -- Chris's "Lockheed
+    Martin homepage" reference. Videos are pre-compressed (4K/100+Mbps
+    originals down to 720p/~1-2Mbps, see static/videos/) and served via
+    Streamlit's static file serving (enableStaticServing in config.toml).
+    Uses components.html (an iframe) rather than st.markdown because
+    st.markdown strips <script> tags, and the rotation needs JS."""
+    video_dir = Path(__file__).parent / "static" / "videos"
+    video_files = sorted(p.name for p in video_dir.glob("*.mp4"))
+    if not video_files:
+        return
+
+    video_tags = "\n".join(
+        f'<video class="fm-hero-video" muted playsinline '
+        f'style="opacity:{1 if i == 0 else 0};" '
+        f'src="app/static/videos/{name}"></video>'
+        for i, name in enumerate(video_files)
+    )
+
+    html = f"""
+    <style>
+        html, body {{ margin:0; padding:0; background:{b.BG}; }}
+        .fm-hero-video {{
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            object-fit:cover; transition:opacity 1.2s ease-in-out;
+        }}
+    </style>
+    <div style="position:relative; width:100%; height:440px; overflow:hidden; background:{b.BG};">
+        {video_tags}
+        <div style="position:absolute; inset:0;
+                    background:linear-gradient(180deg, rgba(6,11,20,0.25) 0%, rgba(6,11,20,0.55) 100%);"></div>
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:'Bahnschrift','Barlow Semi Condensed',sans-serif;
+                         font-style:italic; font-size:1.9rem; color:#FFFFFF;
+                         text-shadow:0 2px 14px rgba(0,0,0,0.75); letter-spacing:1px;">
+                Intelligence for the Frontier
+            </span>
+        </div>
+    </div>
+    <script>
+        const videos = Array.from(document.querySelectorAll('.fm-hero-video'));
+        let current = 0;
+        function playNext() {{
+            videos[current].style.opacity = 0;
+            current = (current + 1) % videos.length;
+            const next = videos[current];
+            next.currentTime = 0;
+            next.style.opacity = 1;
+            next.play();
+        }}
+        videos.forEach((v) => v.addEventListener('ended', playNext));
+        videos[0].play();
+    </script>
+    """
+    components.html(html, height=440)
 
 
 def render_footer(df):
@@ -141,6 +256,7 @@ def render_footer(df):
 
 
 render_header()
+render_video_hero()
 
 events = load_events()
 if not events:

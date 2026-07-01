@@ -40,10 +40,12 @@ LOW = "#2ED8A0"
 # fall back to a generic default on non-Windows machines.
 FONT_STACK = "'Bahnschrift', 'Barlow Semi Condensed', 'Segoe UI', Roboto, Arial, sans-serif"
 
-# Display font for the big "FRONTIER MERCATOR" wordmark — geometric, wide,
-# bold caps to match the logo's lettering. Montserrat (Google Fonts) is the
-# closest widely-available free match.
-DISPLAY_FONT_STACK = "'Montserrat', 'Bahnschrift', 'Segoe UI', Arial, sans-serif"
+# Display font for the big "FRONTIER MERCATOR" wordmark — Chris wants the
+# sharpness/slant of the Lockheed Martin wordmark. 'Exo 2' (Google Fonts,
+# free) is a geometric sans with a genuine italic cut that reads as
+# aerospace/defense-adjacent when set bold + italic + wide letter-spacing,
+# the closest free match to that look.
+DISPLAY_FONT_STACK = "'Exo 2', 'Bahnschrift', 'Segoe UI', Arial, sans-serif"
 
 
 def severity_color(score: float) -> str:

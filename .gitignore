@@ -18,3 +18,7 @@ data/
 
 # Personal/reference docs, not project code
 *.docx
+
+# Raw uncompressed source videos (100s of MB, 4K originals) -- only the
+# compressed versions in static/videos/ are meant to be served/committed
+/videos/

@@ -14,3 +14,4 @@ toolbarMode = "minimal"
 headless = true
 runOnSave = true
 port = 8501
+enableStaticServing = true
