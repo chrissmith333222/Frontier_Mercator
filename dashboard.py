@@ -89,15 +89,14 @@ def load_events():
 
 @st.cache_data
 def prepare_dataframe(events):
-    """Convert events to pandas dataframe for analysis. Core dashboard/briefs
-    stay scoped to the Africa/LatAm mandate by default (in_core_mandate=True);
-    Europe/Middle East/global events are ingested and tagged but held back from
-    the main view until the episodic global-monitoring surface is built."""
+    """Convert events to pandas dataframe for analysis. Keeps every event,
+    core mandate (Africa/LatAm) and extended monitoring (Europe, Middle East,
+    Global/Other) alike — the map and analytics should show all of it. Default
+    filtering to prioritize the core mandate happens via the sidebar region
+    selector below, not by dropping data here."""
     df = pd.DataFrame(events)
     df['event_date'] = pd.to_datetime(df['event_date'], errors='coerce')
     df['severity_label'] = df['severity_score'].apply(b.severity_label)
-    if 'in_core_mandate' in df.columns:
-        df = df[df['in_core_mandate'] == True].copy()  # noqa: E712
     return df
 
 
@@ -136,9 +135,18 @@ st.sidebar.markdown("### Filters")
 min_severity = st.sidebar.slider(
     "Minimum Severity Score", min_value=0.0, max_value=10.0, value=0.0, step=0.5
 )
+
+all_regions = sorted(df['region'].dropna().unique())
+core_regions = sorted(df.loc[df.get('in_core_mandate', True) == True, 'region'].dropna().unique())  # noqa: E712
+extended_regions = sorted(set(all_regions) - set(core_regions))
+
+include_extended = st.sidebar.checkbox(
+    "Include extended monitoring (Europe, Middle East, Global)", value=False,
+)
+default_regions = all_regions if include_extended else core_regions
+
 selected_regions = st.sidebar.multiselect(
-    "Regions", options=sorted(df['region'].dropna().unique()),
-    default=sorted(df['region'].dropna().unique()),
+    "Regions", options=all_regions, default=default_regions,
 )
 
 df_filtered = df[
@@ -176,7 +184,11 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(
 
 with tab1:
     st.markdown("### Event Severity Map")
-    st.markdown("Geographic distribution of events across Africa and Latin America. Satellite basemap.")
+    st.markdown(
+        "Geographic distribution of events. Shows the Africa/LatAm core mandate by default — "
+        "enable extended monitoring in the sidebar to add Europe, Middle East, and Global/Other. "
+        "Satellite basemap."
+    )
 
     map_center = [-5, 20]
     m = folium.Map(
@@ -320,16 +332,24 @@ with tab4:
     st.markdown("### Intelligence Briefs")
     st.markdown(
         "Generate a branded PDF brief from current data. Country briefs summarize a single "
-        "country's event picture; regional briefs roll up all countries in a selected region."
+        "country's event picture; regional briefs roll up all countries in a selected region. "
+        "Africa/LatAm core-mandate countries and regions are listed first; extended-monitoring "
+        "options (Europe, Middle East, Global/Other) are available below them for episodic reports."
     )
+
+    # Core-mandate options first, then extended — matches the "prioritize Africa/
+    # LatAm, but allow episodic global reports" direction.
+    country_mandate = df.drop_duplicates("country").set_index("country")["in_core_mandate"]
+    country_options = sorted(country_mandate.index, key=lambda c: (not country_mandate[c], c))
+
+    region_mandate = df.drop_duplicates("region").set_index("region")["in_core_mandate"]
+    region_options = sorted(region_mandate.index, key=lambda r: (not region_mandate[r], r))
 
     report_col1, report_col2 = st.columns(2)
 
     with report_col1:
         st.markdown("#### Country Intelligence Brief")
-        country_choice = st.selectbox(
-            "Country", options=sorted(df['country'].dropna().unique()), key="country_brief_select"
-        )
+        country_choice = st.selectbox("Country", options=country_options, key="country_brief_select")
         if st.button("Generate Country Brief", key="gen_country_brief"):
             pdf_bytes = generate_country_brief(df, country_choice)
             st.download_button(
@@ -340,9 +360,7 @@ with tab4:
 
     with report_col2:
         st.markdown("#### Regional Executive Summary")
-        region_choice = st.selectbox(
-            "Region", options=sorted(df['region'].dropna().unique()), key="region_brief_select"
-        )
+        region_choice = st.selectbox("Region", options=region_options, key="region_brief_select")
         if st.button("Generate Regional Brief", key="gen_regional_brief"):
             pdf_bytes = generate_regional_brief(df, region_choice)
             st.download_button(
