@@ -591,12 +591,30 @@ def render_unified_map(df):
     m = folium.Map(location=[10, 10], zoom_start=2, tiles=None)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Esri World Imagery", name="Satellite", overlay=False, control=False,
+        attr="Esri World Imagery", name="High-Res Satellite (Esri)", overlay=False, control=True,
+    ).add_to(m)
+    # NASA GIBS: free, no-auth, near-real-time satellite imagery (MODIS,
+    # ~1-day latency) -- gives an actually "up to date" imagery option
+    # alongside Esri's higher-resolution but more static base layer. Chris's
+    # ask for current satellite context on conflict zones/chokepoints; full
+    # Sentinel Hub ingestion (higher-res, radar-capable for cloud cover) is
+    # still on the roadmap as a proper ingested data source, not just a map
+    # tile layer.
+    gibs_date = (pd.Timestamp.utcnow() - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+    folium.TileLayer(
+        tiles=(
+            "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/"
+            f"MODIS_Terra_CorrectedReflectance_TrueColor/default/{gibs_date}/"
+            "GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg"
+        ),
+        attr="NASA GIBS (MODIS, near-real-time)", name=f"Recent Satellite ({gibs_date}, NASA)",
+        overlay=False, control=True,
     ).add_to(m)
     folium.TileLayer(
         tiles="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",
-        attr="CartoDB", name="Labels", overlay=True, control=False,
+        attr="CartoDB", name="Labels", overlay=True, control=True,
     ).add_to(m)
+    folium.LayerControl(collapsed=True).add_to(m)
 
     for _, event in scope.iterrows():
         lat, lon = event['latitude'], event['longitude']
@@ -747,6 +765,23 @@ with dash6:
     - Confidence levels: "we assess," "reporting indicates," "key intelligence gap"
     - Source attribution required for all claims
     - Designed for professional use in investment and national security contexts
+
+    #### Satellite Imagery & OSINT Resources
+    The Unified Intelligence Map (bottom of page) includes a **Recent Satellite** layer
+    (NASA GIBS, ~1-day-old MODIS imagery, free/no-auth) alongside the high-resolution Esri
+    base layer — use the layer control in the map's top-right corner to switch. For deeper,
+    continuously-updated OSINT on specific conflict zones, these organizations already do
+    this well and are worth going directly to rather than duplicating their work:
+    - **[Institute for the Study of War](https://understandingwar.org)** — daily control-of-terrain
+      maps for Ukraine and the Middle East
+    - **[Liveuamap](https://liveuamap.com)** — crowd-sourced, geolocated live conflict event maps
+      (Ukraine, Middle East, and other active theaters)
+    - **[Critical Threats Project](https://criticalthreats.org)** (AEI) — Iran/Middle East-focused analysis
+    - **[UNOSAT](https://unosat.org)** — UN satellite-based damage assessments for conflict/disaster zones
+    - **[Sentinel Hub EO Browser](https://apps.sentinel-hub.com/eo-browser/)** — free Sentinel-1/2
+      satellite imagery (Sentinel-1 radar sees through cloud cover, useful for persistently
+      overcast conflict zones); planned as a proper ingested data source, not just a link
+    - **[Bellingcat](https://www.bellingcat.com)** — open-source investigation methodology and findings
     """)
 
 st.markdown("---")
