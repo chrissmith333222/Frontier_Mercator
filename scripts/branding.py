@@ -18,20 +18,35 @@ PANEL = "#101A2E"         # card / table-header / panel background
 PANEL_ALT = "#0B1220"     # slightly darker alternating panel (zebra rows, etc.)
 BORDER = "#243252"        # hairline borders/dividers on dark surfaces
 
-# Brand core (kept from the original identity, Chris likes these)
+# Brand core -- strictly dark blue / gray / white now (Chris's 2026-07-02
+# direction: no light/"baby" blue anywhere in the chrome). ACCENT used to be
+# a brightened periwinkle (#6E8FC7); replaced with a cool light gray so
+# interactive/highlight states read as gray, not blue. Severity colors
+# (below) are intentionally exempt -- those are data encoding, not chrome,
+# and stay fully saturated on purpose (see severity_color).
 NAVY = "#091E42"          # deep brand navy — used as a strong accent/header band
-SLATE = "#505F79"         # brand secondary
-ACCENT = "#6E8FC7"        # brightened slate, used for interactive/active states
+SLATE = "#505F79"         # brand secondary (gray)
+ACCENT = "#9AA5B4"        # light gray — interactive/active states, no blue tint
 
 # Text
-TEXT_PRIMARY = "#EDEFF4"
-TEXT_MUTED = "#8A97B3"
+TEXT_PRIMARY = "#FFFFFF"
+TEXT_MUTED = "#9AA5B4"
 
 # Severity scale — brightened for contrast against dark backgrounds
 CRITICAL = "#FF5C4D"
 HIGH = "#FFB03B"
 MEDIUM = "#9B8CFF"
 LOW = "#2ED8A0"
+
+# event_category groupings, shared by dashboard.py and pdf_report.py so a
+# merged multi-source dataset (conflict + economic + news signal all in one
+# dataframe) gets split the same way everywhere.
+CONFLICT_CATEGORIES = [
+    "conflict", "protest_civil_unrest", "political_violence_targeting_civilians",
+    "explosion_remote_violence",
+]
+ECON_CATEGORY = "economic_indicator"
+NEWS_CATEGORIES = ["strategic_development", "other", "humanitarian"]
 
 # Body font: Bahnschrift is Chris's pick (bundled with Windows) — listed first
 # so Windows visitors get it natively. 'Barlow Semi Condensed' (loaded from
@@ -40,12 +55,12 @@ LOW = "#2ED8A0"
 # fall back to a generic default on non-Windows machines.
 FONT_STACK = "'Bahnschrift', 'Barlow Semi Condensed', 'Segoe UI', Roboto, Arial, sans-serif"
 
-# Display font for the big "FRONTIER MERCATOR" wordmark — Chris wants the
-# sharpness/slant of the Lockheed Martin wordmark. 'Exo 2' (Google Fonts,
-# free) is a geometric sans with a genuine italic cut that reads as
-# aerospace/defense-adjacent when set bold + italic + wide letter-spacing,
-# the closest free match to that look.
-DISPLAY_FONT_STACK = "'Exo 2', 'Bahnschrift', 'Segoe UI', Arial, sans-serif"
+# Display font for the big "FRONTIER MERCATOR" wordmark only -- everything
+# else on the site uses FONT_STACK (Bahnschrift). Chris wants sharp, angular,
+# NOT rounded letterforms (Lockheed Martin wordmark as the reference point).
+# 'Rajdhani' (Google Fonts, free) has hard angular cuts rather than rounded
+# terminals; combined with a CSS skew transform in dashboard.py for the slant.
+DISPLAY_FONT_STACK = "'Rajdhani', 'Bahnschrift', 'Segoe UI', Arial, sans-serif"
 
 
 def severity_color(score: float) -> str:

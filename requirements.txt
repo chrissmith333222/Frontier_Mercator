@@ -7,3 +7,4 @@ python-dotenv==1.2.2
 requests==2.34.2
 reportlab==4.2.5
 curl_cffi==0.15.0
+svglib==2.0.2

@@ -11,12 +11,12 @@ Dark theme, matching the dashboard (see scripts/branding.py for the shared
 palette) — Chris wants the dark, Bloomberg-terminal-adjacent identity to
 carry through to the printed/downloaded reports, not just the site.
 
-Current version is data-driven (quantified event/severity statistics computed
-directly from normalized ACLED/GDELT records). It does NOT yet include Claude-
-generated narrative analysis (investment recommendations, forecasts) — that
-lands once the Parallax reasoning agent (Phase 5 of the roadmap) is built.
-Until then, treat these as a statistical snapshot brief, not a full analytical
-product.
+Current version is data-driven (quantified event/severity statistics from
+ACLED/GDELT, plus a macroeconomic snapshot from World Bank/IMF). It does NOT
+yet include Claude-generated narrative analysis (investment recommendations,
+political-risk assessment, forecasts) — that lands once the Parallax
+reasoning agent (Phase 5 of the roadmap) is built. Until then, treat these as
+a statistical snapshot brief, not a full analytical product.
 
 Usage (as a module, called from dashboard.py):
     from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief
@@ -33,12 +33,34 @@ from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable,
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Flowable, HRFlowable,
 )
+from svglib.svglib import svg2rlg
 
 from scripts import branding as b
 
-LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "Frontier_Mercator_Logo.jpg"
+# The emblem (not the old photographic logo -- retired everywhere per
+# Chris's 2026-07-02 direction) is the one brand mark used across the site
+# and reports now, so it never drifts out of sync in one product or the other.
+EMBLEM_PATH = Path(__file__).resolve().parent.parent.parent / "static" / "fm_emblem.svg"
+
+
+class _EmblemFlowable(Flowable):
+    """Wraps the SVG emblem (via svglib) at a fixed size for the report header."""
+
+    def __init__(self, size: float = 1.0 * inch):
+        super().__init__()
+        self.size = size
+        self.drawing = svg2rlg(str(EMBLEM_PATH))
+        scale = size / self.drawing.width
+        self.drawing.width *= scale
+        self.drawing.height *= scale
+        self.drawing.scale(scale, scale)
+        self.width = self.height = size
+        self.hAlign = "CENTER"
+
+    def draw(self):
+        self.drawing.drawOn(self.canv, 0, 0)
 
 # Pull the shared palette (defined once in scripts/branding.py) into reportlab colors.
 PAGE_BG = colors.HexColor(b.BG)
@@ -100,8 +122,8 @@ def _paint_dark_background(canvas, doc):
 
 def _header_flowables(title: str, subtitle: str) -> list:
     flowables = []
-    if LOGO_PATH.exists():
-        flowables.append(Image(str(LOGO_PATH), width=1.3 * inch, height=0.87 * inch))
+    if EMBLEM_PATH.exists():
+        flowables.append(_EmblemFlowable(size=0.9 * inch))
         flowables.append(Spacer(1, 8))
     flowables.append(Paragraph(title, TITLE_STYLE))
     flowables.append(Paragraph(subtitle, SUBTITLE_STYLE))
@@ -110,6 +132,10 @@ def _header_flowables(title: str, subtitle: str) -> list:
 
 
 def _summary_table(df_scope: pd.DataFrame) -> tuple[Table, str]:
+    """df_scope here is already filtered to conflict-category events only
+    (see _build_pdf) -- the merged multi-source dataset also contains
+    economic_indicator and news-signal rows with null severity_score, which
+    would otherwise inflate "Total Events" with non-conflict data."""
     total_events = len(df_scope)
     critical = int((df_scope["severity_score"] >= 7).sum())
     high = int(((df_scope["severity_score"] >= 5) & (df_scope["severity_score"] < 7)).sum())
@@ -173,6 +199,41 @@ def _events_table(df_scope: pd.DataFrame, limit: int = 15) -> Table:
     return table
 
 
+def _macro_snapshot_table(econ_scope: pd.DataFrame) -> Table | None:
+    """Latest reading per indicator for the report's country/region scope,
+    from World Bank/IMF economic_indicator events. Returns None if there's
+    nothing to show (e.g. World Bank/IMF haven't been run for this country)."""
+    if len(econ_scope) == 0:
+        return None
+    latest = (
+        econ_scope.sort_values("event_date")
+        .drop_duplicates(subset=["country", "event_subtype"], keep="last")
+        .sort_values(["country", "event_subtype"])
+    )
+    header = [Paragraph(h, CELL_HEADER_STYLE) for h in ["Country", "Indicator", "Latest Value", "Source"]]
+    rows = [header]
+    for _, ev in latest.iterrows():
+        summary = str(ev.get("narrative_summary", ""))
+        rows.append([
+            Paragraph(str(ev.get("country", "")), CELL_STYLE),
+            Paragraph(summary.split(":")[0], CELL_STYLE),
+            Paragraph(summary.split(":", 1)[1].strip() if ":" in summary else summary, CELL_STYLE),
+            Paragraph(str(ev.get("source", "")), CELL_STYLE),
+        ])
+    table = Table(rows, colWidths=[1.2 * inch, 2.3 * inch, 1.7 * inch, 0.9 * inch], repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+        ("GRID", (0, 0), (-1, -1), 0.4, BORDER),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [PAGE_BG, PANEL]),
+    ]))
+    return table
+
+
 def _footer_flowables() -> list:
     generated = datetime.now(timezone.utc).strftime("%d %B %Y, %H:%M UTC")
     return [
@@ -181,7 +242,8 @@ def _footer_flowables() -> list:
         Paragraph(
             f"Frontier Mercator Group — Intelligence for the Frontier. "
             f"Generated {generated}. Statistical snapshot derived from open-source event data "
-            f"(ACLED, GDELT). Analytical narrative and investment recommendations are added once "
+            f"(ACLED, GDELT, World Bank, IMF). Analytical narrative and investment recommendations "
+            f"are added once "
             f"upstream source coverage and analytical review are complete. Distribution restricted "
             f"to authorized recipients.",
             DISCLAIMER_STYLE,
@@ -189,7 +251,13 @@ def _footer_flowables() -> list:
     ]
 
 
-def _build_pdf(title: str, subtitle: str, df_scope: pd.DataFrame) -> bytes:
+def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame) -> bytes:
+    """`scope` is the full merged multi-source dataset already filtered to a
+    country or region -- split here into conflict events (for the severity
+    summary/table) and economic indicators (for the macro snapshot)."""
+    conflict_scope = scope[scope["event_category"].isin(b.CONFLICT_CATEGORIES)]
+    econ_scope = scope[scope["event_category"] == b.ECON_CATEGORY]
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=LETTER,
@@ -199,17 +267,22 @@ def _build_pdf(title: str, subtitle: str, df_scope: pd.DataFrame) -> bytes:
 
     story = _header_flowables(title, subtitle)
 
-    summary_table, date_range = _summary_table(df_scope)
+    summary_table, date_range = _summary_table(conflict_scope)
     if date_range:
         story.append(Paragraph(f"<b>Reporting period:</b> {date_range}", BODY_STYLE))
         story.append(Spacer(1, 6))
     story.append(summary_table)
 
+    macro_table = _macro_snapshot_table(econ_scope)
+    if macro_table is not None:
+        story.append(Paragraph("Macroeconomic Snapshot", SECTION_STYLE))
+        story.append(macro_table)
+
     story.append(Paragraph("Highest-Severity Events", SECTION_STYLE))
-    if len(df_scope) > 0:
-        story.append(_events_table(df_scope))
+    if len(conflict_scope) > 0:
+        story.append(_events_table(conflict_scope))
     else:
-        story.append(Paragraph("No events recorded for this scope in the current dataset.", BODY_STYLE))
+        story.append(Paragraph("No conflict/security events recorded for this scope in the current dataset.", BODY_STYLE))
 
     story.extend(_footer_flowables())
 
@@ -219,15 +292,15 @@ def _build_pdf(title: str, subtitle: str, df_scope: pd.DataFrame) -> bytes:
 
 def generate_country_brief(df: pd.DataFrame, country: str) -> bytes:
     """Generates a Country Intelligence Brief PDF for a single country, returned as bytes."""
-    df_scope = df[df["country"] == country]
+    scope = df[df["country"] == country]
     title = f"{country} — Country Intelligence Brief"
     subtitle = "Frontier Mercator Group | Emerging Market Intelligence"
-    return _build_pdf(title, subtitle, df_scope)
+    return _build_pdf(title, subtitle, scope)
 
 
 def generate_regional_brief(df: pd.DataFrame, region: str) -> bytes:
     """Generates a Regional Executive Summary PDF covering all countries in a region."""
-    df_scope = df[df["region"] == region]
+    scope = df[df["region"] == region]
     title = f"{region} — Regional Executive Summary"
     subtitle = "Frontier Mercator Group | Emerging Market Intelligence"
-    return _build_pdf(title, subtitle, df_scope)
+    return _build_pdf(title, subtitle, scope)
