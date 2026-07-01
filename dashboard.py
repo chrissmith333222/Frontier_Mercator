@@ -142,11 +142,16 @@ st.markdown(f"""
 
 @st.cache_data
 def load_events():
-    """Loads and merges normalized events from every ingested source
-    (ACLED, GDELT, World Bank, IMF -- ReliefWeb once Chris's appname is
-    approved). Each source writes its own <source>_latest_normalized.json;
-    merging here means adding a new source is just dropping its file in
-    data/normalized/, no dashboard code changes needed."""
+    """Loads the curated merged dataset (entity-resolved, cross-source
+    deduplicated -- see scripts/curation/build_merged_dataset.py) if it's
+    been built; falls back to combining the raw per-source
+    *_latest_normalized.json files directly so the dashboard still works
+    before that build step has ever been run."""
+    merged_path = DATA_DIR / "merged_dataset.json"
+    if merged_path.exists():
+        with open(merged_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
     events = []
     for path in sorted(DATA_DIR.glob("*_latest_normalized.json")):
         with open(path, "r", encoding="utf-8") as f:
