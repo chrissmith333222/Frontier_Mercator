@@ -6,3 +6,4 @@ plotly==5.17.0
 python-dotenv==1.2.2
 requests==2.34.2
 reportlab==4.2.5
+curl_cffi==0.15.0
