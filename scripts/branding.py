@@ -48,6 +48,30 @@ CONFLICT_CATEGORIES = [
 ECON_CATEGORY = "economic_indicator"
 NEWS_CATEGORIES = ["strategic_development", "other", "humanitarian"]
 
+# Type colors for the unified multi-category map -- distinct saturated hues
+# per category (conflict/economic/news), independent of the severity scale.
+# Like severity_color, these are data encoding, not chrome, so they aren't
+# constrained to navy/gray/white.
+TYPE_COLOR_CONFLICT = "#FF5C4D"
+TYPE_COLOR_ECON = "#FFB03B"
+TYPE_COLOR_NEWS = "#3DD6F5"
+
+
+def type_color(category: str) -> str:
+    if category in CONFLICT_CATEGORIES:
+        return TYPE_COLOR_CONFLICT
+    if category == ECON_CATEGORY:
+        return TYPE_COLOR_ECON
+    return TYPE_COLOR_NEWS
+
+
+def type_label(category: str) -> str:
+    if category in CONFLICT_CATEGORIES:
+        return "Conflict & Security"
+    if category == ECON_CATEGORY:
+        return "Markets & Economy"
+    return "News & Social Signal"
+
 # Body font: Bahnschrift is Chris's pick (bundled with Windows) — listed first
 # so Windows visitors get it natively. 'Barlow Semi Condensed' (loaded from
 # Google Fonts in dashboard.py) is a close free lookalike for Mac/Linux/mobile

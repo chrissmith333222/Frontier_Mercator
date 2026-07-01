@@ -16,6 +16,7 @@ from scripts.reports.pdf_report import generate_country_brief, generate_regional
 from scripts import branding as b
 from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_LABELS
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
+from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 
 INDICATOR_LABELS = {code: label for code, (label, _cat) in {
     **WORLDBANK_INDICATOR_LABELS, **IMF_INDICATOR_LABELS,
@@ -122,6 +123,18 @@ st.markdown(f"""
        the content and embedded iframes regardless of rerun state. */
     [data-testid="stMain"], [data-testid="stIFrame"], .element-container {{
         opacity: 1 !important;
+    }}
+
+    /* Hide Streamlit/GitHub chrome (main menu, footer "Made with Streamlit",
+       toolbar, deploy button, viewer badge) -- Chris wants none of the
+       platform's own branding showing on the site. Deliberately NOT hiding
+       the whole header bar -- the sidebar expand/collapse control lives
+       there and hiding it would break sidebar access. */
+    #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"], .stAppDeployButton,
+    .viewerBadge_container__r5tak, .viewerBadge_link__qRIco {{
+        visibility: hidden !important;
+        display: none !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -489,6 +502,162 @@ def render_news_dashboard(news_df):
         st.markdown("---")
 
 
+# Keyword heuristic for the Great Power Competition dashboard -- there's no
+# dedicated entity resolution yet (that's Phase 3/4), so this is a text-match
+# stand-in over the merged dataset, not a real actor-tagged filter. Flagged
+# clearly in the UI as preliminary.
+CHINA_KEYWORDS = ["china", "chinese", "beijing", "prc", "belt and road"]
+IRAN_KEYWORDS = ["iran", "iranian", "tehran", "irgc"]
+
+
+def _keyword_mask(df_scope, keywords):
+    text = (
+        df_scope["narrative_summary"].fillna("").str.lower() + " " +
+        df_scope["country"].fillna("").str.lower()
+    )
+    pattern = "|".join(keywords)
+    return text.str.contains(pattern, regex=True)
+
+
+def render_greatpower_dashboard(df):
+    st.markdown(
+        "US-China and US-Iran competition signal, drawn from the same merged conflict/economic/"
+        "news dataset above. **Preliminary** — this is keyword matching over country names and "
+        "event summaries (no dedicated actor/entity resolution yet), so treat it as a first-pass "
+        "filter, not a definitive tally."
+    )
+
+    china_df = df[_keyword_mask(df, CHINA_KEYWORDS)]
+    iran_df = df[_keyword_mask(df, IRAN_KEYWORDS)]
+
+    china_tab, iran_tab = st.tabs(["US-China Competition", "US-Iran Conflict"])
+
+    for tab, subset, label in [(china_tab, china_df, "China"), (iran_tab, iran_df, "Iran")]:
+        with tab:
+            if len(subset) == 0:
+                st.info(f"No {label}-related signal in the currently loaded data.")
+                continue
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Matching Events", f"{len(subset):,}")
+            with col2:
+                st.metric("Countries Involved", subset['country'].nunique())
+            with col3:
+                conflict_count = len(subset[subset['event_category'].isin(CONFLICT_CATEGORIES)])
+                st.metric("Conflict-Related", conflict_count)
+
+            top = subset.sort_values('event_date', ascending=False).head(20)
+            for _, event in top.iterrows():
+                st.markdown(
+                    f"**{event['country']}** — {event['event_date']} "
+                    f"*({b.type_label(event['event_category'])})*  \n{event['narrative_summary']}"
+                )
+                st.markdown("---")
+
+
+def render_unified_map(df):
+    """Standalone aggregator map at the bottom of the page, combining
+    conflict, economic, and news/social events in one filterable view --
+    Chris's "Palantir Gotham" reference. Circles are colored by category
+    type and sized by severity_score where available; economic/news events
+    without a severity score get a fixed mid-size placeholder until the
+    Phase 5 reasoning agent can assign real significance scores. Economic
+    events have no native lat/lon (they're country-level annual stats), so
+    they're plotted at the country's centroid instead."""
+    st.markdown("## Unified Intelligence Map")
+    st.markdown(
+        "Every category at once — conflict (red), markets/economy (amber), news/social signal "
+        "(cyan). Filter by type, region, severity, and date to narrow in on what matters to you."
+    )
+
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+    with filter_col1:
+        type_options = st.multiselect(
+            "Event type",
+            options=["Conflict & Security", "Markets & Economy", "News & Social Signal"],
+            default=["Conflict & Security", "Markets & Economy", "News & Social Signal"],
+            key="unified_map_types",
+        )
+    with filter_col2:
+        map_regions = st.multiselect(
+            "Region", options=sorted(df['region'].dropna().unique()),
+            default=[], key="unified_map_regions",
+            help="Leave empty to include all regions.",
+        )
+    with filter_col3:
+        map_min_severity = st.slider(
+            "Min severity (conflict only)", 0.0, 10.0, 0.0, 0.5, key="unified_map_severity",
+        )
+    with filter_col4:
+        date_bounds = df['event_date'].dropna()
+        min_date, max_date = (date_bounds.min(), date_bounds.max()) if len(date_bounds) else (None, None)
+        date_range = st.date_input(
+            "Date range", value=(min_date, max_date) if min_date is not None else None,
+            key="unified_map_dates",
+        )
+
+    scope = df[df['event_category'].apply(lambda c: b.type_label(c) in type_options)]
+    if map_regions:
+        scope = scope[scope['region'].isin(map_regions)]
+    if isinstance(date_range, tuple) and len(date_range) == 2 and date_range[0] is not None:
+        start, end = pd.Timestamp(date_range[0]), pd.Timestamp(date_range[1])
+        scope = scope[(scope['event_date'] >= start) & (scope['event_date'] <= end)]
+    is_conflict = scope['event_category'].isin(CONFLICT_CATEGORIES)
+    scope = scope[~is_conflict | (scope['severity_score'] >= map_min_severity)]
+
+    MAX_MAP_MARKERS = 2000
+    if len(scope) > MAX_MAP_MARKERS:
+        # Cap per category, not globally -- conflict events vastly outnumber
+        # economic/news events, so a global top-N-by-severity cut would show
+        # conflict markers only and silently drop the other two colors
+        # entirely, defeating the point of a *unified* map.
+        n_types = scope['event_category'].apply(b.type_label).nunique() or 1
+        per_type_cap = MAX_MAP_MARKERS // n_types
+        scope = (
+            scope.assign(_rank=scope['severity_score'].fillna(3.0))
+            .groupby(scope['event_category'].apply(b.type_label), group_keys=False)
+            .apply(lambda g: g.sort_values('_rank', ascending=False).head(per_type_cap))
+        )
+        st.caption(
+            f"Showing up to {per_type_cap:,} highest-significance events per category "
+            f"({len(scope):,} of {len(df):,} total matching events)."
+        )
+
+    m = folium.Map(location=[10, 10], zoom_start=2, tiles=None)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri World Imagery", name="Satellite", overlay=False, control=False,
+    ).add_to(m)
+    folium.TileLayer(
+        tiles="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",
+        attr="CartoDB", name="Labels", overlay=True, control=False,
+    ).add_to(m)
+
+    for _, event in scope.iterrows():
+        lat, lon = event['latitude'], event['longitude']
+        if pd.isna(lat) or pd.isna(lon):
+            centroid = get_centroid(event.get('iso3', ''))
+            if centroid is None:
+                continue
+            lat, lon = centroid
+        significance = event['severity_score'] if pd.notna(event['severity_score']) else 3.0
+        color = b.type_color(event['event_category'])
+        popup_text = (
+            f"<b>{event['country']}</b> — {event['event_date']}<br>"
+            f"<b>Category:</b> {b.type_label(event['event_category'])} "
+            f"({str(event['event_category']).replace('_', ' ')})<br>"
+            f"<b>Summary:</b> {str(event['narrative_summary'])[:150]}<br>"
+        )
+        folium.CircleMarker(
+            location=[lat, lon], radius=4 + (significance / 1.5),
+            popup=folium.Popup(popup_text, max_width=300),
+            color=color, fill=True, fillColor=color,
+            fillOpacity=0.8, weight=1, opacity=0.9,
+        ).add_to(m)
+
+    st_folium(m, width=1200, height=650, key="unified_map")
+
+
 render_header()
 render_video_hero()
 
@@ -526,8 +695,9 @@ news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")
 
-dash1, dash2, dash3, dash4, dash5 = st.tabs(
-    ["Conflict & Security", "Markets & Economy", "News & Social Signal", "Reports", "About"]
+dash1, dash2, dash3, dash4, dash5, dash6 = st.tabs(
+    ["Conflict & Security", "Markets & Economy", "News & Social Signal",
+     "Great Power Competition", "Reports", "About"]
 )
 
 with dash1:
@@ -540,23 +710,36 @@ with dash3:
     render_news_dashboard(news_df)
 
 with dash4:
+    render_greatpower_dashboard(df)
+
+with dash5:
     st.markdown("### Intelligence Briefs")
     st.markdown(
         "Generate a branded PDF brief from current data. Country briefs summarize a single "
         "country's event picture; regional briefs roll up all countries in a selected region. "
-        "Africa/LatAm core-mandate countries and regions are listed first; extended-monitoring "
-        "options (Europe, Middle East, Global/Other) are available below them for episodic reports."
+        "Africa/LatAm core-mandate countries and regions are listed first, extended-monitoring "
+        "(Europe, Middle East) next, then every other country in the world -- pick any of them "
+        "for an episodic report even if little or no data has been ingested for it yet."
     )
 
-    country_mandate = df.drop_duplicates("country").set_index("country")["in_core_mandate"]
-    country_options = sorted(country_mandate.index, key=lambda c: (not country_mandate[c], c))
+    # Every country in the world is selectable (Chris: "find and select any
+    # country"), ordered core-mandate first, then extended, then everything
+    # else -- so the Africa/LatAm focus stays the path of least resistance
+    # without blocking a report on, say, Vietnam.
+    _extended_regions = {"Europe", "Middle East"}
+    country_options = sorted(
+        ALL_COUNTRIES.items(),
+        key=lambda kv: (not kv[1][2], kv[1][1] not in _extended_regions, kv[1][0]),
+    )
+    country_name_options = [name for _iso3, (name, _region, _mandate) in country_options]
+
     region_mandate = df.drop_duplicates("region").set_index("region")["in_core_mandate"]
     region_options = sorted(region_mandate.index, key=lambda r: (not region_mandate[r], r))
 
     report_col1, report_col2 = st.columns(2)
     with report_col1:
         st.markdown("#### Country Intelligence Brief")
-        country_choice = st.selectbox("Country", options=country_options, key="country_brief_select")
+        country_choice = st.selectbox("Country", options=country_name_options, key="country_brief_select")
         if st.button("Generate Country Brief", key="gen_country_brief"):
             pdf_bytes = generate_country_brief(df, country_choice)
             st.download_button(
@@ -575,7 +758,7 @@ with dash4:
                 mime="application/pdf", key="dl_regional_brief",
             )
 
-with dash5:
+with dash6:
     st.markdown("### About This Platform")
     st.markdown("""
     Frontier Mercator Group's intelligence platform provides structured, real-time analysis of
@@ -600,5 +783,8 @@ with dash5:
     - Source attribution required for all claims
     - Designed for professional use in investment and national security contexts
     """)
+
+st.markdown("---")
+render_unified_map(df)
 
 render_footer(df)

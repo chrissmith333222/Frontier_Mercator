@@ -8,3 +8,5 @@ requests==2.34.2
 reportlab==4.2.5
 curl_cffi==0.15.0
 svglib==2.0.2
+pycountry==26.2.16
+pycountry-convert==0.7.2
