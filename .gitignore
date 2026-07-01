@@ -1,0 +1,17 @@
+# Never commit real credentials
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local data output
+data/
+*.log
+
+# OS
+.DS_Store

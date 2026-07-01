@@ -1,0 +1,152 @@
+{
+  "name": "MERIDIAN — ACLED Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "command": "=cd /path/to/meridian && python3 scripts/ingestion/acled_fetch.py --days-back 1 --output data/raw/acled_latest.json"
+      },
+      "id": "fetch-acled",
+      "name": "Fetch ACLED Events",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "notes": "IMPORTANT: replace /path/to/meridian with your actual project path before running. This calls acled_fetch.py, which reads ACLED_EMAIL/ACLED_PASSWORD from the .env file via python-dotenv — n8n itself never sees these credentials."
+    },
+    {
+      "parameters": {
+        "command": "=cd /path/to/meridian && python3 scripts/ingestion/acled_normalize.py --input data/raw/acled_latest.json --output data/normalized/acled_latest_normalized.json"
+      },
+      "id": "normalize-acled",
+      "name": "Normalize to MERIDIAN Schema",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "command": "=cat /path/to/meridian/data/normalized/acled_latest_normalized.json"
+      },
+      "id": "read-normalized-output",
+      "name": "Read Normalized Output",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parses the normalized JSON output from the previous node and splits it\n// into individual items, one per event, so downstream nodes (storage,\n// risk scoring) can process them independently.\nconst stdout = $input.first().json.stdout;\nlet events;\ntry {\n  events = JSON.parse(stdout);\n} catch (e) {\n  throw new Error('Failed to parse normalized ACLED output as JSON: ' + e.message);\n}\nreturn events.map(event => ({ json: event }));"
+      },
+      "id": "parse-and-split",
+      "name": "Parse & Split Events",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.severity_score }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filter-high-severity",
+      "name": "Severity >= 6?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 300],
+      "notes": "Splits the pipeline: high-severity events (>= 6, roughly battles/violence against civilians with casualties) get routed to immediate-attention handling; everything still flows to general storage."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "placeholder-store-all",
+      "name": "Store All Events (configure your DB)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1560, 420],
+      "notes": "PLACEHOLDER: Replace this with your actual storage node — e.g. Supabase 'Insert Row', Postgres node, or another Execute Command calling a storage script. Left as a no-op so the workflow is importable and runnable end-to-end before you've set up Supabase/Postgres."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "placeholder-flag-high-severity",
+      "name": "Flag for Review (configure notification)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1560, 200],
+      "notes": "PLACEHOLDER: Replace this with a notification node (Slack, Email, Telegram) to alert you when a high-severity event lands. This is the human-in-the-loop gate from MERIDIAN's design — high-severity events shouldn't wait for your next scheduled review."
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [{ "node": "Fetch ACLED Events", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch ACLED Events": {
+      "main": [
+        [{ "node": "Normalize to MERIDIAN Schema", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalize to MERIDIAN Schema": {
+      "main": [
+        [{ "node": "Read Normalized Output", "type": "main", "index": 0 }]
+      ]
+    },
+    "Read Normalized Output": {
+      "main": [
+        [{ "node": "Parse & Split Events", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse & Split Events": {
+      "main": [
+        [{ "node": "Severity >= 6?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Severity >= 6?": {
+      "main": [
+        [{ "node": "Flag for Review (configure notification)", "type": "main", "index": 0 }],
+        [{ "node": "Store All Events (configure your DB)", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateNote": "MERIDIAN ACLED ingestion module. Before running: (1) replace /path/to/meridian in the Execute Command nodes with your real path, (2) ensure .env is set up per docs/acled_setup.md, (3) replace the two NoOp placeholder nodes with your actual storage and notification integrations."
+  }
+}

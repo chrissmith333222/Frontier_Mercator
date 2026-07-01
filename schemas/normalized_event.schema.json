@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MERIDIAN Normalized Event",
+  "description": "Common schema that every MERIDIAN data source (ACLED, ReliefWeb, GDELT, etc.) normalizes into. Downstream risk-scoring and RAG agents only ever read this shape, never the raw source format.",
+  "type": "object",
+  "required": [
+    "meridian_event_id",
+    "source",
+    "source_event_id",
+    "event_date",
+    "country",
+    "region",
+    "event_category",
+    "ingested_at"
+  ],
+  "properties": {
+    "meridian_event_id": {
+      "type": "string",
+      "description": "Deterministic hash of source + source_event_id, used to dedupe across re-runs."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["ACLED", "ReliefWeb", "GDELT", "WorldBank", "VDem", "AllAfrica", "IMF"],
+      "description": "Which data source this event originated from."
+    },
+    "source_event_id": {
+      "type": "string",
+      "description": "The original ID from the source system, e.g. ACLED's event_id_cnty."
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date the event occurred (not the date it was ingested)."
+    },
+    "country": {
+      "type": "string",
+      "description": "Standardized country name."
+    },
+    "iso3": {
+      "type": ["string", "null"],
+      "description": "ISO 3166-1 alpha-3 country code, used to join across data sources cleanly."
+    },
+    "admin1": {
+      "type": ["string", "null"],
+      "description": "First-level administrative region (state/province), if available."
+    },
+    "region": {
+      "type": "string",
+      "description": "MERIDIAN macro-region, e.g. 'West Africa', 'Andean Region', 'Southern Cone'. Mapped from country during normalization."
+    },
+    "latitude": { "type": ["number", "null"] },
+    "longitude": { "type": ["number", "null"] },
+
+    "event_category": {
+      "type": "string",
+      "enum": [
+        "conflict",
+        "protest_civil_unrest",
+        "political_violence_targeting_civilians",
+        "explosion_remote_violence",
+        "strategic_development",
+        "economic_indicator",
+        "governance_change",
+        "humanitarian",
+        "other"
+      ],
+      "description": "MERIDIAN's own coarse classification, mapped from each source's native event typing."
+    },
+    "event_subtype": {
+      "type": ["string", "null"],
+      "description": "Source-native sub-type, preserved as-is for traceability (e.g. ACLED's 'Battles', 'Violence against civilians')."
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "type": {
+            "type": "string",
+            "description": "e.g. 'state_forces', 'rebel_group', 'militia', 'civilian', 'external_intervention'"
+          }
+        }
+      }
+    },
+    "fatalities": {
+      "type": ["integer", "null"],
+      "description": "Reported fatalities, if applicable to this event type."
+    },
+    "severity_score": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 10,
+      "description": "MERIDIAN-computed 0-10 severity score, derived during normalization (not raw from source)."
+    },
+
+    "narrative_summary": {
+      "type": "string",
+      "description": "Short text description of the event, either source-provided or generated."
+    },
+    "source_url": {
+      "type": ["string", "null"]
+    },
+
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when MERIDIAN ingested this record (not when the event occurred)."
+    },
+    "raw_source_data": {
+      "type": "object",
+      "description": "The original, unmodified record from the source API, preserved for audit/debugging."
+    }
+  }
+}
