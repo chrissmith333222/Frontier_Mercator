@@ -21,13 +21,23 @@ deploy failures).
 
 Requires ANTHROPIC_API_KEY in .env (not committed -- see .env.example).
 
+Also supports open-ended, cross-cutting questions that aren't scoped to
+one country (e.g. "where is China investing near active conflict zones
+region-wide") via generate_cross_cutting_assessment(), which retrieves
+relevant events by semantic similarity (scripts/knowledge/semantic_search.py,
+Voyage embeddings) instead of the fixed per-category SQL filters
+country_snapshot() uses -- structured filters alone can't find "events
+related to this idea" the way similarity search can.
+
 Usage (CLI):
     python scripts/analysis/reasoning_agent.py --iso3 KEN
     python scripts/analysis/reasoning_agent.py --all-core-mandate
+    python scripts/analysis/reasoning_agent.py --query "Chinese port financing near conflict zones"
 
 Usage (as a module):
-    from scripts.analysis.reasoning_agent import generate_country_assessment
+    from scripts.analysis.reasoning_agent import generate_country_assessment, generate_cross_cutting_assessment
     assessment = generate_country_assessment("KEN", "Kenya")
+    answer = generate_cross_cutting_assessment("Chinese port financing near conflict zones")
 """
 
 import sys
@@ -42,6 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from dotenv import load_dotenv
 
 from scripts.knowledge.queries import country_snapshot, countries_with_data
+from scripts.knowledge.semantic_search import semantic_search
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ANALYSIS_DIR = REPO_ROOT / "data" / "analysis"
@@ -97,6 +108,55 @@ _ASSESSMENT_TOOL = {
     },
 }
 
+CROSS_CUTTING_SYSTEM_PROMPT = """You are an intelligence analyst for Frontier Mercator Group. You \
+will be given an analyst's open-ended question and a set of events retrieved by semantic similarity \
+search across the full multi-country, multi-source dataset (conflict, economic, investment/\
+development-finance, humanitarian/OSINT). The retrieved events may span many countries -- your job \
+is to synthesize what they show in relation to the question, not to answer from general knowledge.
+
+Ground rules, followed strictly:
+1. Reason ONLY from the retrieved events provided. Do not draw on general background knowledge \
+about the countries/actors/topics involved that isn't reflected in the data given.
+2. The retrieval is similarity-based, not exhaustive or guaranteed relevant -- some retrieved events \
+may be irrelevant noise. Say so if the retrieved set doesn't actually support an answer to the \
+question, rather than forcing a synthesis out of weak matches.
+3. Every claim must be traceable to specific events -- reference them by country, date, and source.
+4. This is a preliminary statistical/pattern synthesis, not a finished investment recommendation.
+
+Record your assessment using the record_cross_cutting_assessment tool."""
+
+_CROSS_CUTTING_TOOL = {
+    "name": "record_cross_cutting_assessment",
+    "description": "Records the structured answer to an open-ended, cross-country pattern query.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "answer": {
+                "type": "string",
+                "description": "3-6 sentences directly answering the question based on the "
+                                "retrieved events, or explaining why the retrieved events don't "
+                                "support a confident answer.",
+            },
+            "supporting_evidence": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "2-8 bullet-style strings, each citing a specific retrieved event "
+                                "(country, date, source) that supports the answer.",
+            },
+            "countries_involved": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Countries where this pattern is most evident in the retrieved events.",
+            },
+            "data_caveats": {
+                "type": "string",
+                "description": "1-3 sentences on retrieval quality/coverage limitations for this query.",
+            },
+        },
+        "required": ["answer", "supporting_evidence", "countries_involved", "data_caveats"],
+    },
+}
+
 
 def _build_user_message(snapshot: dict, country_name: str) -> str:
     return (
@@ -113,6 +173,48 @@ def _build_user_message(snapshot: dict, country_name: str) -> str:
         f"Most active actors in this country (across all categories):\n"
         f"{json.dumps(snapshot['top_active_actors'], indent=2, default=str)}"
     )
+
+
+def _build_cross_cutting_user_message(query: str, events: list[dict]) -> str:
+    trimmed = [
+        {k: v for k, v in e.items() if k not in ("raw_source_data",)}
+        for e in events
+    ]
+    return (
+        f"Question: {query}\n\n"
+        f"Retrieved events (ranked by semantic similarity to the question, most similar first):\n"
+        f"{json.dumps(trimmed, indent=2, default=str)}"
+    )
+
+
+def _call_with_forced_tool(client, model: str, system_prompt: str, tool: dict, user_message: str,
+                            context_label: str) -> dict:
+    """Shared call path for both generate_country_assessment and
+    generate_cross_cutting_assessment: forces the given tool, validates
+    the response wasn't truncated, and returns the parsed tool input.
+    Forcing tool_choice guarantees a validated tool_use block with .input
+    already parsed as a dict per the input_schema -- no manual
+    JSON.loads/markdown-fence-stripping of free-form text needed, which
+    is what caused intermittent malformed-JSON failures (unescaped
+    characters in Claude's raw text output) before this was added."""
+    response = client.messages.create(
+        model=model,
+        max_tokens=6000,
+        system=system_prompt,
+        tools=[tool],
+        tool_choice={"type": "tool", "name": tool["name"]},
+        messages=[{"role": "user", "content": user_message}],
+    )
+    if response.stop_reason == "max_tokens":
+        raise RuntimeError(
+            f"Claude response for {context_label} was truncated (hit max_tokens) -- "
+            f"raise max_tokens in reasoning_agent.py rather than trying to use a cut-off tool call."
+        )
+    tool_blocks = [block for block in response.content if getattr(block, "type", None) == "tool_use"]
+    if not tool_blocks:
+        raise RuntimeError(f"No tool_use block in Claude response for {context_label}; "
+                            f"got block types: {[getattr(b, 'type', type(b).__name__) for b in response.content]}")
+    return tool_blocks[0].input
 
 
 def _get_client():
@@ -145,29 +247,10 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
 
     if client is None:
         client = _get_client()
-    response = client.messages.create(
-        model=model,
-        max_tokens=6000,
-        system=SYSTEM_PROMPT,
-        tools=[_ASSESSMENT_TOOL],
-        tool_choice={"type": "tool", "name": "record_country_assessment"},
-        messages=[{"role": "user", "content": _build_user_message(snapshot, country_name)}],
+    analysis = _call_with_forced_tool(
+        client, model, SYSTEM_PROMPT, _ASSESSMENT_TOOL,
+        _build_user_message(snapshot, country_name), context_label=f"{country_name} ({iso3})",
     )
-    if response.stop_reason == "max_tokens":
-        raise RuntimeError(
-            f"Claude response for {country_name} ({iso3}) was truncated (hit max_tokens) -- "
-            f"raise max_tokens in reasoning_agent.py rather than trying to use a cut-off tool call."
-        )
-    # Forcing tool_choice guarantees the response is a validated tool_use
-    # block with .input already parsed as a dict per the input_schema --
-    # no manual JSON.loads/markdown-fence-stripping of free-form text
-    # needed, which is what caused intermittent malformed-JSON failures
-    # (unescaped characters in Claude's raw text output) in earlier runs.
-    tool_blocks = [block for block in response.content if getattr(block, "type", None) == "tool_use"]
-    if not tool_blocks:
-        raise RuntimeError(f"No tool_use block in Claude response for {country_name} ({iso3}); "
-                            f"got block types: {[getattr(b, 'type', type(b).__name__) for b in response.content]}")
-    analysis = tool_blocks[0].input
 
     return {
         "iso3": iso3,
@@ -176,6 +259,37 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
         "model": model,
         "total_events_analyzed": total_events,
         "category_counts": snapshot["category_counts"],
+        "analysis": analysis,
+    }
+
+
+def generate_cross_cutting_assessment(
+    query: str, k: int = 20, model: str = DEFAULT_MODEL, client=None, search_client=None
+) -> dict:
+    """Answers an open-ended, cross-country question by retrieving the k
+    most semantically similar events (scripts/knowledge/semantic_search.py,
+    Voyage embeddings) and asking Claude to synthesize a grounded answer.
+    `client` is the Anthropic client (injectable for tests); `search_client`
+    is the Voyage client used inside semantic_search (also injectable)."""
+    events = semantic_search(query, k=k, client=search_client)
+    if len(events) < 2:
+        raise RuntimeError(
+            f"Only {len(events)} event(s) retrieved for query {query!r} -- too little to "
+            f"synthesize an answer. Try a broader query or check the vector index is built."
+        )
+
+    if client is None:
+        client = _get_client()
+    analysis = _call_with_forced_tool(
+        client, model, CROSS_CUTTING_SYSTEM_PROMPT, _CROSS_CUTTING_TOOL,
+        _build_cross_cutting_user_message(query, events), context_label=f"query {query!r}",
+    )
+
+    return {
+        "query": query,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "model": model,
+        "events_retrieved": len(events),
         "analysis": analysis,
     }
 
@@ -214,6 +328,12 @@ def main():
     parser.add_argument("--iso3", type=str, help="Single country ISO3 code to assess, e.g. KEN")
     parser.add_argument("--all-core-mandate", action="store_true",
                          help="Generate assessments for every core-mandate country with data")
+    parser.add_argument("--query", type=str,
+                         help="Open-ended cross-country question, answered via semantic retrieval "
+                              "+ synthesis instead of a fixed per-country snapshot. Requires the "
+                              "vector index (scripts/knowledge/build_vector_index.py) to be built.")
+    parser.add_argument("--top-k", type=int, default=20,
+                         help="Number of events to retrieve for --query mode (default 20)")
     parser.add_argument("--min-events", type=int, default=10,
                          help="Skip countries with fewer than this many events (default 10)")
     parser.add_argument("--skip-existing", action="store_true",
@@ -222,8 +342,13 @@ def main():
                               "re-spending API calls on countries that already succeeded.")
     args = parser.parse_args()
 
+    if args.query:
+        result = generate_cross_cutting_assessment(args.query, k=args.top_k)
+        print(json.dumps(result, indent=2))
+        return
+
     if not args.iso3 and not args.all_core_mandate:
-        parser.error("Specify --iso3 <CODE> or --all-core-mandate")
+        parser.error("Specify --iso3 <CODE>, --all-core-mandate, or --query <question>")
 
     if args.iso3:
         countries = [c for c in countries_with_data() if c["iso3"] == args.iso3]

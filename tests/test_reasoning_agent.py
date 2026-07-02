@@ -17,9 +17,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import numpy as np
+
 from scripts.knowledge.build_knowledge_base import build_knowledge_base
 from scripts.analysis.reasoning_agent import (
     generate_country_assessment,
+    generate_cross_cutting_assessment,
     _build_user_message,
 )
 
@@ -143,6 +146,57 @@ def test_generate_assessment_reads_tool_use_input():
     # Confirm the tool was actually forced, not left optional.
     assert fake_client.messages.last_call_kwargs["tool_choice"]["name"] == "record_country_assessment"
     print("✓ test_generate_assessment_reads_tool_use_input passed")
+
+
+VALID_CROSS_CUTTING_ANALYSIS = {
+    "answer": "China Eximbank-financed port expansion in Kenya coincides with nearby conflict activity in Mozambique's port area.",
+    "supporting_evidence": ["Kenya, 2026-01-10, AidData: port expansion financing.", "Mozambique, 2026-02-01, ACLED: clashes near port area."],
+    "countries_involved": ["Kenya", "Mozambique"],
+    "data_caveats": "Only 2 retrieved events; not a comprehensive regional survey.",
+}
+
+
+def test_generate_cross_cutting_assessment_reads_tool_use_input():
+    import scripts.analysis.reasoning_agent as agent_module
+
+    fake_retrieved_events = [
+        {"meridian_event_id": "e1", "country": "Kenya", "event_date": "2026-01-10",
+         "source": "AidData", "narrative_summary": "Port expansion financing.", "similarity_score": 0.95},
+        {"meridian_event_id": "e2", "country": "Mozambique", "event_date": "2026-02-01",
+         "source": "ACLED", "narrative_summary": "Clashes near port area.", "similarity_score": 0.81},
+    ]
+    fake_anthropic_client = _FakeClient(VALID_CROSS_CUTTING_ANALYSIS)
+
+    original_semantic_search = agent_module.semantic_search
+    agent_module.semantic_search = lambda query, k=20, client=None: fake_retrieved_events
+    try:
+        result = generate_cross_cutting_assessment(
+            "Chinese port financing near conflict zones", client=fake_anthropic_client
+        )
+    finally:
+        agent_module.semantic_search = original_semantic_search
+
+    assert result["events_retrieved"] == 2
+    assert "answer" in result["analysis"]
+    assert result["analysis"]["countries_involved"] == ["Kenya", "Mozambique"]
+    assert fake_anthropic_client.messages.last_call_kwargs["tool_choice"]["name"] == "record_cross_cutting_assessment"
+    print("✓ test_generate_cross_cutting_assessment_reads_tool_use_input passed")
+
+
+def test_generate_cross_cutting_assessment_raises_on_thin_retrieval():
+    import scripts.analysis.reasoning_agent as agent_module
+    original_semantic_search = agent_module.semantic_search
+    agent_module.semantic_search = lambda query, k=20, client=None: [{"meridian_event_id": "e1"}]  # only 1
+    try:
+        raised = False
+        try:
+            generate_cross_cutting_assessment("obscure query", client=_FakeClient(VALID_CROSS_CUTTING_ANALYSIS))
+        except RuntimeError:
+            raised = True
+        assert raised
+    finally:
+        agent_module.semantic_search = original_semantic_search
+    print("✓ test_generate_cross_cutting_assessment_raises_on_thin_retrieval passed")
 
 
 def test_generate_assessment_raises_on_truncated_response():
