@@ -453,12 +453,15 @@ def render_markets_dashboard(econ_df):
     with investment_tab:
         investment_df = econ_df[econ_df['event_category'] == 'investment']
         st.markdown(
-            "Who's financing development here, from both sides — "
+            "Who's financing development here, across government and private capital — "
             "[AidData Global Chinese Development Finance Dataset](https://www.aiddata.org/data/aiddatas-global-chinese-development-finance-dataset-version-3-0) "
-            "(20,985 China-financed loans/grants, 2000-2021) and "
+            "(20,985 China-financed loans/grants, 2000-2021), "
             "[DFC Annual Project Data](https://www.dfc.gov/our-impact/transaction-data) "
             "(U.S. International Development Finance Corporation loans, guarantees, equity, and insurance, "
-            "legacy OPIC deals included). Directly answers \"who's investing here.\""
+            "legacy OPIC deals included), and the "
+            "[World Bank Private Participation in Infrastructure Database](https://ppi.worldbank.org/en/ppidata) "
+            "(private-sector energy/transport/water/ICT investment commitments, 1990-2024). "
+            "Directly answers \"who's investing here.\""
         )
         if len(investment_df) == 0:
             st.info("No investment project data loaded yet.")
