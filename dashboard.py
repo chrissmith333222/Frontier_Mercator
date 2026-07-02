@@ -146,14 +146,14 @@ st.markdown(f"""
     }}
 
     .fm-emblem-large {{
-        width: 130px;
-        height: 130px;
+        width: 112px;
+        height: 112px;
     }}
 
     .fm-wordmark {{
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 700;
-        font-size: 2.6rem;
+        font-size: 3.0rem;
         letter-spacing: 4px;
         text-align: center;
         color: {b.TEXT_PRIMARY};
@@ -161,7 +161,7 @@ st.markdown(f"""
         margin: 0.75rem 0 0 0;
     }}
     @media (max-width: 600px) {{
-        .fm-wordmark {{ font-size: 1.7rem; letter-spacing: 2px; }}
+        .fm-wordmark {{ font-size: 1.9rem; letter-spacing: 2px; }}
     }}
 
     .stMetric {{
@@ -1116,9 +1116,9 @@ with dash5:
     st.markdown(
         "Generate a branded PDF brief from current data. Country briefs summarize a single "
         "country's event picture; regional briefs roll up all countries in a selected region. "
-        "Africa/LatAm core-mandate countries and regions are listed first, extended-monitoring "
-        "(Europe, Middle East) next, then every other country in the world -- pick any of them "
-        "for an episodic report even if little or no data has been ingested for it yet."
+        "Countries and regions with the deepest current coverage are listed first, followed by "
+        "every other country in the world -- pick any of them for an episodic report even if "
+        "little or no data has been ingested for it yet."
     )
 
     # Every country in the world is selectable (Chris: "find and select any
@@ -1292,9 +1292,7 @@ with dash6:
         <p>In the sixteenth century, a cartographer named Gerardus Mercator reimagined how the
         world could be viewed — flattening a sphere onto a plane so that distant shores, unfamiliar
         coastlines, and the paths between them could finally be read at a glance. His projection
-        did not simplify the world, but it made visible what before was unseen. The name carries a
-        second meaning too, one just as old: <em>mercator</em>, in Latin, is merchant — one who
-        reads distant markets and returns with understanding. Frontier Mercator was named for both.</p>
+        did not simplify the world, but it made visible what before was unseen.</p>
         <p>Frontier Mercator Group carries that legacy into an age where the map is no longer
         paper, and the terrain is no longer only geography. We believe that instinct and vision
         have never mattered more than they do now, in the frontier markets of the globe — where
@@ -1315,7 +1313,7 @@ with dash6:
     st.markdown("""
     Frontier Mercator Group's intelligence platform provides structured, real-time analysis of
     conflict, political risk, macroeconomic conditions, and emerging market trends across the
-    world's frontier markets, with particular depth in Africa and Latin America.
+    world's frontier markets.
 
     #### Data Sources
     - **ACLED:** Armed Conflict Location & Event Data — geo-coded conflict and protest events
@@ -1363,9 +1361,8 @@ with dash7:
         <div class="fm-watermark-bg">
         <h3>Contact Us</h3>
         <p>Frontier Mercator Group works directly with investors, analysts, and institutions
-        operating in Africa, Latin America, and the broader frontier-market landscape. For
-        inquiries about custom research, platform access, or partnership opportunities, reach
-        out below.</p>
+        operating across the world's frontier markets. For inquiries about custom research,
+        platform access, or partnership opportunities, reach out below.</p>
         <p><b>General inquiries:</b>
         <a href="mailto:inquiries@frontiermercator.com">inquiries@frontiermercator.com</a></p>
         <p><b>Research &amp; custom analysis:</b>
