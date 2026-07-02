@@ -63,14 +63,39 @@ data -- reference them by date and source (e.g. "ACLED, 2026-03-14").
 4. This is a preliminary statistical/pattern synthesis, not a finished investment recommendation. \
 Do not tell the reader whether to invest; describe what the data shows.
 
-Respond with ONLY a JSON object (no markdown fences, no commentary outside the JSON) matching this \
-shape:
-{
-  "trend_summary": "3-5 sentences on the overall pattern across categories in the given window",
-  "key_relationships": ["2-5 bullet-style strings describing notable actor/event/category intersections, each citing specific dates/sources"],
-  "risk_flags": ["0-5 bullet-style strings on specific risk patterns visible in the data, each citing specific dates/sources"],
-  "data_caveats": "1-3 sentences on what this data window does NOT cover or where confidence is low"
-}"""
+Record your assessment using the record_country_assessment tool."""
+
+_ASSESSMENT_TOOL = {
+    "name": "record_country_assessment",
+    "description": "Records the structured pattern-analysis assessment for one country.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "trend_summary": {
+                "type": "string",
+                "description": "3-5 sentences on the overall pattern across categories in the given window.",
+            },
+            "key_relationships": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "2-5 bullet-style strings describing notable actor/event/category "
+                                "intersections, each citing specific dates/sources.",
+            },
+            "risk_flags": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "0-5 bullet-style strings on specific risk patterns visible in the "
+                                "data, each citing specific dates/sources.",
+            },
+            "data_caveats": {
+                "type": "string",
+                "description": "1-3 sentences on what this data window does NOT cover or where "
+                                "confidence is low.",
+            },
+        },
+        "required": ["trend_summary", "key_relationships", "risk_flags", "data_caveats"],
+    },
+}
 
 
 def _build_user_message(snapshot: dict, country_name: str) -> str:
@@ -124,29 +149,25 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
         model=model,
         max_tokens=6000,
         system=SYSTEM_PROMPT,
+        tools=[_ASSESSMENT_TOOL],
+        tool_choice={"type": "tool", "name": "record_country_assessment"},
         messages=[{"role": "user", "content": _build_user_message(snapshot, country_name)}],
     )
     if response.stop_reason == "max_tokens":
         raise RuntimeError(
             f"Claude response for {country_name} ({iso3}) was truncated (hit max_tokens) -- "
-            f"raise max_tokens in reasoning_agent.py rather than trying to parse a cut-off response."
+            f"raise max_tokens in reasoning_agent.py rather than trying to use a cut-off tool call."
         )
-    # response.content can include non-text blocks (e.g. ThinkingBlock, if
-    # extended thinking is enabled on the account/model) ahead of the
-    # actual text response -- find the text block explicitly rather than
-    # assuming content[0] is it.
-    text_blocks = [block.text for block in response.content if getattr(block, "type", None) == "text"]
-    if not text_blocks:
-        raise RuntimeError(f"No text block in Claude response for {country_name} ({iso3}); "
+    # Forcing tool_choice guarantees the response is a validated tool_use
+    # block with .input already parsed as a dict per the input_schema --
+    # no manual JSON.loads/markdown-fence-stripping of free-form text
+    # needed, which is what caused intermittent malformed-JSON failures
+    # (unescaped characters in Claude's raw text output) in earlier runs.
+    tool_blocks = [block for block in response.content if getattr(block, "type", None) == "tool_use"]
+    if not tool_blocks:
+        raise RuntimeError(f"No tool_use block in Claude response for {country_name} ({iso3}); "
                             f"got block types: {[getattr(b, 'type', type(b).__name__) for b in response.content]}")
-    raw_text = text_blocks[0].strip()
-    # Claude occasionally wraps JSON in markdown fences despite instructions not to -- strip if present.
-    if raw_text.startswith("```"):
-        raw_text = raw_text.strip("`")
-        if raw_text.startswith("json"):
-            raw_text = raw_text[4:]
-        raw_text = raw_text.strip()
-    analysis = json.loads(raw_text)
+    analysis = tool_blocks[0].input
 
     return {
         "iso3": iso3,

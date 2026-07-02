@@ -1,9 +1,9 @@
 """
 tests/test_reasoning_agent.py
 
-Tests the reasoning agent's plumbing (prompt construction, response
-parsing, thin-data guard) with a fake Anthropic client and a small
-temporary knowledge base -- no real API key or network call needed.
+Tests the reasoning agent's plumbing (prompt construction, forced tool-use
+response handling, thin-data guard) with a fake Anthropic client and a
+small temporary knowledge base -- no real API key or network call needed.
 
 Usage:
     python -m pytest tests/test_reasoning_agent.py -v
@@ -55,40 +55,41 @@ FIXTURE_EVENTS = [
 
 
 class _FakeResponse:
-    def __init__(self, text, include_thinking_block=True, stop_reason="end_turn"):
+    def __init__(self, tool_input, include_thinking_block=True, stop_reason="end_turn"):
         blocks = []
         if include_thinking_block:
             # Real Claude responses can include a ThinkingBlock (type=
-            # "thinking", no .text attribute usable the same way) ahead of
-            # the text block when extended thinking is enabled -- mirror
-            # that here so the "find the text block" logic is exercised.
+            # "thinking") ahead of the tool_use block when extended
+            # thinking is enabled -- mirror that here so the "find the
+            # tool_use block" logic is exercised, not just content[0].
             blocks.append(type("ThinkingBlock", (), {"type": "thinking", "thinking": "..."})())
-        blocks.append(type("TextBlock", (), {"type": "text", "text": text})())
+        blocks.append(type("ToolUseBlock", (), {"type": "tool_use", "input": tool_input,
+                                                  "name": "record_country_assessment"})())
         self.content = blocks
         self.stop_reason = stop_reason
 
 
 class _FakeMessages:
-    def __init__(self, response_text):
-        self._response_text = response_text
+    def __init__(self, tool_input):
+        self._tool_input = tool_input
         self.last_call_kwargs = None
 
     def create(self, **kwargs):
         self.last_call_kwargs = kwargs
-        return _FakeResponse(self._response_text)
+        return _FakeResponse(self._tool_input)
 
 
 class _FakeClient:
-    def __init__(self, response_text):
-        self.messages = _FakeMessages(response_text)
+    def __init__(self, tool_input):
+        self.messages = _FakeMessages(tool_input)
 
 
-VALID_ANALYSIS_JSON = json.dumps({
+VALID_ANALYSIS = {
     "trend_summary": "Mixed signal: continued Chinese-financed infrastructure alongside episodic border conflict.",
     "key_relationships": ["China Eximbank financed a road project (AidData, 2026-01-10) in the same window as border clashes (ACLED, 2026-03-14)."],
     "risk_flags": ["Border-area conflict event within the same reporting window as active development finance."],
     "data_caveats": "Only 3 events in this window; not enough to establish a trend with confidence.",
-})
+}
 
 
 def _make_temp_kb():
@@ -118,11 +119,11 @@ def test_build_user_message_includes_key_sections():
     print("✓ test_build_user_message_includes_key_sections passed")
 
 
-def test_generate_assessment_parses_fenced_json_response():
+def test_generate_assessment_reads_tool_use_input():
     db_path = _make_temp_kb()
     import scripts.knowledge.queries as queries_module
 
-    fake_client = _FakeClient(f"```json\n{VALID_ANALYSIS_JSON}\n```")
+    fake_client = _FakeClient(VALID_ANALYSIS)
 
     def _snapshot_from_temp(iso3, db_path_arg=db_path):
         return queries_module.country_snapshot(iso3, db_path=db_path_arg)
@@ -139,7 +140,9 @@ def test_generate_assessment_parses_fenced_json_response():
     assert result["total_events_analyzed"] == 3
     assert "trend_summary" in result["analysis"]
     assert "China Eximbank" in result["analysis"]["key_relationships"][0]
-    print("✓ test_generate_assessment_parses_fenced_json_response passed")
+    # Confirm the tool was actually forced, not left optional.
+    assert fake_client.messages.last_call_kwargs["tool_choice"]["name"] == "record_country_assessment"
+    print("✓ test_generate_assessment_reads_tool_use_input passed")
 
 
 def test_generate_assessment_raises_on_truncated_response():
@@ -147,10 +150,9 @@ def test_generate_assessment_raises_on_truncated_response():
     import scripts.knowledge.queries as queries_module
     import scripts.analysis.reasoning_agent as agent_module
 
-    fake_client = _FakeClient(VALID_ANALYSIS_JSON)
-    fake_client.messages._response_text = None  # unused; override create() directly below
+    fake_client = _FakeClient(VALID_ANALYSIS)
     fake_client.messages.create = lambda **kwargs: _FakeResponse(
-        '{"trend_summary": "cut off mid', stop_reason="max_tokens"
+        {"trend_summary": "cut off mid"}, stop_reason="max_tokens"
     )
 
     original_snapshot_fn = agent_module.country_snapshot
@@ -181,7 +183,7 @@ def test_generate_assessment_raises_on_thin_data():
     try:
         raised = False
         try:
-            generate_country_assessment("KEN", "Kenya", client=_FakeClient(VALID_ANALYSIS_JSON))
+            generate_country_assessment("KEN", "Kenya", client=_FakeClient(VALID_ANALYSIS))
         except RuntimeError:
             raised = True
         assert raised
