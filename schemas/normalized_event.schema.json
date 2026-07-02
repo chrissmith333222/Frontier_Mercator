@@ -20,7 +20,7 @@
     },
     "source": {
       "type": "string",
-      "enum": ["ACLED", "ReliefWeb", "GDELT", "WorldBank", "VDem", "AllAfrica", "IMF", "AidData", "Bellingcat", "DFC", "WorldBankPPI"],
+      "enum": ["ACLED", "ReliefWeb", "GDELT", "WorldBank", "VDem", "AllAfrica", "IMF", "AidData", "Bellingcat", "DFC", "WorldBankPPI", "UNOSAT"],
       "description": "Which data source this event originated from."
     },
     "source_event_id": {
