@@ -453,13 +453,21 @@ def render_markets_dashboard(econ_df):
     with investment_tab:
         investment_df = econ_df[econ_df['event_category'] == 'investment']
         st.markdown(
-            "Chinese government-financed development projects (loans + grants) — "
-            "[AidData Global Chinese Development Finance Dataset](https://www.aiddata.org/data/aiddatas-global-chinese-development-finance-dataset-version-3-0), "
-            "20,985 projects worldwide, 2000-2021 commitments. Directly answers \"who's investing here.\""
+            "Who's financing development here, from both sides — "
+            "[AidData Global Chinese Development Finance Dataset](https://www.aiddata.org/data/aiddatas-global-chinese-development-finance-dataset-version-3-0) "
+            "(20,985 China-financed loans/grants, 2000-2021) and "
+            "[DFC Annual Project Data](https://www.dfc.gov/our-impact/transaction-data) "
+            "(U.S. International Development Finance Corporation loans, guarantees, equity, and insurance, "
+            "legacy OPIC deals included). Directly answers \"who's investing here.\""
         )
         if len(investment_df) == 0:
             st.info("No investment project data loaded yet.")
         else:
+            source_options = ["All Financiers"] + sorted(investment_df['source'].dropna().unique())
+            source_choice = st.selectbox("Financier", options=source_options, key="investment_source")
+            if source_choice != "All Financiers":
+                investment_df = investment_df[investment_df['source'] == source_choice]
+
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Total Projects", f"{len(investment_df):,}")
@@ -474,7 +482,7 @@ def render_markets_dashboard(econ_df):
             country_projects = investment_df[investment_df['country'] == country_choice].sort_values(
                 'event_date', ascending=False
             )
-            st.markdown(f"#### {len(country_projects):,} Chinese-Financed Projects — {country_choice}")
+            st.markdown(f"#### {len(country_projects):,} Financed Projects — {country_choice}")
 
             sector_counts = country_projects['event_subtype'].value_counts().head(10)
             if len(sector_counts) > 0:
@@ -490,8 +498,8 @@ def render_markets_dashboard(econ_df):
                 )
                 st.plotly_chart(fig, width="stretch")
 
-            table = country_projects[['event_date', 'narrative_summary']].head(50).rename(
-                columns={'event_date': 'Commitment Date', 'narrative_summary': 'Project'}
+            table = country_projects[['event_date', 'source', 'narrative_summary']].head(50).rename(
+                columns={'event_date': 'Commitment Date', 'source': 'Financier', 'narrative_summary': 'Project'}
             )
             st.dataframe(table, width="stretch", hide_index=True)
 
