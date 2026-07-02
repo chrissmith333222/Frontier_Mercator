@@ -1,0 +1,35 @@
+{
+  "iso3": "MRT",
+  "country": "Mauritania",
+  "generated_at": "2026-07-02T20:46:02.744441+00:00",
+  "scores": {
+    "security_risk": null,
+    "political_stability_risk": 0.0,
+    "economic_risk": 3.5
+  },
+  "overall_risk": 1.8,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 0
+    },
+    "political_stability": {
+      "event_count": 0
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 1.5,
+        "current_account": -9.6,
+        "debt_pct_gdp": 37.1,
+        "gdp_growth": 4.0
+      },
+      "sub_scores": {
+        "inflation": 1,
+        "current_account": 10,
+        "debt_pct_gdp": 2,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "iso3": "BDI",
+  "country": "Burundi",
+  "generated_at": "2026-07-02T20:46:02.735215+00:00",
+  "scores": {
+    "security_risk": 4.0,
+    "political_stability_risk": 0.0,
+    "economic_risk": 5.8
+  },
+  "overall_risk": 3.3,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 1,
+      "avg_severity": 6.5
+    },
+    "political_stability": {
+      "event_count": 0
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 34.1,
+        "current_account": -13.7,
+        "debt_pct_gdp": 37.0,
+        "gdp_growth": 4.2
+      },
+      "sub_scores": {
+        "inflation": 10,
+        "current_account": 10,
+        "debt_pct_gdp": 2,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

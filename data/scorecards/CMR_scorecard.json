@@ -1,0 +1,36 @@
+{
+  "iso3": "CMR",
+  "country": "Cameroon",
+  "generated_at": "2026-07-02T20:46:02.680483+00:00",
+  "scores": {
+    "security_risk": 5.6,
+    "political_stability_risk": 1.2,
+    "economic_risk": 3.8
+  },
+  "overall_risk": 3.5,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 2,
+      "avg_severity": 9.0
+    },
+    "political_stability": {
+      "event_count": 5
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 3.4,
+        "current_account": -3.3,
+        "debt_pct_gdp": 39.3,
+        "gdp_growth": 3.2
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 6,
+        "debt_pct_gdp": 2,
+        "gdp_growth": 3
+      }
+    }
+  }
+}

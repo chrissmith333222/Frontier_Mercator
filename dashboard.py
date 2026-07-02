@@ -14,6 +14,7 @@ from pathlib import Path
 
 from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief, generate_custom_report
 from scripts.reports.report_archive import archive_report, list_archived_reports
+from scripts.knowledge.relationship_graph import build_country_graph, build_plotly_figure
 from scripts import branding as b
 from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_LABELS
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
@@ -41,6 +42,23 @@ def load_cached_assessment(country_name: str) -> dict | None:
     if not iso3:
         return None
     path = ANALYSIS_DIR / f"{iso3}_assessment.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def load_scorecard(country_name: str) -> dict | None:
+    """Reads a pre-generated risk scorecard (scripts/analytics/risk_scorecard.py,
+    run as a local/backend batch job -- the underlying computation needs
+    the SQLite knowledge base, which isn't committed/available in the
+    deployed app) for the given country name, if one exists."""
+    iso3 = NAME_TO_ISO3.get(country_name)
+    if not iso3:
+        return None
+    path = ANALYSIS_DIR.parent / "scorecards" / f"{iso3}_scorecard.json"
     if not path.exists():
         return None
     try:
@@ -981,6 +999,33 @@ with dash5:
                     st.markdown(f"- {item}")
             if analysis.get("data_caveats"):
                 st.caption(f"Data caveats: {analysis['data_caveats']}")
+
+        scorecard = load_scorecard(country_choice)
+        if scorecard:
+            st.markdown("##### Risk Scorecard")
+            st.caption(
+                "Decomposed 0-10 sub-scores (higher = more risk), computed deterministically from "
+                "ingested event data -- not an AI judgment call. Security/Political Stability use a "
+                "trailing 12-month window of conflict/unrest event frequency and severity; Economic "
+                "uses the latest available inflation, current account, debt, and GDP growth figures "
+                "against simple published-threshold heuristics."
+            )
+            scores = scorecard["scores"]
+            sc1, sc2, sc3, sc4 = st.columns(4)
+            sc1.metric("Overall", scorecard["overall_risk"] if scorecard["overall_risk"] is not None else "N/A")
+            sc2.metric("Security", scores["security_risk"] if scores["security_risk"] is not None else "N/A")
+            sc3.metric("Stability", scores["political_stability_risk"])
+            sc4.metric("Economic", scores["economic_risk"] if scores["economic_risk"] is not None else "N/A")
+
+        country_graph = build_country_graph(events, country_choice)
+        if country_graph["nodes"]:
+            st.markdown("##### Relationship Network")
+            st.caption(
+                f"The {len(country_graph['nodes']) - 1} most-connected actors in {country_choice}, "
+                f"weighted by event count -- financiers, government bodies, and other named actors "
+                f"linked to the country hub. Hover a node for its category breakdown."
+            )
+            st.plotly_chart(build_plotly_figure(country_graph), use_container_width=True, key="country_relationship_graph")
     with report_col2:
         st.markdown("#### Regional Executive Summary")
         region_choice = st.selectbox("Region", options=region_options, key="region_brief_select")

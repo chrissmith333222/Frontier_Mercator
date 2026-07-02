@@ -1,0 +1,36 @@
+{
+  "iso3": "BEN",
+  "country": "Benin",
+  "generated_at": "2026-07-02T20:46:02.718658+00:00",
+  "scores": {
+    "security_risk": 5.0,
+    "political_stability_risk": 1.8,
+    "economic_risk": 4.0
+  },
+  "overall_risk": 3.6,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 4,
+      "avg_severity": 7.75
+    },
+    "political_stability": {
+      "event_count": 7
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 1.1,
+        "current_account": -8.2,
+        "debt_pct_gdp": 57.2,
+        "gdp_growth": 8.1
+      },
+      "sub_scores": {
+        "inflation": 1,
+        "current_account": 10,
+        "debt_pct_gdp": 4,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

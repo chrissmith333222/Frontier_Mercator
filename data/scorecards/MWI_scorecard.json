@@ -1,0 +1,36 @@
+{
+  "iso3": "MWI",
+  "country": "Malawi",
+  "generated_at": "2026-07-02T20:46:02.660406+00:00",
+  "scores": {
+    "security_risk": 7.2,
+    "political_stability_risk": 5.8,
+    "economic_risk": 8.0
+  },
+  "overall_risk": 7.0,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 30,
+      "avg_severity": 7.95
+    },
+    "political_stability": {
+      "event_count": 23
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 28.4,
+        "current_account": -18.8,
+        "debt_pct_gdp": 74.5,
+        "gdp_growth": 1.9
+      },
+      "sub_scores": {
+        "inflation": 10,
+        "current_account": 10,
+        "debt_pct_gdp": 7,
+        "gdp_growth": 5
+      }
+    }
+  }
+}

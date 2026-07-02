@@ -1,0 +1,35 @@
+{
+  "iso3": "GNB",
+  "country": "Guinea-Bissau",
+  "generated_at": "2026-07-02T20:46:02.769741+00:00",
+  "scores": {
+    "security_risk": null,
+    "political_stability_risk": 0.0,
+    "economic_risk": 4.8
+  },
+  "overall_risk": 2.4,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 0
+    },
+    "political_stability": {
+      "event_count": 0
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 0.9,
+        "current_account": -7.4,
+        "debt_pct_gdp": 73.6,
+        "gdp_growth": 5.8
+      },
+      "sub_scores": {
+        "inflation": 1,
+        "current_account": 10,
+        "debt_pct_gdp": 7,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

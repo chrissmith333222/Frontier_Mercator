@@ -1,0 +1,36 @@
+{
+  "iso3": "ZWE",
+  "country": "Zimbabwe",
+  "generated_at": "2026-07-02T20:46:02.650260+00:00",
+  "scores": {
+    "security_risk": 8.4,
+    "political_stability_risk": 3.0,
+    "economic_risk": 4.0
+  },
+  "overall_risk": 5.1,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 46,
+      "avg_severity": 7.92
+    },
+    "political_stability": {
+      "event_count": 12
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 104.7,
+        "current_account": 1.2,
+        "debt_pct_gdp": 42.3,
+        "gdp_growth": 8.1
+      },
+      "sub_scores": {
+        "inflation": 10,
+        "current_account": 1,
+        "debt_pct_gdp": 4,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

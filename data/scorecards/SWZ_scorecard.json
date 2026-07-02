@@ -1,0 +1,35 @@
+{
+  "iso3": "SWZ",
+  "country": "Eswatini",
+  "generated_at": "2026-07-02T20:46:02.810512+00:00",
+  "scores": {
+    "security_risk": null,
+    "political_stability_risk": 0.0,
+    "economic_risk": 2.5
+  },
+  "overall_risk": 1.2,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 0
+    },
+    "political_stability": {
+      "event_count": 0
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 3.5,
+        "current_account": 1.6,
+        "debt_pct_gdp": 50.0,
+        "gdp_growth": 4.2
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 1,
+        "debt_pct_gdp": 4,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

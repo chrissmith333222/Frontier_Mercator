@@ -1,0 +1,36 @@
+{
+  "iso3": "RWA",
+  "country": "Rwanda",
+  "generated_at": "2026-07-02T20:46:02.700277+00:00",
+  "scores": {
+    "security_risk": 6.0,
+    "political_stability_risk": 0.2,
+    "economic_risk": 5.5
+  },
+  "overall_risk": 3.9,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 15,
+      "avg_severity": 7.97
+    },
+    "political_stability": {
+      "event_count": 1
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 5.9,
+        "current_account": -12.0,
+        "debt_pct_gdp": 66.8,
+        "gdp_growth": 9.4
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 10,
+        "debt_pct_gdp": 7,
+        "gdp_growth": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "iso3": "CHL",
+  "country": "Chile",
+  "generated_at": "2026-07-02T20:46:02.775233+00:00",
+  "scores": {
+    "security_risk": 5.8,
+    "political_stability_risk": 2.8,
+    "economic_risk": 3.5
+  },
+  "overall_risk": 4.0,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 12,
+      "avg_severity": 8.15
+    },
+    "political_stability": {
+      "event_count": 11
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 4.2,
+        "current_account": -1.2,
+        "debt_pct_gdp": 42.5,
+        "gdp_growth": 2.5
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 3,
+        "debt_pct_gdp": 4,
+        "gdp_growth": 3
+      }
+    }
+  }
+}

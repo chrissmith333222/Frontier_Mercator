@@ -1,0 +1,36 @@
+{
+  "iso3": "JAM",
+  "country": "Jamaica",
+  "generated_at": "2026-07-02T20:46:02.697280+00:00",
+  "scores": {
+    "security_risk": 8.7,
+    "political_stability_risk": 0.5,
+    "economic_risk": 4.2
+  },
+  "overall_risk": 4.5,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 52,
+      "avg_severity": 7.85
+    },
+    "political_stability": {
+      "event_count": 2
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 4.0,
+        "current_account": 3.1,
+        "debt_pct_gdp": 65.8,
+        "gdp_growth": 0.1
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 1,
+        "debt_pct_gdp": 7,
+        "gdp_growth": 5
+      }
+    }
+  }
+}

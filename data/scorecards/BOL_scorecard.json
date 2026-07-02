@@ -1,0 +1,36 @@
+{
+  "iso3": "BOL",
+  "country": "Bolivia",
+  "generated_at": "2026-07-02T20:46:02.706539+00:00",
+  "scores": {
+    "security_risk": 4.3,
+    "political_stability_risk": 0.0,
+    "economic_risk": 7.2
+  },
+  "overall_risk": 3.8,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 5,
+      "avg_severity": 6.5
+    },
+    "political_stability": {
+      "event_count": 0
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 19.5,
+        "current_account": -1.9,
+        "debt_pct_gdp": 102.7,
+        "gdp_growth": -1.6
+      },
+      "sub_scores": {
+        "inflation": 7,
+        "current_account": 3,
+        "debt_pct_gdp": 10,
+        "gdp_growth": 9
+      }
+    }
+  }
+}

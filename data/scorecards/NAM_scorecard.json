@@ -1,0 +1,36 @@
+{
+  "iso3": "NAM",
+  "country": "Namibia",
+  "generated_at": "2026-07-02T20:46:02.665959+00:00",
+  "scores": {
+    "security_risk": 7.7,
+    "political_stability_risk": 3.2,
+    "economic_risk": 6.5
+  },
+  "overall_risk": 5.8,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 34,
+      "avg_severity": 8.34
+    },
+    "political_stability": {
+      "event_count": 13
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 3.5,
+        "current_account": -13.4,
+        "debt_pct_gdp": 70.5,
+        "gdp_growth": 1.7
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 10,
+        "debt_pct_gdp": 7,
+        "gdp_growth": 5
+      }
+    }
+  }
+}

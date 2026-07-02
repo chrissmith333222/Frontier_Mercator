@@ -1,0 +1,36 @@
+{
+  "iso3": "ZAF",
+  "country": "South Africa",
+  "generated_at": "2026-07-02T20:46:02.614452+00:00",
+  "scores": {
+    "security_risk": 8.6,
+    "political_stability_risk": 10,
+    "economic_risk": 4.8
+  },
+  "overall_risk": 7.8,
+  "methodology_inputs": {
+    "as_of": "2026-12-31",
+    "trailing_window_days": 365,
+    "security": {
+      "event_count": 458,
+      "avg_severity": 7.66
+    },
+    "political_stability": {
+      "event_count": 393
+    },
+    "economic": {
+      "raw_values": {
+        "inflation": 3.2,
+        "current_account": -0.4,
+        "debt_pct_gdp": 78.9,
+        "gdp_growth": 1.1
+      },
+      "sub_scores": {
+        "inflation": 4,
+        "current_account": 3,
+        "debt_pct_gdp": 7,
+        "gdp_growth": 5
+      }
+    }
+  }
+}
