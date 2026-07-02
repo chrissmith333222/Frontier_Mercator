@@ -1,0 +1,24 @@
+{
+  "query": "critical minerals VC investment opportunities in West Africa resulting from a recent coup or resource discovery",
+  "generated_at": "2026-07-02T14:38:46.803355+00:00",
+  "model": "claude-sonnet-5",
+  "events_retrieved": 25,
+  "analysis": {
+    "answer": "The retrieved event set does not substantively support an assessment of \"critical minerals VC investment opportunities in West Africa resulting from a recent coup or resource discovery.\" None of the 25 retrieved events involve venture capital financing, none reference a recent coup, and none describe a new resource discovery triggering investment. The set is dominated by older (largely 1990s-2019) power-sector infrastructure deals (Ivory Coast electricity PPPs, Gabon hydropower), Chinese state-linked bilateral loans/grants (AidData records for CAR, Republic of Congo, Sierra Leone, Mali), and one DFC direct loan to a bauxite miner in Guinea (2016). These are development-finance and state-to-state infrastructure/mining transactions, not VC investments, and there is no temporal or causal link established in the data between any coup event and subsequent mineral investment activity. The single mining-relevant West African critical-minerals-adjacent event -- the DFC's $150M loan to Compagnie des Bauxites de Guinee (2016) -- predates Guinea's 2021 coup and is not tied to any coup narrative in the retrieved text, so it cannot be used to support a coup-driven opportunity thesis. Overall, this retrieval appears to be a poor semantic match to the analyst's actual question; a targeted search for post-coup mining sector reforms (e.g., Guinea, Mali, Burkina Faso 2020-2023) and dedicated VC/private equity minerals financing would be needed.",
+    "supporting_evidence": [
+      "DFC (FY2016, Guinea): $150.0M direct loan to Compagnie des Bauxites de Guinee for bauxite mining -- the only West African critical-minerals financing event in the set, but predates any coup reference and is a DFC direct loan, not VC.",
+      "AidData (2011-01-01, Mali): COVEC $2.3M supplier credit to Sino-Malian Textile Company -- unrelated to minerals or coups.",
+      "AidData (2000-03-14, Ivory Coast): China Eximbank $1.2M loan for Zeregbo Gold Mining Development Project -- a mining-related loan, but no coup linkage and two decades removed from any relevant political event.",
+      "AidData (2016, Sierra Leone): Chinese government pledge of $60M for a fly-over infrastructure project (mislabeled as 'Mining, Quarrying, Construction') -- not a minerals investment.",
+      "WorldBankPPI events (1990-2019, Ivory Coast, Gabon, Benin): all energy-sector (electricity, gas pipeline) PPI projects with no mineral or VC content.",
+      "No event in the retrieved set references a coup, political transition, junta, or a new critical-mineral (lithium, cobalt, manganese, rare earths) discovery in West Africa."
+    ],
+    "countries_involved": [
+      "Guinea",
+      "Ivory Coast",
+      "Mali",
+      "Sierra Leone"
+    ],
+    "data_caveats": "The retrieved events are overwhelmingly older development-finance/PPI and Chinese bilateral loan records (1990-2019) with no VC, no coup references, and no resource-discovery narratives; semantic similarity appears to have keyed on generic terms like 'mining,' 'investment,' and 'West Africa' rather than the specific coup/discovery/VC framing of the question. This retrieval should be treated as largely non-responsive noise, and a re-query targeting recent (2020-2024) Guinea/Mali/Burkina Faso political events and dedicated minerals VC deal flow is recommended before drawing investment conclusions."
+  }
+}

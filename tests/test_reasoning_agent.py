@@ -26,6 +26,8 @@ from scripts.analysis.reasoning_agent import (
     save_cross_cutting_assessment,
     _build_user_message,
     _slugify_query,
+    _normalize_tool_output,
+    _CROSS_CUTTING_TOOL,
 )
 
 FIXTURE_EVENTS = [
@@ -199,6 +201,50 @@ def test_generate_cross_cutting_assessment_raises_on_thin_retrieval():
     finally:
         agent_module.semantic_search = original_semantic_search
     print("✓ test_generate_cross_cutting_assessment_raises_on_thin_retrieval passed")
+
+
+def test_normalize_tool_output_repairs_real_malformed_response():
+    """This exact shape came back from a real Claude call against a
+    data-thin query: supporting_evidence arrived as a single string with
+    embedded pseudo-XML tags instead of a JSON array, and the required
+    countries_involved key was omitted entirely. The dashboard/PDF
+    rendering iterates these fields expecting a list of strings --
+    without normalization, iterating a raw string yields one bullet per
+    character and a missing key crashes with KeyError."""
+    malformed = {
+        "answer": "The retrieved event set does not support an answer to this question.",
+        "supporting_evidence": (
+            "\n<item>Guinea, 2016-01-01 (DFC): $150.0M direct loan.</item>"
+            "\n<item>Ivory Coast, 2000-03-14 (AidData): China Eximbank loan.</item>\n"
+        ),
+        "data_caveats": '<data_caveats">The retrieval surfaced legacy development-finance records.',
+        # countries_involved deliberately omitted, mirroring the real failure
+    }
+    normalized = _normalize_tool_output(malformed, _CROSS_CUTTING_TOOL)
+
+    assert isinstance(normalized["supporting_evidence"], list)
+    assert len(normalized["supporting_evidence"]) == 2
+    assert "Guinea" in normalized["supporting_evidence"][0]
+    assert "<item>" not in normalized["supporting_evidence"][0]
+
+    assert normalized["countries_involved"] == []
+
+    assert isinstance(normalized["data_caveats"], str)
+    assert "<data_caveats" not in normalized["data_caveats"]
+    assert normalized["data_caveats"].startswith("The retrieval surfaced")
+    print("✓ test_normalize_tool_output_repairs_real_malformed_response passed")
+
+
+def test_normalize_tool_output_leaves_well_formed_response_unchanged():
+    well_formed = {
+        "answer": "A clean answer.",
+        "supporting_evidence": ["Evidence one.", "Evidence two."],
+        "countries_involved": ["Kenya", "Mozambique"],
+        "data_caveats": "A clean caveat.",
+    }
+    normalized = _normalize_tool_output(well_formed, _CROSS_CUTTING_TOOL)
+    assert normalized == well_formed
+    print("✓ test_normalize_tool_output_leaves_well_formed_response_unchanged passed")
 
 
 def test_slugify_query_produces_filesystem_safe_stem():

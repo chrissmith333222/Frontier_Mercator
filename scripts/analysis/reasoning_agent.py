@@ -42,6 +42,7 @@ Usage (as a module):
 
 import sys
 import os
+import re
 import json
 import argparse
 from pathlib import Path
@@ -159,6 +160,41 @@ _CROSS_CUTTING_TOOL = {
 }
 
 
+def _normalize_tool_output(analysis: dict, schema: dict) -> dict:
+    """Forcing tool_choice strongly encourages schema conformance but
+    doesn't guarantee it -- a real run against a data-thin/ambiguous
+    query returned "supporting_evidence" as a single string containing
+    embedded pseudo-XML tags (e.g. "\\n<item>...</item>\\n<item>...")
+    instead of a JSON array, and omitted the required "countries_involved"
+    key entirely. Rather than let a malformed sub-field crash the
+    dashboard/PDF rendering (which iterates list fields expecting a list
+    of strings), normalize defensively: missing fields get sensible
+    empty defaults, and a string value in an array-typed field gets
+    split back into a list instead of being iterated character-by-character."""
+    normalized = dict(analysis)
+    for field_name, field_schema in schema["input_schema"]["properties"].items():
+        value = normalized.get(field_name)
+        if field_schema["type"] == "array":
+            if value is None:
+                normalized[field_name] = []
+            elif isinstance(value, str):
+                # Split on <item>...</item> tags if present, else on newlines.
+                items = re.findall(r"<item>(.*?)</item>", value, re.DOTALL)
+                if not items:
+                    items = [line.strip() for line in value.splitlines() if line.strip()]
+                normalized[field_name] = [re.sub(r"</?[a-z_]+>", "", item).strip() for item in items] or [value.strip()]
+        elif field_schema["type"] == "string":
+            if value is None:
+                normalized[field_name] = ""
+            elif not isinstance(value, str):
+                normalized[field_name] = str(value)
+            else:
+                # Strip stray tag fragments Claude occasionally leaves in
+                # string fields (e.g. a malformed `<data_caveats">` prefix).
+                normalized[field_name] = re.sub(r"</?[a-z_]+\"?>", "", value).strip()
+    return normalized
+
+
 def _build_user_message(snapshot: dict, country_name: str) -> str:
     return (
         f"Country: {country_name} ({snapshot['iso3']})\n\n"
@@ -215,7 +251,7 @@ def _call_with_forced_tool(client, model: str, system_prompt: str, tool: dict, u
     if not tool_blocks:
         raise RuntimeError(f"No tool_use block in Claude response for {context_label}; "
                             f"got block types: {[getattr(b, 'type', type(b).__name__) for b in response.content]}")
-    return tool_blocks[0].input
+    return _normalize_tool_output(tool_blocks[0].input, tool)
 
 
 def _get_client():
