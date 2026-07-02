@@ -1,0 +1,31 @@
+{
+  "iso3": "SEN",
+  "country": "Senegal",
+  "generated_at": "2026-07-02T11:48:17.223282+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 265,
+  "category_counts": {
+    "conflict": 4,
+    "economic_indicator": 60,
+    "humanitarian": 4,
+    "investment": 193,
+    "protest_civil_unrest": 4
+  },
+  "analysis": {
+    "trend_summary": "The data shows Senegal as a heavy recipient of both Chinese state financing and Western (US DFC, World Bank PPI) capital, concentrated in energy, transport, and telecom greenfield projects, alongside a narrow but sharply-clustered burst of political unrest tied to a constitutional reform curbing presidential powers in late June/early July 2026. Macroeconomic indicators show persistent current account deficits (-5.6% to -6.2% of GDP) and very high government debt (130-132% of GDP), with a notable deceleration in IMF-projected real GDP growth from 7.9% (2025) to 2.2% (2026). Humanitarian signals are limited to a 2024 flooding event in the Matam/Kanel/Saint-Louis departments, detected via UNOSAT satellite imagery, in a region that also hosts a major $475M gas turbine investment. Overall the dataset suggests a country attracting large-scale infrastructure capital under conditions of rising fiscal pressure and an acute, recent episode of political-institutional friction.",
+    "key_relationships": [
+      "Police-protester and police-parliament clashes cluster tightly in a 48-hour window (GDELT/africanews.com, 2026-06-30; GDELT/allafrica.com, 2026-07-01), all narratively linked to the National Assembly's passage of constitutional reform curbing presidential powers, indicating the unrest is directly tied to this single political event rather than diffuse conflict.",
+      "Government of Senegal is the dominant investment counterpart (103 events, actor list) while Chinese state financiers collectively account for the largest financing bloc (Unspecified Chinese Government Institution n=56, China Ministry of Commerce n=27, China Eximbank n=24, Chinese Embassy n=8, plus smaller Chinese ministries), versus US DFC (n=20) and OPIC (n=9), pointing to a financing landscape skewed toward Chinese bilateral channels.",
+      "The Saint-Louis CCGT gas plant ($475.0M, WorldBankPPI, 2024-01-01) is located in the same Saint-Louis/Matam region flagged by four separate UNOSAT satellite flood-detection products (2024-10-23 through 2024-10-28), indicating geographic overlap between a major energy investment and documented flood hazard exposure.",
+      "High government debt (IMF GGXWDG_NGDP, 132.3% of GDP, 2026-12-31; 130.2%, 2025-12-31) and current account deficits (IMF BCA_NGDPD, -6.2%, 2026-12-31; -5.6%, 2025-12-31) coincide with continued inflows of concessional and development finance (AidData/DFC/WorldBankPPI entries spanning 2021-2024), consistent with reliance on external financing to sustain investment activity amid fiscal strain."
+    ],
+    "risk_flags": [
+      "Government gross debt is reported at over 130% of GDP for both 2025 and 2026 (IMF, GGXWDG_NGDP, 2025-12-31 and 2026-12-31), alongside a widening current account deficit (IMF, BCA_NGDPD, -6.2%, 2026-12-31), signaling fiscal vulnerability.",
+      "IMF data shows a sharp growth deceleration from 7.9% (2025) to 2.2% (2026) (IMF, NGDP_RPCH, 2025-12-31 and 2026-12-31), a discontinuity not explained elsewhere in the dataset and worth further verification.",
+      "Political unrest in the data is concentrated entirely around the constitutional reform episode (GDELT/africanews.com and allafrica.com, 2026-06-30 to 2026-07-01), with conflict severity scores as high as 7.7 for POLICE-related CAMEO 175 events, suggesting acute short-term political-institutional risk rather than a chronic pattern.",
+      "Major energy infrastructure investment in Saint-Louis ($475.0M CCGT, WorldBankPPI, 2024-01-01) sits in a region independently documented as flood-affected by UNOSAT (2024-10-23 to 2024-10-28), indicating potential climate/operational risk exposure for that asset class.",
+      "Investment financing is heavily concentrated among Chinese state-linked actors (combined n=119 across Chinese financier entities per the actor list) relative to Western sources (US DFC/OPIC combined n=31), a concentration pattern that may carry counterparty or geopolitical exposure implications."
+    ],
+    "data_caveats": "Conflict and protest data are limited to just four events each, all sourced from GDELT-aggregated news within a narrow 48-hour window in mid-2026, with no corroborating ACLED or ground-verified reporting, and fatality figures are entirely null (severity scores only). Humanitarian data is restricted to a single 2024 flood event captured via UNOSAT satellite imagery with no other humanitarian indicators (displacement, food security, etc.) present, and investment records span 2021-2024 with several entries listing 'undisclosed' amounts, limiting quantitative precision."
+  }
+}

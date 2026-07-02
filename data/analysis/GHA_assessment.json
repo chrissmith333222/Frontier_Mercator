@@ -1,0 +1,34 @@
+{
+  "iso3": "GHA",
+  "country": "Ghana",
+  "generated_at": "2026-07-02T04:11:53.312530+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 476,
+  "category_counts": {
+    "conflict": 72,
+    "economic_indicator": 62,
+    "humanitarian": 1,
+    "investment": 302,
+    "other": 8,
+    "political_violence_targeting_civilians": 5,
+    "protest_civil_unrest": 5,
+    "strategic_development": 21
+  },
+  "analysis": {
+    "trend_summary": "The data shows Ghana's macro picture (IMF/World Bank, 2025-2026) improving on inflation (14.2% in 2025 to 5.8% projected 2026) and current account balance (7.9% to 10.1% of GDP), alongside solid but slowing real GDP growth (6.0% to 4.8%) and a rising government debt ratio (48.8% to 53.0% of GDP). Investment activity is dominated by a small set of Chinese state-linked financiers (China Eximbank, ICBC, Bank of China, China Development Bank, Chinese Embassy) directed largely at COCOBOD cocoa trade finance and education/ICT loans, with smaller US DFC and World Bank PPI-tracked private-sector deals in finance, transport, and ICT. The 'conflict' and 'political_violence_targeting_civilians' categories are almost entirely populated by high-severity-scored GDELT CAMEO codes (190/191/193/180/181) that on inspection correspond to floods, a tanker fire, drug-education outreach, and unrelated court/justice narratives rather than clear political violence, suggesting the severity scores in this window are not reliable indicators of unrest. Humanitarian signal coverage is essentially absent (1 tagged event, and the 'humanitarian/OSINT' list is dominated by cybercrime-arrest and cabinet-meeting news items), leaving a significant blind spot on displacement, food security, or disaster-response indicators. Protest/civil unrest and targeted-civilian-violence counts are each very small (5 events), too thin to support pattern claims.",
+    "key_relationships": [
+      "Chinese state financiers (Bank of China, ICBC) repeatedly co-financed multi-billion-dollar syndicated trade finance facilities to Ghana Cocoa Board (COCOBOD) for consecutive crop seasons (AidData, 2020-09-29 and 2021-09-21), indicating a recurring, concentrated financing relationship between Chinese banks and Ghana's cocoa sector.",
+      "China Eximbank provided large concessional loans (\\$39M and \\$218.4M) for ICT-based distance learning projects tied to Ghanaian tertiary/local government education institutions (AidData, 2020-10-30), a second cluster of Chinese state lending outside the cocoa sector.",
+      "US DFC financing in the dataset is smaller-scale and concentrated in the financial sector -- guaranties to Absa Bank Ghana (\\$10.0M, FY2023) and Opportunity International Savings and Loans (\\$2.5M, FY2023), plus a construction loan to International Community School (\\$8.0M, FY2022) -- contrasting with the scale of Chinese state lending.",
+      "Multiple 2026-07-01 GDELT items nominally coded as 'conflict' (subtype 190/191) actually reference flooding and drain-clearing responses by NADMO/Zoomlion in Greater Accra (newsghana.com.gh, 2026-07-01) and a regional flood report referencing Ivory Coast fatalities (Winnipeg Free Press, 2026-07-01), suggesting the conflict severity scores in this window largely capture disaster/infrastructure events, not political violence.",
+      "The 'political_violence_targeting_civilians' entries for 2026-07-01 are sourced from a fire/arson story (Mirror, 2026-07-01) and an abducted-children/police-rescue story with an Oyo (Nigeria) dateline (thechronicle.com.gh, 2026-07-01), indicating possible geographic misattribution to Ghana rather than confirmed domestic civilian-targeting violence."
+    ],
+    "risk_flags": [
+      "General government gross debt rose from 48.8% to 53.0% of GDP between 2025 and 2026 even as growth decelerated from 6.0% to 4.8% (IMF, 2026-12-31 and 2025-12-31), a combination worth monitoring for fiscal space.",
+      "Investment activity is heavily concentrated among a small number of Chinese state-linked actors (Government of Ghana as recipient n=156; Chinese financiers collectively over 150 entries across categories, per actor list), raising concentration risk if Chinese state financing conditions or priorities shift.",
+      "Conflict-category data quality is low in this window: multiple high-severity-score (9.0+) 'conflict' events on 2026-07-01 correspond to floods, a tanker fire, and unrelated court/education stories (ghanamma.com, newsghana.com.gh, ghanaiantimes.com.gh, 2026-07-01) rather than verified political violence, limiting confidence in the conflict severity metrics.",
+      "Humanitarian/OSINT coverage is minimal and largely off-topic (cybercrime arrests, cabinet meetings, travel warnings per GDELT, 2026-07-01), meaning genuine humanitarian indicators (displacement, food security, disaster impact) are not well represented despite flood references appearing elsewhere in the data."
+    ],
+    "data_caveats": "The conflict and political-violence-targeting-civilians categories in this window appear substantially contaminated by GDELT CAMEO miscodings of natural-disaster (flood, fire) and unrelated news items, so severity scores and event counts in those categories should not be read as direct measures of unrest or targeted violence. Humanitarian signal volume is too thin (1 tagged event) to support any conclusion about humanitarian conditions, and protest/civil-unrest and civilian-targeting counts (5 each) are too small for pattern-level claims; investment data, while more voluminous, spans 2020-2024 and does not capture activity in 2025-2026."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "iso3": "BWA",
+  "country": "Botswana",
+  "generated_at": "2026-07-02T11:54:26.807050+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 210,
+  "category_counts": {
+    "conflict": 2,
+    "economic_indicator": 61,
+    "humanitarian": 4,
+    "investment": 143
+  },
+  "analysis": {
+    "trend_summary": "The data shows a resource- and aid-intensive economic profile for Botswana with minimal recorded conflict activity but signs of macroeconomic softening. Investment activity (143 events) is dominated by Chinese state and quasi-state financiers alongside World Bank PPI-tracked renewable energy projects, while conflict data (2 events) is sparse and appears to consist of ambiguous GDELT-coded items rather than substantiated unrest. Economic indicators show a swing from negative real GDP growth in 2025 (-0.7% to -0.9%) to a projected rebound in 2026 (4.7%), alongside rising government debt (38.6% to 47.0% of GDP) and a current account balance moving from surplus (+3.7% in 2025) to deficit (-1.9% projected 2026). A single humanitarian episode -- flooding in Gaborone/South East/Kgatleng Districts in February-March 2025 -- is the only humanitarian signal in the window, with no fatalities or displacement figures reported.",
+    "key_relationships": [
+      "Chinese state financiers (Unspecified Chinese Government Institution, Chinese Embassy, China Ministry of Commerce, China Eximbank, ICBC, Hanban) collectively account for the large majority of tracked investment/aid events (AidData, 2020-2021 grants and debt relief), with the Government of Botswana as the principal recipient agency (n=98, investment category), indicating a concentrated bilateral aid relationship rather than diversified financing.",
+      "Chinese debt relief action -- cancellation of RMB 15.6 million in Botswana government debt (AidData/SAIS-CARI, 2020-10-07) -- occurred alongside a broader wave of Chinese health/education grants during 2020-2021 (e.g. AidData, 2021-04 Sinovac donation; AidData, 2021-01 scholarship program), suggesting coordinated soft-power engagement rather than large-scale commercial lending.",
+      "World Bank PPI-tracked renewable energy projects (Mmadinare solar complex, 2023-01-01 and 2024-01-01; Sandveld Solar Park, 2024-01-01; Bobonong/Shakawe solar, 2022-01-01) show a distinct, separate investment channel focused on electricity infrastructure, involving private-sector financiers rather than Chinese actors.",
+      "The two recorded conflict events (GDELT, 2026-07-01) reference ambiguous or unrelated actors (PORTUGAL, KALAHARI, unspecified) and are sourced from non-conflict-related URLs (a swimsuit lifestyle site and a mining industry news article about lithium exploration), raising doubts about their reliability as genuine unrest indicators.",
+      "The Gaborone flooding events (UNOSAT, 2025-02-24 through 2025-03-07) are geographically concentrated in the capital region where much of the recipient government and investment activity (e.g. Botswana Power Corporation, Botswana Ministry of Health) is based, suggesting potential infrastructure exposure though no direct linkage to investment disruption is evidenced in this dataset."
+    ],
+    "risk_flags": [
+      "Real GDP growth turned negative in 2025 per both IMF (-0.9%) and World Bank (-0.7%) figures, followed by a large projected rebound to 4.7% in 2026 (IMF, 2026-12-31), indicating volatility that the data does not explain.",
+      "General government gross debt rose sharply from 38.6% of GDP (2025) to a projected 47.0% (2026) (IMF, 2026-12-31), a notable one-year increase.",
+      "Current account balance is projected to shift from a 3.7% surplus (2025) to a 1.9% deficit (2026) (IMF, 2026-12-31), reversing the prior year's external position.",
+      "Unemployment remains persistently high at 23.8-24.5% across 2024-2025 (World Bank), a structural labor-market signal not offset by the investment or growth data shown.",
+      "Conflict data quality is low: both recorded conflict events (GDELT, 2026-07-01) have high severity scores (9.0) but no fatality data, unclear actor identification, and source URLs unrelated to conflict reporting, undermining confidence in the conflict category for this country."
+    ],
+    "data_caveats": "The conflict dataset (n=2) is too sparse and internally inconsistent (unrelated source URLs, ambiguous actor labels) to support any conclusion about unrest risk in Botswana. Humanitarian coverage is limited to a single flood episode in early 2025 with no fatality, displacement, or economic-loss figures, so broader humanitarian conditions cannot be assessed. Investment data is heavily weighted toward Chinese grant/aid activity from 2020-2021 and World Bank PPI energy projects through 2024, with only sparse and dated representation of U.S. or other Western financiers (DFC, n=4), limiting confidence in characterizing the full investment landscape."
+  }
+}

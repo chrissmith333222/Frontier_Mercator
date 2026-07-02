@@ -1,0 +1,20 @@
+{
+  "iso3": "CMR",
+  "country": "Cameroon",
+  "generated_at": "2026-07-02T12:05:49.971160+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 323,
+  "category_counts": {
+    "conflict": 2,
+    "economic_indicator": 61,
+    "humanitarian": 4,
+    "investment": 225,
+    "other": 26,
+    "political_violence_targeting_civilians": 2,
+    "protest_civil_unrest": 3
+  },
+  "analysis": {
+    "data_caveats": "The dataset spans mostly 2020-2023 for detailed investment records and 2024-2026 for economic indicators, with a thin and recent (July 2026) burst of GDELT news-derived investment/humanitarian signals that lack the granularity of the AidData/WorldBankPPI records; direct comparability across time periods is therefore limited.",
+    "key_relationships": "\n<parameter name=\"risk_flags\">[\"Two of six conflict-category entries dated 2026-06-30 (GDELT/crtv.cm) reference a 'fire incident at Bamenda Regional Hospital' coded as high-severity (9.0) conflict, which may indicate either an infrastructure-safety incident in the historically unstable Northwest Region or a data-classification error \\u2014 the underlying event type is unclear from the narrative alone.\", \"A 2026-06-30 entry (GDELT/bignewsnetwork.com) describing '3 dead, 18 injured in armed attack' is sourced from a Central African Republic-datelined article but tagged to Cameroon as political-violence-targeting-civilians (severity 9.3), suggesting a possible geotagging/actor-attribution error that inflates apparent violence in the Cameroon dataset.\", \"External debt stood at $15.77B (2024, WorldBank) alongside a widening current account deficit trend (-3.3% in 2024 to -5.1% projected 2026, IMF), which combined with prior China Eximbank debt-service suspension (2021, AidData) and RMB debt cancellation (2021, AidData) points to a historical pattern of debt-relief dependency on Chinese financing that warrants monitoring given the deficit trajectory.\"]\n<parameter name=\"trend_summary\">The Cameroon dataset is dominated by investment/development-finance activity (225 of 321 total events, ~70%), overwhelmingly tied to Chinese state financiers (Unspecified Chinese Government Institution, China Ministry of Commerce, China Eximbank, Chinese Embassy) engaging with Cameroonian government recipient agencies, alongside a smaller but active World Bank PPI private-sector infrastructure channel (energy, transport). Conflict and political-violence-targeting-civilians categories are very thin (2 events each) and appear to be GDELT-parsed news snippets with ambiguous or possibly mis-attributed content rather than clear security incidents. Macroeconomic indicators show a moderate, fairly stable picture: real GDP growth ~3.1-3.3% (2025-2026, IMF), inflation ~3.4-3.5% (2025-2026), government debt declining slightly from 40.4% to 39.3% of GDP (2025-2026, IMF), but a current account deficit widening from -3.3% (2024, WorldBank) to a projected -5.1% (2026, IMF). Recent (July 2026) GDELT-sourced items point to active new investment agreements (CFA 20.5 billion, businessincameroon.com, 2026-07-01) and a U.S. health-infrastructure donation (CFA 6 billion in mobile field hospitals, businessincameroon.com, 2026-07-01), suggesting continued diversification of external partners beyond China. Overall, the pattern is one of sustained multilateral/bilateral development engagement with limited, ambiguous unrest signal in this data window."
+  }
+}

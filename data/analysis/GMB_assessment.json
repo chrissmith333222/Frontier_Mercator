@@ -1,0 +1,31 @@
+{
+  "iso3": "GMB",
+  "country": "Gambia",
+  "generated_at": "2026-07-02T12:00:13.747312+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 151,
+  "category_counts": {
+    "conflict": 18,
+    "economic_indicator": 60,
+    "humanitarian": 2,
+    "investment": 66,
+    "other": 2,
+    "political_violence_targeting_civilians": 3
+  },
+  "analysis": {
+    "trend_summary": "Macroeconomic indicators show a modestly improving trajectory for Gambia: IMF data show government debt falling from 73.9% of GDP (2025) to 68.3% (2026) and inflation easing from 7.9% to 5.8% over the same period, alongside stable real GDP growth near 5-6%. The current account deficit is widening slightly (-4.1% in 2024 to -5.1% in 2026 per IMF/World Bank series), and 2024 FDI net inflows were notably high at 9.7% of GDP. Investment/development-finance data in this window is dominated almost entirely by Chinese grant-based assistance (health, transport, agriculture, education) concentrated in 2020-2021, mostly COVID-related, with no 2026-dated investment records present. Conflict and political-violence-targeting-civilians entries are concentrated on 2026-06-30/07-01 but are drawn from GDELT with narrative content that appears largely unrelated to Gambia itself (e.g., an Australian car-theft sentencing story, a Bronx stabbing, UK migration reporting), raising serious doubts about their relevance as genuine unrest signals. Humanitarian/OSINT coverage is thin, limited to two 2022 UNOSAT flood-extent detections and two more GDELT entries of uncertain relevance.",
+    "key_relationships": [
+      "Government of Gambia (n=38, investment category) is the principal recipient of Chinese state financing, with 'Unspecified Chinese Government Institution' (n=30) and 'Chinese Embassy' (n=16) as top financiers, per AidData records spanning 2020-03-01 to 2021-12-01 -- almost entirely health-sector COVID assistance (e.g., $5.1M anti-COVID supplies, 2021-03-12; $3.6M Sinopharm donation, 2021-12-01).",
+      "Sector-specific recipient agencies (Gambia Ministry of Health, n=3; Nusrat High School, n=4; Kanifing Municipal Council, n=2) show Chinese aid targeting health, education, and municipal sanitation, per AidData entries 2020-07-24 through 2021-07-28.",
+      "The 'Gambia' actor entity (n=13) spans conflict, political_violence_targeting_civilians, and 'other' categories on 2026-06-30/07-01 (GDELT), but the underlying source URLs (allafrica.com, mudgeeguardian.com.au, express.co.uk) suggest cross-referencing noise rather than Gambia-specific events, notably a story about a stolen-car sentencing in Australia (2026-07-01) coded as GAMBIA<->PRISON.",
+      "A cluster of GAMBIA<->GHANA / GHANA<->GAMBIA CAMEO-173 events on 2026-06-30 (allafrica.com) suggests some bilateral diplomatic or migration-related interaction, though the specific nature is not described in the narrative summaries provided."
+    ],
+    "risk_flags": [
+      "High-severity-scored (9.0-9.3) political_violence_targeting_civilians events on 2026-06-30 (GDELT, allafrica.com, lithgowmercury.com.au, gothamist.com) carry narrative summaries that do not describe Gambia-specific violence (one references a Bronx, NYC stabbing), indicating likely geotagging/source-matching errors that undermine confidence in this category for Gambia during the window.",
+      "Government debt remains elevated at 68.3% of GDP even after a reported decline (IMF, 2026-12-31), combined with a current account deficit that has widened from -4.1% (2024) to -5.1% (2026, IMF/WorldBank), signaling continued external financing dependence.",
+      "Investment data shows a near-total reliance on Chinese grant financing (66 investment events, majority AidData/Chinese sources) with no diversified private-sector or multilateral investment activity reflected after 2021, and no data bridging the 2021-2026 gap.",
+      "Humanitarian signal coverage is minimal (2 events, both 2022 UNOSAT flood detections in Banjul/Kanifing/Brikama), providing no current insight into humanitarian conditions in 2025-2026."
+    ],
+    "data_caveats": "A substantial share of the conflict and political-violence-targeting-civilians entries appear to be GDELT mismatches or noise (narratives referencing Australia, the UK, and New York rather than Gambia), and severity scores in this category should not be treated as reliable indicators of unrest inside Gambia without independent verification. The investment dataset ends in December 2021 with no records through 2026, leaving a multi-year gap in development-finance monitoring, and humanitarian/OSINT data is limited to two 2022 flood-mapping products, providing no recent humanitarian context."
+  }
+}

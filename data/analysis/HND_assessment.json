@@ -1,0 +1,30 @@
+{
+  "iso3": "HND",
+  "country": "Honduras",
+  "generated_at": "2026-07-02T11:59:49.270211+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 157,
+  "category_counts": {
+    "conflict": 20,
+    "economic_indicator": 69,
+    "humanitarian": 7,
+    "investment": 58,
+    "political_violence_targeting_civilians": 3
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows a country profile where headline 'conflict' events are dominated not by domestic unrest in Honduras but by GDELT-coded reporting on U.S. court proceedings against MS-13 members (Las Vegas/Nevada racketeering convictions), while economic indicators point to moderate, stable macro conditions (3.3-3.8% real GDP growth, inflation near 4.4-4.6%, gross debt rising from 41.2% to 43.8% of GDP between 2025-2026 per IMF). Investment activity is concentrated in the energy sector (wind, solar, geothermal) and financial-sector lending via DFC and World Bank PPI channels, spanning 2015-2023, with additional Chinese-linked co-financing routed through IDB to local banks (2016-2020). Humanitarian signals are limited to natural-disaster geospatial monitoring (2020 flooding, 2024 Tropical Cyclone Sara) rather than conflict-driven displacement or needs data. Overall, the categories present a picture of steady macro/investment activity in productive sectors juxtaposed with a conflict data stream that is largely extraterritorial (transnational gang prosecutions in the U.S.) rather than reflective of ground-level instability inside Honduras.",
+    "key_relationships": [
+      "MS-13 gang network ties Honduras, El Salvador, and U.S. jurisdictions (Las Vegas, Nevada) in a cluster of high-severity (9.0+) conflict-coded events on 2026-06-29/30, per GDELT sourcing from bnonews.com and lasvegassun.com -- these describe U.S. federal convictions for racketeering/murder, not incidents occurring within Honduras.",
+      "Private-sector financiers (World Bank PPI Database, n=43 investment events) and the U.S. DFC (n=10) are the two most active investment actors, concentrated in renewable energy (San Marcos Wind Complex, $370.0M, 2023; Palmerola Airport, $209.0M, 2020) and bank lending (Banco Atl\u00e1ntida $80.0M FY2023; Banco del Pa\u00eds $92.3M FY2020).",
+      "China Co-Financing Fund for Latin America and the Caribbean, administered via IDB, extended SME-support loans to Honduran banks Ficohsa ($6.0M, 2016) and Banpa\u00eds ($4.0M, 2017), and a larger $32.2M loan to textile firm Elcatex (2020), indicating a distinct Chinese-financier channel alongside Western/multilateral flows.",
+      "Natural-hazard monitoring (UNOSAT) covers flooding in Cort\u00e9s, Atl\u00e1ntida, Yoro, Col\u00f3n, and Olancho departments (Nov 2020) and Tropical Cyclone Sara impacts (Nov 2024), showing recurring hydro-meteorological exposure distinct from and unlinked to the conflict/political-violence data streams."
+    ],
+    "risk_flags": [
+      "The 'conflict' and 'political_violence_targeting_civilians' categories are dominated by GDELT reporting on U.S. court convictions of MS-13 members (theblaze.com, wbrz.com, wpbf.com, news3lv.com, bnonews.com, lasvegassun.com, all 2026-06-30/07-01) rather than documented incidents on Honduran territory, which limits the reliability of these categories as indicators of domestic unrest.",
+      "Unemployment figures for 2025 diverge sharply between sources -- IMF reports 5.9% while World Bank reports 4.9% (both dated 2025-12-31) -- indicating a data-consistency issue that should caution against over-reliance on any single unemployment series.",
+      "IMF data shows unemployment projected to rise from 5.9% (2025) to 6.8% (2026) alongside a swing in current account balance from +2.4% of GDP (2025, World Bank/IMF) to -2.6% (2026, IMF), a combination that could signal emerging macro softening not otherwise explained in the supplied data.",
+      "Investment/development-finance entries end in 2023 (San Marcos Wind Complex, Banco Atl\u00e1ntida DFC loan), leaving no visibility into 2024-2026 investment activity despite economic and conflict-adjacent data continuing into 2026."
+    ],
+    "data_caveats": "The conflict/political-violence data is GDELT-sourced and appears to conflate U.S. domestic legal proceedings against Honduran-linked gang members with Honduras-based conflict events, so it should not be read as a direct measure of unrest inside the country; no ACLED-style ground-truthed conflict data is present. Investment data has no entries after 2023, and humanitarian/OSINT coverage is limited to two natural-disaster episodes (2020, 2024) with no data on gang violence, migration, or other humanitarian dimensions, and no fatality figures are reported for any conflict event despite high severity scores."
+  }
+}

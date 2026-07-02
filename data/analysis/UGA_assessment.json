@@ -1,0 +1,34 @@
+{
+  "iso3": "UGA",
+  "country": "Uganda",
+  "generated_at": "2026-07-02T04:13:03.980201+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 452,
+  "category_counts": {
+    "conflict": 70,
+    "economic_indicator": 61,
+    "humanitarian": 3,
+    "investment": 271,
+    "other": 24,
+    "political_violence_targeting_civilians": 6,
+    "strategic_development": 17
+  },
+  "analysis": {
+    "trend_summary": "The data shows a country with strong macroeconomic headline numbers (GDP growth 6.3-7.5%, moderate inflation ~3.6-4%, low unemployment 2.7%) alongside a large, China-dominated investment/development-finance footprint (271 investment records, with Chinese state entities accounting for roughly two-thirds of investment actor mentions) spanning energy, ICT, health, and transport infrastructure. The conflict and political-violence-targeting-civilians categories are numerically large (70 and 6 events respectively) but are composed almost entirely of generic, high-severity-scored GDELT CAMEO codes (190, 180, 186) with no fatality data and several apparent geographic mismatches, making them of limited analytical value on their own. Humanitarian/OSINT signal volume is very thin (3 events), offering little independent corroboration of on-the-ground conditions. One notable exception is a cluster of Ebola/WHO-related administration tension entries dated 2026-07-01, which is not otherwise substantiated by the humanitarian category. Overall, the pattern suggests a data environment where economic and investment indicators are relatively robust and specific, while conflict/political signals are noisy and require caution before being read as substantive unrest indicators.",
+    "key_relationships": [
+      "Chinese state financiers (Unspecified Chinese Government Institution n=110, China Ministry of Commerce n=23, Chinese Embassy n=22, China Eximbank n=20) are consistently paired with the Government of Uganda as recipient (n=102), including a China Construction Bank EUR96.2M pledge for the Oil Roads Upgrading Project (AidData, 2021-09-01) linked to broader oil infrastructure development.",
+      "World Bank PPI-tracked private-sector investment (n=43) concentrates in energy and ICT greenfield projects, e.g., Achwa I Hydroelectric Power Plant $95.0M (WorldBankPPI, 2024-01-01), SEACOM broadband expansion $29.6M (WorldBankPPI, 2023-01-01), and Raxio data center $24.3M (WorldBankPPI, 2023-01-01), indicating a distinct non-Chinese infrastructure investment channel.",
+      "US DFC activity (n=15) is smaller and more diversified across finance/insurance and technical assistance, e.g., Balloon Ventures $5.0M direct lending and $810K technical assistance (DFC, 2024-01-01), and Opportunity Bank Uganda $5.4M unfunded guaranty (DFC, 2023-01-01).",
+      "A health-sector administration/WHO tension signal (GDELT, 2026-07-01, referencing an Ebola op-ed) coincides with sustained Chinese health-related investment activity, including the China-Uganda Friendship Hospital (n=9 investment mentions) and Uganda Ministry of Health (n=10), though the two data streams are not directly linked in the source records.",
+      "A political/judicial event involving civil society figure Miria Matembe and a prosecutor (GDELT/chimpreports, 2026-07-01) appears twice in the conflict category, suggesting an active, reported legal proceeding involving a known political figure."
+    ],
+    "risk_flags": [
+      "Multiple conflict-category entries dated 2026-07-01 (GDELT) carry high severity scores (9.0-9.5) but no fatality figures and appear geographically mismatched to Uganda -- e.g., a 'POLICE OFFICER <-> JOURNALIST' entry sourced from a Kenya-focused nairobiwire.com article about Gachagua/Ruto, and an 'ISRAEL <-> ENTEBBE' entry referencing a 50-year-old historical event -- indicating the automated severity scoring for this window should not be treated as a reliable unrest signal.",
+      "Persistent current account deficits are visible across sources: -7.8% of GDP (WorldBank, 2024), -6.2% (IMF, 2025), improving to an IMF-projected -3.9% (2026), alongside rising general government gross debt from 54.2% (IMF, 2025) to 55.0% (IMF, 2026) of GDP.",
+      "Investment activity is heavily concentrated among Chinese state-linked financiers (110+23+22+20+5 = 180 of 271 investment-tagged actor mentions), versus much smaller US (DFC, n=15) and multilateral private-sector (World Bank PPI, n=43) channels, indicating a concentration in financing sources.",
+      "An Ebola-related administration/WHO tension signal (GDELT, 2026-07-01, progressive.org op-ed) appears in the conflict category rather than the humanitarian category, and is not corroborated by any of the three humanitarian-tagged records, leaving the actual public-health situation unclear from this data.",
+      "A court/bail proceeding involving political figure Miria Matembe (GDELT/chimpreports, 2026-07-01) recurs in the dataset, flagging an active judicial matter involving a civil-society-linked actor, though the underlying charges and context are not detailed in the provided data."
+    ],
+    "data_caveats": "The conflict and political-violence-targeting-civilians categories rely on GDELT CAMEO codes that are generic (e.g., 190 'make statement', 180/181/186) and in several cases appear misattributed to Uganda from stories about other countries (Kenya, Israel) or unrelated topics, so severity scores in this window should be treated with low confidence. The humanitarian category contains only 3 low-specificity entries, providing essentially no independent basis for assessing humanitarian conditions, and most investment records cluster in 2021-2024 with a gap before the 2026 conflict/economic data, limiting the ability to assess current investment-flow dynamics against present-day risk signals."
+  }
+}

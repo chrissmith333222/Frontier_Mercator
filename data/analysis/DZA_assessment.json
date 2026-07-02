@@ -1,0 +1,31 @@
+{
+  "iso3": "DZA",
+  "country": "Algeria",
+  "generated_at": "2026-07-02T11:57:52.286599+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 184,
+  "category_counts": {
+    "conflict": 11,
+    "economic_indicator": 61,
+    "humanitarian": 20,
+    "investment": 89,
+    "other": 2,
+    "protest_civil_unrest": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows Algeria's macroeconomic indicators as relatively stable through the 2024-2026 window, with real GDP growth holding near 3.8%, inflation low (1.4%-2.9%), and government debt moderate (54-59% of GDP), alongside a notable current-account swing from -7.7% of GDP (IMF, 2025) to -1.2% (IMF, 2026). Investment activity is dominated by two actor clusters: the Government of Algeria as top recipient (44 of 89 investment events) and Chinese state-linked financiers (Unspecified Chinese Government Institution, China Ministry of Commerce, Chinese Embassy, China Eximbank combined ~48 events), the latter concentrated in COVID-era health grants (2020-2021) rather than large infrastructure lending. Humanitarian/OSINT signals are limited to UNOSAT satellite mapping of wildfires (2021, 2023) and floods (2023) in northern wilayas (Bejaia, Tizi Ouzou, Jijel, Tipaza), with no recent (2024-2026) humanitarian entries. The conflict/protest category is almost entirely composed of GDELT mismatches unrelated to actual Algerian unrest (e.g., a Dublin knife-attack case, a Michigan 'Alger County' court trial), meaning genuine security-event coverage for the country is effectively absent in this data.",
+    "key_relationships": [
+      "Chinese state actors (Chinese Embassy, China Ministry of Commerce, Unspecified Chinese Government Institution) account for the bulk of health-sector grant activity in Algeria, concentrated in 2020-2021 COVID assistance (AidData, multiple entries dated 2020-03-27 through 2021-09-01).",
+      "Government of Algeria is the single most frequently cited investment recipient (n=44, category: investment), spanning ICT (MEDUSA Submarine Cable, WorldBankPPI, 2023-01-01) and waste management (Hassi Bounif Landfill and Oran plastic recycling facility, WorldBankPPI, 2017-01-01).",
+      "Private sector financiers via the World Bank PPI Database (n=32) are concentrated in greenfield/brownfield telecom and municipal solid waste projects (2017, 2023), distinct from the grant-based Chinese activity.",
+      "UNOSAT humanitarian signals cluster geographically in the same northern wilayas (Bejaia, Tizi Ouzou, Jijel) across both the 2021 wildfire event (2021-08-17) and the 2023 wildfire event (2023-07-24 to 2023-07-28), suggesting a recurring environmental hazard pattern in that region rather than an isolated incident."
+    ],
+    "risk_flags": [
+      "The 'conflict' and 'protest_civil_unrest' categories in this dataset are substantially contaminated with GDELT mismatches unrelated to Algeria's domestic situation -- e.g., a Dublin stabbing/riot case tagged 'ALGERIAN <-> DUBLIN' (GDELT, 2026-07-01) and a Michigan 'Alger County' criminal trial repeatedly coded as 'ALGERIA' (GDELT, 2026-06-29 and 2026-06-30) -- meaning no reliable domestic unrest signal exists in this data window.",
+      "Current account balance shows a large year-over-year swing from -7.7% of GDP (IMF, 2025-12-31) to -1.2% of GDP (IMF, 2026-12-31), a magnitude of change that warrants scrutiny given no accompanying narrative explanation in the data.",
+      "Investment financing shown here skews heavily toward Chinese grant-based health assistance tied to the COVID period (AidData, 2020-2021) rather than diversified, recent (2024-2026) capital inflows, and FDI net inflows are reported at only 0.5% of GDP (WorldBank, 2024-12-31), suggesting limited foreign direct investment penetration in the most recent indicator available.",
+      "Recurring wildfire events in Bejaia/Tizi Ouzou/Jijel wilayas (UNOSAT, 2021-08-17 and 2023-07-24 to 2023-07-28) indicate a repeated environmental hazard pattern in northern Algeria, though the data does not link these events to any specific investment or economic asset."
+    ],
+    "data_caveats": "This window contains no verified domestic conflict or protest events for Algeria -- the conflict category is dominated by GDELT keyword mismatches referencing unrelated foreign incidents -- so security-risk conclusions cannot be drawn from it. Humanitarian/OSINT coverage is sparse and dated (latest entry 2023), with a gap through 2024-2026, and investment data, while numerous, is heavily weighted toward historical (2017-2023) Chinese grants and World Bank PPI projects rather than current pipeline activity."
+  }
+}

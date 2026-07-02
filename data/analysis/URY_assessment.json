@@ -1,0 +1,29 @@
+{
+  "iso3": "URY",
+  "country": "Uruguay",
+  "generated_at": "2026-07-02T11:58:52.108130+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 169,
+  "category_counts": {
+    "conflict": 7,
+    "economic_indicator": 64,
+    "investment": 95,
+    "political_violence_targeting_civilians": 2,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows a macro-stable Uruguay: GDP growth flat at 1.8% for 2025-2026 (IMF/WorldBank), inflation easing from 4.7% to 4.0% (IMF, 2026-12-31), and government debt rising modestly from 65.7% to 66.8% of GDP (IMF, 2025-12-31 to 2026-12-31), alongside a slight uptick in unemployment from 7.5% to 8.0% (IMF, 2025-12-31 to 2026-12-31). Investment/development-finance activity is dominated by a 2020-2022 wave of Chinese grants (mostly COVID-related medical donations) and a handful of loans/transmission-line financing, plus World Bank PPI-tracked toll-road and energy concessions active through 2022 -- but there is no investment data after early 2022, creating a multi-year gap relative to the 2026 economic indicators. The 'conflict' and 'political_violence_targeting_civilians' entries almost entirely consist of GDELT records describing US domestic criminal sentencing stories (e.g., Minnesota sexual-assault case, a Netflix-fraud director's sentencing) that appear to be mis-tagged with Uruguay/Montevideo actor labels rather than genuine unrest in-country. Strategic_development is represented by only a single, undetailed event. Overall the data supports a picture of steady macroeconomic conditions and a historically significant but now-stale China-linked aid/investment relationship, with no verifiable in-country conflict signal in this window.",
+    "key_relationships": [
+      "China is the dominant investment/aid counterpart to the Government of Uruguay: Chinese financier entities (Unspecified Chinese Government Institution, China Ministry of Commerce, PBC, Chinese Embassy) account for roughly 69 of the top-actor investment mentions, including a $20M loan for the Tacuarembo-Salto 500kV Transmission Ring (AidData, 2021-05-31) and repeated COVID-era medical donations (AidData, 2020-04-28 through 2021-10-01).",
+      "World Bank PPI data shows a cluster of transport/energy concessions active in 2021-2022 -- Circuito 5 ($332M) and Circuito 6 ($144M) toll roads (WorldBankPPI, 2022-01-01), and Circuito Vial 2 ($130M), Circuito Vial 7 ($90M), and Salto Transmission Line ($67M) (WorldBankPPI, 2021-01-01) -- with 'Private sector (World Bank PPI Database)' and 'Government of Uruguay' as the recurring counterparties.",
+      "The Government of Uruguay is the near-universal recipient agency across the investment category (n=38), indicating a centralized state role in absorbing both Chinese aid and PPI-financed infrastructure.",
+      "The conflict/political-violence entries cluster around a narrow set of judicial-system actor tags (Prison, Judge, Attorney, United States) on 2026-06-30/07-01 (GDELT), all tied to narratives about US criminal sentencing rather than any identifiable Uruguayan unrest event."
+    ],
+    "risk_flags": [
+      "Likely data-quality/attribution error: the only 'political_violence_targeting_civilians' and most 'conflict' records (severity scores 6.5-9.2, GDELT, 2026-06-30/07-01) describe US sentencing cases (a Minnesota sexual-assault conviction, a Netflix-fraud director's sentencing) with Uruguay/Montevideo appearing only as CAMEO actor-code artifacts -- this should not be read as evidence of civil unrest or targeted violence in Uruguay.",
+      "Investment/development-finance data is stale: the most recent recorded investment event is dated 2022-01-01 (WorldBankPPI, Circuito 5/6), leaving a roughly four-year blind spot relative to the 2026 economic indicators, which limits assessment of current investment climate or China-Uruguay financing trends.",
+      "Mild labor-market softening: unemployment rose from 7.5% (IMF/WorldBank, 2025-12-31) to 8.0% (IMF, 2026-12-31) even as inflation eased, a divergence worth monitoring though not extreme in this window."
+    ],
+    "data_caveats": "The conflict and political-violence-targeting-civilians categories in this window appear to be dominated by GDELT mis-tagging of unrelated US criminal-justice news rather than genuine Uruguay-based events, so no reliable unrest signal can be drawn from them. Investment/development-finance data effectively ends in 2022, and the single strategic_development event lacks any narrative detail, so recent (2023-2026) investment activity and strategic developments are not represented in this dataset."
+  }
+}

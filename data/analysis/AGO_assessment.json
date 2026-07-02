@@ -1,0 +1,28 @@
+{
+  "iso3": "AGO",
+  "country": "Angola",
+  "generated_at": "2026-07-02T04:11:22.433244+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 485,
+  "category_counts": {
+    "conflict": 1,
+    "economic_indicator": 62,
+    "investment": 422
+  },
+  "analysis": {
+    "trend_summary": "The data for Angola is overwhelmingly dominated by investment/development-finance activity (422 events) against a single, low-severity conflict/unrest signal (GDELT, 2026-07-01, severity 6.5) and a moderate set of macroeconomic indicators. Investment activity spans a long historical tail of Chinese state financing (China Eximbank, CDB, ICBC) for debt actions and infrastructure alongside more recent (2023-2024) diversification into transport, energy, and ICT projects backed by DFC and World Bank PPI data, including the large Lobito Atlantic Railway rehabilitation. Macroeconomic indicators show moderate real GDP growth (2.3-3.1% in 2025-2026), persistently high inflation (12.9-20.2%), government debt near 51-52% of GDP, and a near-zero-to-slightly-positive current account balance, suggesting a stabilizing but still fragile fiscal position. There are no humanitarian/OSINT signals in this window, and conflict data is nearly absent, limiting assessment of unrest-related risk.",
+    "key_relationships": [
+      "The Government of Angola (n=318, recipient_agency) is the central node linking nearly all investment activity to Chinese financiers, most notably China Eximbank (n=128) and China Development Bank (n=114), consistent with the debt rescheduling and suspension events recorded in 2020-2021 (AidData, 2020-05-01; 2020-12-01; 2021-01-01; 2021-01-11).",
+      "Chinese state financiers converted from debt-relief actors (2020-2021 debt suspensions/reprofiling, AidData) to project financiers in the same infrastructure space now being developed by Western/DFC-backed actors, e.g., the Lobito Atlantic Railway received both DFC direct lending ($553.0M, FY2024) and World Bank PPI-tracked rehabilitation financing ($800.0M, 2024), indicating overlapping multilateral and Chinese interest in the same transport corridor.",
+      "DFC's political risk insurance for Monstera Water ($150.0M, FY2024) and technical assistance to Pensana Rare Earth ($3.4M, FY2024) point to a 2024 uptick in US development-finance engagement in utilities and critical minerals, a sector shift from the earlier (2020-2021) health/COVID-related Chinese grant activity.",
+      "The sole conflict event recorded (GDELT, 2026-07-01) explicitly references a Luanda-companies interaction (CAMEO code 172), suggesting a business-linked unrest or coercive-action signal in the capital, though the narrative summary is too sparse to characterize further."
+    ],
+    "risk_flags": [
+      "High and volatile inflation persists across sources: IMF reports 20.2% (2025) easing to 12.9% (2026), while WorldBank corroborates 20.2% (2025), indicating ongoing price-stability risk despite the projected easing.",
+      "Government gross debt remains elevated at 51.3-51.6% of GDP (IMF, 2025-2026), following a history of Chinese debt suspensions and a $13.6B CDB debt reprofiling (AidData, 2020-12-01), suggesting continued exposure to external creditor renegotiation dynamics.",
+      "FDI net inflows were negative (-1.1% of GDP) in 2024 (WorldBank), a divergence from the high volume of investment project activity recorded in the same year, warranting caution in interpreting the investment dataset as a direct proxy for net capital inflow.",
+      "The single conflict/unrest data point (GDELT, 2026-07-01) directly names a companies-related interaction in Luanda but lacks fatality data, severity context, or corroboration, making it impossible to assess whether this reflects a broader pattern of business-related unrest."
+    ],
+    "data_caveats": "Humanitarian/OSINT data is entirely absent (0 events), and conflict data contains only a single, low-detail GDELT entry, so no meaningful assessment of security or humanitarian conditions can be made from this window. Investment data is heavily weighted toward Chinese financiers and historical (2020-2021) debt-related actions, with a gap between 2021 and 2023, which may reflect reporting lag rather than an actual pause in activity; economic indicators also mix IMF and WorldBank series with overlapping but not identical years and methodologies."
+  }
+}

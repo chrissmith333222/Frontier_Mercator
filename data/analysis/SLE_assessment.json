@@ -1,0 +1,29 @@
+{
+  "iso3": "SLE",
+  "country": "Sierra Leone",
+  "generated_at": "2026-07-02T11:43:19.110569+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 309,
+  "category_counts": {
+    "conflict": 2,
+    "economic_indicator": 61,
+    "humanitarian": 2,
+    "investment": 243,
+    "other": 1
+  },
+  "analysis": {
+    "trend_summary": "The data for Sierra Leone is dominated by investment/development-finance activity (243 events), overwhelmingly driven by Chinese state financiers (Unspecified Chinese Government Institution, China Ministry of Commerce, Chinese Embassy, China Eximbank, China Development Bank, PLA) alongside a smaller but sustained U.S. DFC footprint. Macroeconomic indicators show a moderately stable picture: real GDP growth near 4.4-4.6% (IMF/WorldBank, 2024-2026), inflation easing from 7.6% to 7.5% (IMF, 2025-2026), government debt edging down from 45.2% to 44.3% of GDP (IMF, 2025-2026), and a narrowing current account deficit per IMF (-5.1% in 2025 to -3.3% in 2026), though WorldBank's current-account figure for 2024 (-14.1% of GDP) diverges sharply, suggesting methodological inconsistency between sources. Conflict data is extremely thin (2 events) and appears to be a GDELT artifact tied to an Ebola-scare news article rather than genuine unrest. Humanitarian/OSINT signals are sparse and largely historical (2017 Freetown landslide/mudflow imagery), with only one recent (2026) item of unclear relevance.",
+    "key_relationships": [
+      "China Development Bank issued a $2.00B loan for Phase 2 of the Tonkolili Iron Mine Project, linked to a railway and port lease agreement with Kingho Railway and Port Company (AidData, 2021-01-01), indicating a large-scale Chinese resource-extraction financing footprint.",
+      "U.S. DFC has repeatedly financed CECA SL Generation Limited in the utilities sector across multiple years -- $217.0M direct lending (FY2021), $292.0M direct lending and $120.0M political risk insurance (FY2024) -- showing sustained U.S. development-finance engagement in Sierra Leone's power sector (DFC, 2021 and 2024).",
+      "China Eximbank suspended debt service payments from the Government of Sierra Leone in 2021 (AidData/World Bank DSSI note, 2021-01-01) even as Chinese institutions continued to be the most active investment actors overall (126+ events for 'Unspecified Chinese Government Institution' alone), pointing to a financing relationship under debt strain.",
+      "The Government of Sierra Leone appears as recipient agency in 102 investment-category events, second only to Chinese financier actors, indicating the state is the central counterparty across both Chinese and U.S.-backed financing flows (actor list, investment category)."
+    ],
+    "risk_flags": [
+      "Debt-service suspension by China Eximbank in 2021 (AidData) alongside continued large-scale Chinese lending (e.g., $2.00B CDB Tonkolili loan, 2021) suggests potential debt-sustainability concerns not fully resolved by later declines in the IMF gross-debt ratio (45.2% to 44.3% of GDP, 2025-2026).",
+      "Investment activity is heavily concentrated among Chinese state-linked financiers (over 200 of 243 investment events across Chinese actor categories), indicating significant creditor/counterparty concentration risk rather than a diversified financing base.",
+      "Conflict-category data (2 events, both GDELT, 2026-06-30, severity 8.8) appears to be a data-extraction artifact linked to a health-scare news article about a suspected Ebola case (Daily Star) rather than genuine unrest, undermining confidence in using this category to assess stability."
+    ],
+    "data_caveats": "The two 'conflict' events are GDELT CAMEO-coded entries referencing 'UNIVERSITY <-> GLASGOW/UNITED KINGDOM' tied to an Ebola-scare article, which does not read as a substantive unrest signal and should not be treated as evidence of conflict activity. Humanitarian/OSINT data is sparse (3 items) and mostly from 2017, providing no meaningful coverage of current humanitarian conditions. Economic indicators show a notable discrepancy between IMF and World Bank current-account figures for overlapping years, and the investment dataset's heavy skew toward Chinese aid/finance sources may reflect data-collection bias (e.g., AidData's China focus) rather than the full universe of investment activity in-country."
+  }
+}

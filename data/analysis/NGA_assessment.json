@@ -1,0 +1,34 @@
+{
+  "iso3": "NGA",
+  "country": "Nigeria",
+  "generated_at": "2026-07-02T04:06:23.530418+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 1821,
+  "category_counts": {
+    "conflict": 661,
+    "economic_indicator": 62,
+    "humanitarian": 16,
+    "investment": 289,
+    "other": 428,
+    "political_violence_targeting_civilians": 230,
+    "protest_civil_unrest": 57,
+    "strategic_development": 78
+  },
+  "analysis": {
+    "trend_summary": "The Nigeria dataset is dominated by conflict and political-violence-targeting-civilians categories (661 and 230 events respectively), but a large share of the listed 'political_violence_targeting_civilians' entries are GDELT records tagged with generic CAMEO codes (e.g., 186, 010, 1823) describing diplomatic or verbal-statement interactions rather than confirmed physical violence, which likely inflates the apparent severity of this category. A genuinely severe incident is present, however: a mass school kidnapping in northeastern Nigeria (36 students and 3 teachers reported missing) dated 2026-07-01. Economic indicators show a moderating but still elevated inflation trajectory (23.0% in 2025 to 16.0% projected 2026, IMF) alongside steady real GDP growth (~4.0-4.1%) and declining government debt (35.5% to 32.3% of GDP, IMF), suggesting macro stabilization even as security incidents continue. Investment/development-finance activity remains active and diversified -- DFC direct lending to finance, manufacturing and agriculture firms (2022-2024), World Bank PPI-tracked renewable energy projects (Husk Power Systems, WATT, 2023-2024), and a reported >\u20ac500M European development bank injection (2026-07-01, GDELT/ghanamma.com) -- occurring in parallel with, rather than clearly displaced by, the conflict signal.",
+    "key_relationships": [
+      "Government and Police actors appear across nearly every event category (Government n=113, Police n=70), spanning conflict, protest_civil_unrest, and political_violence_targeting_civilians, indicating state security forces are consistently embedded in the unrest narrative rather than isolated to one category.",
+      "Armed non-state actors 'Terrorist' (n=57) and 'Gunmen' (n=37) are tied specifically to conflict and political_violence_targeting_civilians categories, consistent with the 2026-07-01 school-kidnapping event in northeastern Nigeria (therecord.com/GDELT) attributed to gunmen.",
+      "Chinese financiers (Export-Import Bank of China, n=42; Unspecified Chinese Government Institution, n=57) are among the most active investment actors, but the specific investment narratives provided for China are limited to small education grants/scholarships (AidData, 2021-11-10, 2021-12-14, 2021-12-15) with no large infrastructure loans visible in this data window.",
+      "Western/multilateral development finance (DFC, WorldBankPPI) shows continued sector diversification into energy (Husk Power Systems, 2023-01-01 and 2024-01-01), finance (Access Bank $280M FY2022; Africa Finance Corporation $250M FY2024), and manufacturing (Indorama Eleme Fertilizer $75M FY2024), occurring alongside the government's public investment-promotion push referenced at the Jigawa Investment Summit (2026-07-01, africa-newsroom.com/GDELT).",
+      "European development banks' reported >\u20ac500M injection (2026-07-01, ghanamma.com/GDELT) coincides temporally with the same-day school kidnapping report (therecord.com/GDELT), illustrating simultaneous positive investment signaling and acute security incidents in the current data window."
+    ],
+    "risk_flags": [
+      "Mass abduction of 36 students and 3 teachers from a school in northeastern Nigeria (2026-07-01, therecord.com/GDELT) signals persistent targeting of the education sector by armed groups, consistent with 'School' (n=46) and 'Student' (n=93) appearing frequently across conflict and political_violence_targeting_civilians categories.",
+      "A substantial portion of coded 'political_violence_targeting_civilians' events (e.g., CAMEO 186, 010, 1823 entries dated 2026-07-01, GDELT) describe verbal/diplomatic actor interactions rather than confirmed physical violence, raising data-classification risk that could overstate the category's true severity if used at face value.",
+      "Fatality fields are null across all conflict-listed events despite high assigned severity scores (9.2-9.5), meaning lethality cannot be independently verified from this dataset.",
+      "Drug/trafficking-related law-enforcement activity (e.g., NDLEA cannabis interception, 2026-07-01, pmnewsnigeria.com/GDELT) is coded under political_violence_targeting_civilians, suggesting category boundaries in this feed are broad and may mix organized-crime enforcement with civilian-targeting violence."
+    ],
+    "data_caveats": "The humanitarian category is very thin (16 total events) and the sample provided contains no direct humanitarian-need narratives, only GDELT political/legal items, so humanitarian conditions cannot be assessed from this data. Investment records shown are mostly historical (2021-2024) with only one 2026 entry, so recent investment momentum may be understated; combined with the GDELT classification issues noted above, confidence in the conflict/political-violence severity metrics is low without independent verification against event-specific (e.g., ACLED) sourcing."
+  }
+}

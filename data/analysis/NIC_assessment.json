@@ -1,0 +1,31 @@
+{
+  "iso3": "NIC",
+  "country": "Nicaragua",
+  "generated_at": "2026-07-02T12:01:44.500026+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 126,
+  "category_counts": {
+    "conflict": 12,
+    "economic_indicator": 68,
+    "humanitarian": 4,
+    "investment": 38,
+    "other": 4
+  },
+  "analysis": {
+    "trend_summary": "The window is dominated by a cluster of GDELT-sourced conflict events on 2026-06-30/07-01 centered on the arrest of an elderly Catholic bishop by Nicaraguan police, alongside macro indicators showing continued GDP growth (3.8-4.9%), low reported unemployment, moderate inflation, and a shrinking government debt ratio (34.8% in 2025 to 33.2% in 2026, IMF). Investment/development-finance activity is heavily weighted toward the energy sector (wind, solar, geothermal, hydro, biomass greenfield projects tracked by WorldBankPPI, 2007-2024) plus banking-sector lending from the US DFC/OPIC and China-linked co-financing via AidData/IDB, but no investment entries appear after 2024 despite economic indicators running through 2026. Humanitarian signals are almost entirely UNOSAT satellite flood-mapping products from 2020 and 2022, with no humanitarian data in 2023-2026. A notable portion of the conflict and humanitarian GDELT records appear to be data-quality artifacts, misattributing US (Milwaukee ICE) news stories to Nicaragua.",
+    "key_relationships": [
+      "Police and Bishop/Prelate actors are directly linked in the 2026-06-30/07-01 GDELT conflict cluster (CAMEO 173, source: catholicworldreport.com via GDELT, 'Nicaraguan police arrest 80-year-old bishop being treated at a medical clinic'), indicating state-church confrontation.",
+      "US International Development Finance Corporation and its predecessor OPIC are the most active investment actors in the banking sector, financing Banco Lafise Bancentro ($35.0M, DFC 2018), Bancentro ($45.0M political risk insurance, DFC 2007), and Financiera Fama ($7.3M guaranty, DFC 2017).",
+      "Chinese financiers (People's Bank of China, unspecified Chinese Government Institution) appear via AidData records: a $13.0M IDB-administered China Co-Financing Fund loan to BanPro for agribusiness (2019-09-04) and $14.4M plus $3.6M in Sinopharm vaccine donations to the Government of Nicaragua (2021, globaltimes.cn / confidencial.digital).",
+      "World Bank PPI Database accounts for 29 of the tracked investment actor-events, almost entirely in the energy sector (wind, solar, geothermal, hydro, biomass) spanning 2007-2024, making it the dominant infrastructure-financing channel in this dataset.",
+      "Several 2026-06-30/07-01 GDELT conflict and humanitarian entries labeled 'NICARAGUA' or 'NICARAGUAN' actually link to stories about ICE immigration enforcement in Milwaukee, Wisconsin (e.g., wupy101.com, urbanmilwaukee.com, wjfw.com), suggesting actor/entity misattribution rather than genuine Nicaragua-based events."
+    ],
+    "risk_flags": [
+      "State action against a senior religious figure: GDELT/catholicworldreport.com (2026-06-30) reports Nicaraguan police arresting an 80-year-old bishop during medical treatment, corroborated by multiple related CAMEO 173 entries dated 2026-07-01 involving Bishop, Prelate, Dissident, and Criminal actor tags -- signaling potential state-society/religious-institution tension.",
+      "Data inconsistency in labor market indicators: IMF reports unemployment at 2.7% for both 2025 and 2026, while World Bank reports 5.0% for 2024 and 2025 -- a near two-fold discrepancy that undermines confidence in unemployment-based risk assessment.",
+      "Investment data gap: no tracked investment/development-finance events after the 2024-01-01 San Isidro Solar PV Park entry, despite economic indicators continuing through 2026, which may reflect either a genuine slowdown in tracked FDI/DFI flows or a lag/gap in data collection.",
+      "Significant entity-resolution noise in the conflict and humanitarian GDELT feeds, with multiple 2026-06-30/07-01 entries misattributing US domestic immigration-enforcement stories (Milwaukee) to Nicaragua, reducing the reliability of the reported conflict event count (12) for this window."
+    ],
+    "data_caveats": "Humanitarian coverage is limited to UNOSAT satellite flood-extent products from 2020 and 2022, with no humanitarian signals recorded for 2023-2026, so recent humanitarian conditions cannot be assessed from this data. The conflict category is effectively a two-day snapshot (2026-06-30/07-01) rather than a longitudinal series, and several entries are likely misattributed to Nicaragua due to apparent GDELT entity-matching errors; investment data also stops in 2024, leaving 2025-2026 investment activity unobserved."
+  }
+}

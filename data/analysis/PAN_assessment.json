@@ -1,0 +1,31 @@
+{
+  "iso3": "PAN",
+  "country": "Panama",
+  "generated_at": "2026-07-02T11:59:18.549901+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 166,
+  "category_counts": {
+    "conflict": 18,
+    "economic_indicator": 64,
+    "investment": 74,
+    "other": 7,
+    "political_violence_targeting_civilians": 2,
+    "protest_civil_unrest": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows a stable macroeconomic profile for Panama alongside a conflict/unrest feed that is overwhelmingly composed of low-relevance or apparently mis-tagged GDELT entries (e.g., Florida criminal convictions, Orlando bear-statue theft, Venezuela earthquake coverage) rather than clear Panama-specific unrest. Economic indicators (IMF, WorldBank) point to moderate real GDP growth (3.8-4.4% in 2025-2026), very low inflation (0.0-1.4%), a near-balanced current account, and government debt in the high-50s % of GDP, with unemployment persistently elevated at 8.4-10.4%. Investment/development-finance data is almost entirely historical (2020-2021) and dominated by Chinese government/embassy COVID-era grants to Panamanian ministries and municipalities, with no investment records shown for 2022 or later. A recurring, seemingly genuine domestic legal story -- the 'ALAS case' classified as a crime against humanity involving Ali Zaki Hage -- appears twice in the conflict feed (GDELT, 2026-06-30 and 2026-07-01), but is not corroborated by any other category.",
+    "key_relationships": [
+      "Chinese state entities (Unspecified Chinese Government Institution, n=18; Chinese Embassy, n=11; China Ministry of Commerce, n=7; China Eximbank, n=5; PBoC, n=3) collectively account for the large majority of listed investment activity, almost all of it health/COVID-related grants to the Government of Panama and municipal bodies between 2020-06-17 and 2021-04-01 (AidData).",
+      "The Government of Panama (n=17, recipient_agency) and Panama City Municipality (n=4) are the principal domestic counterparts to this Chinese grant activity, per the same AidData records.",
+      "U.S.-linked development finance (OPIC, n=4; U.S. International Development Finance Corporation, n=4) is present but far smaller in volume than Chinese financing in this dataset, suggesting an imbalance in recorded external financier activity.",
+      "The 'ALAS case' crime-against-humanity investigation involving Ali Zaki Hage recurs on consecutive days (newsroompanama.com via GDELT, 2026-06-30 and 2026-07-01), the only conflict-category story that appears internally consistent and repeated rather than isolated noise."
+    ],
+    "risk_flags": [
+      "The conflict/unrest feed is dominated by apparent false positives or non-Panama-specific GDELT matches (e.g., 'Lynn Haven Man Convicted' 2026-07-01, 'Panama City Beach Man Convicted Meth Trafficking' 2026-07-01, 'Former Coast Guardsman Sentenced' 2026-07-01, Orlando bear-sign theft 2026-06-30), indicating low source reliability for the conflict category in this window and a risk of overstating unrest severity if these are counted at face value.",
+      "All investment/development-finance records are dated 2020-2021 (AidData), meaning there is no visibility into financing activity in the last several years despite 74 investment-category events counted overall -- the absence of recent entries is itself a gap, not evidence of reduced financing.",
+      "Elevated and persistent unemployment (10.4% IMF 2025 and 2026; 8.4-8.5% WorldBank 2024-2025) sits alongside solid GDP growth figures, an inconsistency across sources (IMF vs WorldBank methodology) that warrants caution when characterizing labor-market conditions.",
+      "The repeated 'crime against humanity' investigation reference (newsroompanama.com, 2026-06-30 and 2026-07-01) is a legal/political signal with unclear scope or connection to investment climate, given no corroborating detail in the economic or investment data."
+    ],
+    "data_caveats": "Investment data is stale (2020-2021 only) and dominated by small-value or undisclosed-value Chinese COVID-relief grants, so it cannot speak to current financing flows or larger infrastructure/FDI activity. The conflict and humanitarian/OSINT feeds contain numerous entries that appear unrelated to Panama or are generic GDELT CAMEO-coded noise (U.S. domestic crime stories, AI stock commentary), significantly limiting confidence in the conflict severity counts and civil-unrest signal (only 1 protest_civil_unrest event recorded).  Only 2 political_violence_targeting_civilians events are listed and neither includes fatality data or a clearly Panama-specific narrative, further limiting confidence in that category."
+  }
+}

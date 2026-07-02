@@ -1,0 +1,29 @@
+{
+  "iso3": "GNQ",
+  "country": "Equatorial Guinea",
+  "generated_at": "2026-07-02T11:51:00.673340+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 239,
+  "category_counts": {
+    "economic_indicator": 50,
+    "humanitarian": 1,
+    "investment": 187,
+    "political_violence_targeting_civilians": 1
+  },
+  "analysis": {
+    "trend_summary": "The data for Equatorial Guinea is dominated by investment/development-finance records (187 events) and economic indicators (50 events), with almost no conflict or humanitarian signal (1 event each). Investment activity is overwhelmingly Chinese state-linked (grants, loans, health/COVID aid, infrastructure), funneled almost exclusively to the central government, alongside a smaller but notable non-Chinese footprint (World Bank PPI port contract, DFC political risk insurance). Economic indicators show the economy contracting for at least two consecutive years (WorldBank/IMF) despite continued investment inflows, with manageable but rising debt and modest inflation. The single political-violence-coded event, dated 2026-06-30, stands out for its high severity score and direct naming of a foreign energy investor, but is an isolated data point.",
+    "key_relationships": [
+      "Government of Equatorial Guinea is the recipient in 123 of 187 investment events, overwhelmingly matched with Chinese financiers (Unspecified Chinese Government Institution n=72, China Ministry of Commerce n=33, China Eximbank n=29) per AidData records 2020-2021, indicating heavy bilateral concentration.",
+      "Chinese COVID-19/emergency response aid (AidData, 2020-04-20 through 2021-04-01) clusters tightly around the 2021 Bata explosion and pandemic period, suggesting Chinese engagement is partly crisis-driven/reactive rather than purely commercial.",
+      "Non-Chinese investment activity is comparatively sparse but present: World Bank PPI ports management contract ($285.3M, active 2024-01-01) and DFC political risk insurance for DAI ($2.0M, FY2022) show continued but limited Western/multilateral engagement alongside the China-dominated landscape.",
+      "The sole political violence/civilian-targeting event (GDELT, 2026-06-30, severity 9.2) names Vice President Teodorin Obiang in an action described as a 'two-pronged assault' on the Supreme Court and Trident Energy, directly linking a high-level political actor to an energy-sector investor dispute -- this is the only event in the dataset connecting political action to a named foreign investment target."
+    ],
+    "risk_flags": [
+      "A single high-severity (9.2) political-violence-coded event (GDELT, 2026-06-30) describes the Vice President's actions against both the Supreme Court and an energy investor (Trident Energy), suggesting a potential governance/rule-of-law risk intersecting with the energy sector, though this is based on one source and lacks corroboration in the dataset.",
+      "Real GDP growth is negative across the most recent reported years -- WorldBank -5.8% (2025) and IMF -6.4% (2025), -2.7% (2026 forecast) -- indicating sustained economic contraction concurrent with continued investment inflows.",
+      "Investment financing is heavily concentrated in Chinese state institutions (72+33+29+14+6+4+4+3+3+2+2 of 187 events) with the national government as near-exclusive recipient, indicating low diversification of external financing sources per the actor data.",
+      "Humanitarian/OSINT coverage in this window consists of a single non-conflict event (UNOSAT, 2024-02-23, wildfire near Pico Basil Volcano), meaning the dataset offers no visibility into humanitarian conditions tied to conflict or governance stress."
+    ],
+    "data_caveats": "The dataset contains only one conflict/political-violence event and one humanitarian event, both of which limit any pattern analysis of unrest or humanitarian conditions; the political violence event's categorization (labeled 'political_violence_targeting_civilians' but describing an institutional/corporate dispute) appears inconsistent with its narrative content. The bulk of investment records date from 2020-2022 (COVID/Bata-explosion era Chinese aid), with only a few entries from 2024, so the data may not reflect the most recent investment landscape or any developments after mid-2026."
+  }
+}

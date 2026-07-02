@@ -1,0 +1,30 @@
+{
+  "iso3": "CRI",
+  "country": "Costa Rica",
+  "generated_at": "2026-07-02T11:54:56.607998+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 201,
+  "category_counts": {
+    "conflict": 7,
+    "economic_indicator": 64,
+    "investment": 124,
+    "other": 5,
+    "political_violence_targeting_civilians": 1
+  },
+  "analysis": {
+    "trend_summary": "The macroeconomic indicators show a stable, moderately favorable picture for Costa Rica: real GDP growth of 3.6-4.6% (IMF/WorldBank, 2025-2026), unemployment in the 6.3-7.0% range, near-zero/negative consumer inflation, and government debt drifting up slightly from 60.4% to 61.1% of GDP (IMF, 2025-2026). The investment/development-finance record is dominated by Chinese state and sub-national actors (embassy, provincial/municipal governments, China Development Bank, China Eximbank, MOFCOM) delivering a long series of grants and in-kind donations across health, security, education, and environmental sectors, alongside World Bank Private Participation in Infrastructure (PPI) activity and smaller US DFC lending. The 'conflict' and 'political_violence_targeting_civilians' categories in this window are almost entirely GDELT-derived crime/legal-proceeding stories (sentencing of an individual for sexual abuse, a cruise-line assault case) rather than indicators of political unrest, and the humanitarian/OSINT feed is similarly noisy (yoga journal, student anecdotes, unrelated Chicago reference), suggesting these categories carry limited analytical signal for this country in this window. Overall, the data suggests a low-conflict, externally-financed development environment with China as the most consistently active foreign financier, but the conflict/OSINT layers appear to reflect data-collection noise rather than substantive unrest.",
+    "key_relationships": [
+      "China has been the most persistent bilateral development-finance actor, spanning health (10,000 test kits and PPE to San Jos\u00e9, GDELT/AidData 2020-11-04; masks to Lim\u00f3n, 2020-07-21; supplies to Clodomiro Picado Institute, 2020-06-09), security (equipment donation to Ministry of Public Security worth $4.8M, AidData 2021-02-22; supplies donation, 2020-12-01), education (Mandarin scholarships, 2021-01-01), and finance (China Development Bank $50M loan to Banco Nacional de Costa Rica, AidData 2020-07-01).",
+      "The actor list confirms concentration: Chinese financiers (Unspecified Chinese Government Institution n=28, China MOFCOM n=20, Chinese Embassy n=7, China Development Bank n=4, China Eximbank n=4) collectively outnumber US financiers (DFC n=5, Opic n=3) roughly 6-to-1 in recorded investment events.",
+      "US-linked private-sector finance is present but narrower in scope, limited to a single identified direct-lending deal (Banco Improsa, S.A., $15.0M, DFC FY2021).",
+      "The conflict-category actor 'Prison' (n=4) and repeated 'COSTARICA <-> PRISON' entries (GDELT, 2026-06-29 and 2026-07-01) all trace back to a single criminal sentencing narrative, not a distinct unrest actor or pattern."
+    ],
+    "risk_flags": [
+      "The conflict and political_violence_targeting_civilians categories appear to be misclassified: all listed events (GDELT, 2026-06-29 to 2026-07-01) describe individual criminal prosecutions (child sexual abuse sentencing, a historic cruise-ship assault case) rather than political violence or unrest, indicating a potential data-tagging/classification risk in the source feed rather than an actual security signal.",
+      "General government gross debt is trending upward (60.4% of GDP in 2025 to 61.1% in 2026, IMF), a fiscal metric worth monitoring even though growth remains solid.",
+      "Available investment records cluster in 2020-2021 (AidData/DFC entries), with no dated investment events shown closer to the 2026 conflict/economic data window, suggesting the investment dataset may be stale relative to the current reporting period and should not be read as reflecting present-day financing flows.",
+      "Humanitarian/OSINT signals in this window (GDELT entries referencing yoga, students, and an unrelated 'Chicago' actor, all dated 2026-07-01) show no substantive humanitarian content, indicating this category cannot currently support risk assessment for Costa Rica."
+    ],
+    "data_caveats": "The conflict and humanitarian/OSINT feeds in this window consist largely of GDELT entries that are either individual crime stories or apparently unrelated/noise content, not indicators of organized unrest or humanitarian crisis; confidence in these two categories is very low. The investment dataset shown is heavily weighted toward 2020-2021 Chinese aid/loan activity and does not include dated entries contemporaneous with the 2026 economic/conflict data, limiting the ability to assess current investment-climate risk."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "iso3": "LBY",
+  "country": "Libya",
+  "generated_at": "2026-07-02T12:02:52.985714+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 105,
+  "category_counts": {
+    "conflict": 5,
+    "economic_indicator": 46,
+    "humanitarian": 22,
+    "investment": 15,
+    "other": 4,
+    "political_violence_targeting_civilians": 8,
+    "protest_civil_unrest": 1,
+    "strategic_development": 4
+  },
+  "analysis": {
+    "trend_summary": "The window shows a fragmented and partly noisy data picture for Libya. Genuine conflict/political signals point to an active multi-party security situation in the last days of June/early July 2026 -- Chad, Turkey, Egypt, and the US (via a Rubio-Libyan commander meeting) all appear as external actors intersecting with Libyan conflict dynamics, alongside UN Security Council monitoring. Economic indicators are internally inconsistent between IMF and World Bank sources (GDP growth and inflation figures diverge sharply for the same years), making the macro trend hard to characterize with confidence, though a current-account swing to positive territory in 2026 and persistently high unemployment (~18.8-19.1%) are notable. Investment/development-finance activity in the dataset is dominated by older (2005-2023) Chinese government grants concentrated in the health sector, with only one recent notable project (a 2023 ICT submarine cable). Humanitarian/OSINT signals include routine UN Security Council engagement, an oil-sector growth narrative, and an OSINT report on Russian shadow-fleet grain smuggling routed through Libya.",
+    "key_relationships": [
+      "Chadian actors appear repeatedly in political_violence_targeting_civilians events dated 2026-06-29 to 2026-07-01 (GDELT/Al Jazeera, dominicanrepublicpost.com), coinciding temporally with reported US diplomatic engagement (Marco Rubio meeting a Libyan commander, Al Jazeera 2026-06-29) aimed at resolving the Libyan crisis.",
+      "Turkish and Egyptian actors are linked to conflict CAMEO-192 events on 2026-06-30 (Middle East Eye), in a report explicitly tying UAE support for Sudan's RSF to Haftar and Libya -- indicating external-state entanglement in Libya's internal conflict dynamics.",
+      "Chinese government institutions (Unspecified Chinese Government Institution, China Ministry of Commerce, China Ministry of Health, CSCEC, Chinese Embassy) account for the majority of investment-category actor activity (AidData, 2005-2021), almost entirely health-sector or emergency-response grants to the Libyan Ministry of Health and Libyan Red Crescent Society, with no comparable recent activity in the dataset.",
+      "'Military Force' and 'Prime Minister' actors recur together in strategic_development entries dated 2026-07-01 tied to reporting on Libya's rising oil output (Yahoo Finance, 2026-07-01), suggesting oil-sector governance is entangled with military-political actors in current reporting."
+    ],
+    "risk_flags": [
+      "Several 2026-07-01 political_violence_targeting_civilians events attributed to 'Libya' appear to be GDELT misattributions of an unrelated Israel-based stabbing story (clevelandjewishnews.com, theyeshivaworld.com) rather than genuine Libya-based violence, indicating conflict severity counts for this window should be treated with caution.",
+      "A cluster of foreign-state conflict entanglements (Chad, Turkey, Egypt) within a 3-day span (2026-06-29 to 2026-07-01, GDELT/Middle East Eye) combined with active US diplomatic mediation (Rubio-Libyan commander meeting, Al Jazeera 2026-06-29) points to an unresolved, externally-contested security crisis.",
+      "Macro-economic reporting shows material divergence between IMF and World Bank series for the same years (e.g., 2025 real GDP growth 15.9% IMF vs 13.4% WorldBank; 2026 inflation 10.5% IMF with no corresponding WorldBank figure vs 1.8% in 2025) -- this inconsistency undermines confidence in any single economic trend read from this data.",
+      "Bellingcat OSINT reporting (2026-06-12) documents Russian shadow-fleet grain smuggling routed through Libya, flagging potential sanctions-evasion or illicit trade-network exposure relevant to compliance risk."
+    ],
+    "data_caveats": "Investment data is heavily skewed toward older (2005-2023) Chinese grant/aid activity with a single recent large project (2023 submarine cable), leaving a gap in coverage of other investor nationalities or more recent private capital flows. Conflict/political-violence data quality is uneven -- multiple entries appear to be GDELT topic-matching noise unrelated to actual events in Libya -- and the single protest_civil_unrest entry is a Philippines-related story, suggesting this category is essentially unpopulated for Libya in this window."
+  }
+}

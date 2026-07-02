@@ -1,0 +1,32 @@
+{
+  "iso3": "GIN",
+  "country": "Guinea",
+  "generated_at": "2026-07-02T11:52:07.741346+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 225,
+  "category_counts": {
+    "conflict": 3,
+    "economic_indicator": 61,
+    "investment": 156,
+    "political_violence_targeting_civilians": 4,
+    "protest_civil_unrest": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows a Guinea investment landscape dominated by Chinese state financiers (grants, loans, debt actions) paired with a strong single recipient, the Government of Guinea, alongside macro indicators showing high real GDP growth (6.7-8.7%, IMF/WorldBank 2025-2026) and moderate inflation (3.1-4.1%). Conflict and political-violence data are sparse (8 total events) and cluster almost entirely on 2026-06-30/07-01, with several entries carrying vague, duplicated, or seemingly mismatched narrative content. Investment activity is heavily weighted toward energy, ICT, and transport infrastructure financed by Chinese institutions (CDB, China Eximbank, ICBC, MOFCOM) between 2020-2024, with comparatively minor US (DFC) and World Bank private-sector participation. External account metrics show notable year-over-year volatility (current account balance swinging from -22.3% to -3.6% of GDP per IMF figures), which stands out against an otherwise low, declining government debt ratio (48.1% to 44.7% of GDP).",
+    "key_relationships": [
+      "Government of Guinea (recipient_agency, n=110) is the central node in the investment dataset, financed overwhelmingly by Chinese actors: Unspecified Chinese Government Institution (n=80), China Ministry of Commerce (n=24), and China Eximbank (n=13), consistent with recorded events like the CDB $830M Amaria Hydropower loan (AidData, 2020) and China Eximbank debt service suspensions (AidData, 2020 and 2021).",
+      "Four political_violence_targeting_civilians events are all dated 2026-07-01 and sourced from the same GDELT/allafrica.com link, with narratives that are largely self-referential or ambiguous (e.g., 'GUINEA <-> GUINEA', 'GUINEAN <-> unspecified actor'), suggesting automated event duplication rather than four distinct verified incidents.",
+      "Two conflict-category events dated 2026-07-01 (severity 8.8 and 7.8, GDELT) cite a source URL (connectionnewspapers.com, a Virginia local news outlet reporting on a weather 'microburst') that does not plausibly relate to Guinea, indicating a likely source-linkage or extraction error in this record.",
+      "A conflict-adjacent event on 2026-06-30 (africanews.com) references the conclusion of a 'second trial over 2009 Guinea stadium massacre,' the one narratively coherent and verifiable political item in the conflict/unrest set.",
+      "IMF current account balance figures show a large swing from -22.3% of GDP (2025) to -3.6% (2026), occurring alongside sustained Chinese-financed energy/infrastructure lending (WorldBankPPI Kankan-Siguiri-Kouroussa-Boke-Linsan solar project, 2024; Orange Guinea ICT portfolio, $227.4M, 2023)."
+    ],
+    "risk_flags": [
+      "Conflict and political-violence event data for 2026-06-30/07-01 shows internal inconsistencies -- vague CAMEO-derived narratives, duplicated actor pairings, and at least one source URL unrelated to Guinea (connectionnewspapers.com, 2026-07-01) -- reducing confidence in the severity scores attached to these entries.",
+      "All conflict/political-violence records in this window list fatalities as null, meaning severity scores (up to 9.3) cannot be corroborated with casualty data (GDELT, 2026-07-01).",
+      "Investment financing is heavily concentrated among Chinese state institutions (combined Chinese financier actor counts exceed 125 of 156 investment events), versus minimal US DFC (n=3) and limited World Bank private-sector (n=10) participation, indicating a concentrated financier base.",
+      "Current account balance volatility is pronounced -- IMF data shows -22.3% of GDP (2025) versus -3.6% (2026), a swing large enough to warrant scrutiny of underlying trade/investment flow assumptions.",
+      "Historical debt-relief actions by China Eximbank (debt service suspension, 2020 and 2021; RMB 150M debt cancellation, 2021, per AidData/IMF sourcing) indicate a recurring pattern of external debt distress management tied to a single bilateral creditor relationship."
+    ],
+    "data_caveats": "Humanitarian/OSINT signals are entirely empty for this window, so no independent corroboration of displacement, aid-access, or ground-level unrest conditions is available. The conflict/political-violence sample is very small (7-8 events) and concentrated in a 2-day window with apparent data-quality issues (mismatched sources, duplicate narratives), so conclusions about unrest trends should be treated as low-confidence; investment data is also unevenly distributed, with most itemized entries dating 2020-2024 and comparatively few recent (2025-2026) transactions detailed."
+  }
+}

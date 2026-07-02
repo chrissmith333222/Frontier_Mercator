@@ -1,0 +1,30 @@
+{
+  "iso3": "BOL",
+  "country": "Bolivia",
+  "generated_at": "2026-07-02T11:46:41.337487+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 277,
+  "category_counts": {
+    "conflict": 5,
+    "economic_indicator": 69,
+    "humanitarian": 5,
+    "investment": 196,
+    "other": 2
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows two largely disconnected pictures: a macroeconomic indicator series (IMF/WorldBank, through 2026) documenting sharp fiscal and price deterioration in Bolivia, and an investment/development-finance record (AidData) dominated by Chinese grant aid concentrated in 2021 (mostly COVID-19 health assistance). The conflict and humanitarian event samples provided are sparse (5 and 5 events respectively) and largely appear to be mismatched or generic GDELT records not clearly tied to Bolivia-specific unrest, limiting what can be said about on-the-ground instability. Economic indicators point to a rapid worsening trajectory: inflation near 20% in both 2025 and 2026, negative real GDP growth (-1.2% in 2025, -3.3% projected 2026 per IMF), and government debt rising from 84.8% of GDP (2025) to 102.7% (2026, IMF GGXWDG_NGDP). Investment activity, as recorded, is overwhelmingly bilateral Chinese state financing/aid rather than diversified private capital, though a large 'private sector' actor bucket (World Bank PPI Database, n=49) is also present without dated detail in the sample shown.",
+    "key_relationships": [
+      "Government of Bolivia (recipient_agency, n=63) is the central counterpart to a cluster of Chinese state financiers -- Unspecified Chinese Government Institution (n=60), China Ministry of Commerce (n=27), China Eximbank (n=17), Chinese Embassy (n=15) -- consistent with dated AidData grant records such as the $63M Sinopharm vaccine donation (2021-12-01) and medical/COVID supply grants running from 2021-01-26 through 2021-12-21.",
+      "Sub-national Bolivian bodies (Municipal Government of Santa Cruz, n=3; Bolivian Ministry of Health, n=3) appear repeatedly as recipients of Chinese consulate/embassy-level donations, e.g. Chinese Consulate General mask donation to Santa Cruz Police (2021-03-02) and Chengdu/Sichuan mask donations to Santa Cruz (2021-07-30, 2021-07-23), indicating a pattern of provincial-level as well as national-level Chinese engagement.",
+      "IMF indicators show government debt (GGXWDG_NGDP) jumping from 84.8% of GDP (2025-12-31) to 102.7% (2026-12-31) alongside persistent ~20% inflation (PCPIPCH, 2025-12-31 and 2026-12-31) and negative real GDP growth (NGDP_RPCH, -1.2% in 2025 turning to -3.3% in 2026), signaling a compounding fiscal/price stress pattern within the same reporting window.",
+      "The conflict entries dated 2026-06-30/2026-07-01 (GDELT, severity 6.5) reference actors and source URLs (Philippines drug arrests, a US shipwreck story) that do not correspond to Bolivia-specific content, suggesting these records are miscategorized or noise rather than genuine Bolivia unrest signals."
+    ],
+    "risk_flags": [
+      "Rapid government debt escalation from 84.8% to 102.7% of GDP within one year (IMF, GGXWDG_NGDP, 2025-12-31 to 2026-12-31) combined with contracting real GDP (-3.3% in 2026 per IMF NGDP_RPCH) points to acute fiscal sustainability pressure.",
+      "Persistent high inflation near 20% across two consecutive years (IMF PCPIPCH and WorldBank FP.CPI.TOTL.ZG, 2025-12-31 and 2026-12-31) indicates sustained price instability that is not resolving.",
+      "Investment/financing activity in the sample is heavily concentrated in a single external actor category (Chinese state financiers collectively account for well over half of the top-15 actor list, e.g. n=60, 27, 17, 15, 5, 4), which represents a concentration/counterparty-diversity risk not offset by comparable detail on private or multilateral financing in the data shown.",
+      "Conflict and humanitarian GDELT entries (2026-06-30, 2026-07-01) contain narrative content unrelated to Bolivia (Philippines, Hawaii/US, gemstone article), indicating possible data pipeline errors that undermine confidence in the unrest/OSINT signal for this window."
+    ],
+    "data_caveats": "The conflict and 'other' GDELT-sourced entries for 2026 appear mismatched to Bolivia based on their narrative and source content, so no reliable conclusion about current unrest levels can be drawn from them. The investment sample is dominated by 2021 Chinese COVID-era grants and does not include dated, itemized entries for the large 'Private sector (World Bank PPI Database)' actor bucket (n=49) or for the bulk of the 196 recorded investment events, so the true scale and recency of non-Chinese investment activity cannot be assessed. Humanitarian signals are mostly historical flood-mapping data from 2014-2018, offering no current humanitarian picture."
+  }
+}

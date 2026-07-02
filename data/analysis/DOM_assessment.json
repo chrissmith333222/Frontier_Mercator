@@ -1,0 +1,31 @@
+{
+  "iso3": "DOM",
+  "country": "Dominican Republic",
+  "generated_at": "2026-07-02T11:55:58.619536+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 198,
+  "category_counts": {
+    "conflict": 14,
+    "economic_indicator": 69,
+    "humanitarian": 8,
+    "investment": 105,
+    "political_violence_targeting_civilians": 1,
+    "protest_civil_unrest": 1
+  },
+  "analysis": {
+    "trend_summary": "The Dominican Republic's data window is dominated by investment activity (105 events) concentrated in renewable energy (solar PV) and transport concessions, alongside stable-to-improving macroeconomic indicators (IMF: real GDP growth rising from 2.1% in 2025 to 3.7% projected 2026, unemployment steady near 5.1-5.3%, inflation 3.9-5.1%). Conflict and civil-unrest signals are minimal in volume (14 conflict, 1 protest, 1 political-violence-targeting-civilians event) and largely appear to be GDELT geocoding noise rather than substantive unrest, given narratives referencing Portugal, Colorado, Nicaragua, and Milwaukee ICE operations rather than DOM-specific events. Humanitarian/OSINT signals are entirely natural-hazard related (flooding, hurricanes) and dated 2016-2023, with no recent entries in this window. Government debt (58.3-59.0% of GDP, IMF 2025-2026) and a persistent negative current account balance (-1.2% to -1.5% of GDP) are the main macro-fiscal data points worth tracking alongside the investment inflows.",
+    "key_relationships": [
+      "Private-sector financiers via World Bank PPI Database account for the large majority of investment records (n=70), concentrated in greenfield solar PV projects across 2022-2024 (e.g., Mirasol/Peravia solar plants $395.0M in 2023, La Romana Solar PV & BESS $56.4M in 2024), indicating energy-sector infrastructure as the dominant investment theme.",
+      "Multiple distinct Chinese state-linked financiers (Unspecified Chinese Government Institution n=12, China Ministry of Commerce n=4, Chinese Embassy n=4, CIDCA n=3, China Development Bank n=2, Hanban n=2) appear as active investment actors, collectively outnumbering the U.S. DFC's presence (n=3), though the underlying investment event list provided shows DFC-specific deals (Banco Popular Dominicano $200.0M direct lending, FY2024; Banco de Reservas $42.0M guaranty, FY2024) more explicitly than any single Chinese-financed project.",
+      "The only conflict-category events plausibly tied to the Dominican Republic government/state actor involve a July 2026 GDELT item (severity 9.2) referencing 'CITIZEN <-> DOMINICAN REPUBLIC' (rightspeak.net, 2026-07-01) and a June 2026 protest-tagged item referencing a parametric insurance/UNDP/BMZ agreement (artemis.bm, 2026-06-30), suggesting these GDELT records may be capturing routine government-citizen or institutional interactions rather than unrest.",
+      "Humanitarian/OSINT signals cluster around recurring hydrometeorological hazards -- Hurricane Matthew (UNOSAT, 2016-10-06), Tropical Cyclone Maria landslide inventory (UNOSAT, 2017-03-31), Tropical Cyclone Fiona exposure analysis (UNOSAT, 2022-09-21), and Valdesia/Cibao flood-extent mapping (UNOSAT, 2023-11-21 to 2023-11-23) -- with no OSINT reporting tied to conflict or civil unrest in this dataset."
+    ],
+    "risk_flags": [
+      "Several 'conflict' category entries (severity scores 9.0) reference actors and narratives with no apparent Dominican Republic nexus -- e.g., 'PORTUGAL <-> unspecified actor' (GDELT, 2026-07-01, si.com swimsuit article URL) and 'COLORADO <-> VOTER' (GDELT, 2026-07-01, abc57.com primaries article) -- indicating likely GDELT source/geocoding misattribution that undermines confidence in the conflict count for this country.",
+      "General government gross debt is elevated and roughly flat at 58.3-59.0% of GDP across 2025-2026 (IMF), alongside a persistent negative current account balance (-1.2% to -1.5% of GDP, IMF/WorldBank 2025-2026), which are structural fiscal factors visible in the data independent of the unrest signal.",
+      "Repeated historical exposure to tropical cyclones and flooding (UNOSAT records spanning 2016, 2017, 2022, and 2023) points to recurring climate/natural-hazard risk relevant to infrastructure investment, though no events in this category are dated after November 2023.",
+      "A single political_violence_targeting_civilians event (GDELT, 2026-07-01, severity 9.2) lacks fatality data and a clear narrative beyond a generic CAMEO 180 tag referencing a Supreme Court case article, limiting its interpretability as a genuine civilian-targeting incident."
+    ],
+    "data_caveats": "The conflict and protest/civil-unrest categories in this window appear substantially affected by GDELT source noise and possible geotagging errors (narratives referencing Portugal, Colorado, Nicaragua, Milwaukee), so the low event counts and severity scores in these categories should not be read as a reliable measure of on-the-ground unrest in the Dominican Republic. Humanitarian/OSINT coverage is limited to natural-disaster satellite mapping predating late 2023, leaving a gap of over two years with no humanitarian signal in this dataset, and fatality/impact figures are largely null across the conflict-tagged events, preventing severity comparison over time."
+  }
+}

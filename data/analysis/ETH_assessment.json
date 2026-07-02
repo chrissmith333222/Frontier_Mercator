@@ -1,0 +1,33 @@
+{
+  "iso3": "ETH",
+  "country": "Ethiopia",
+  "generated_at": "2026-07-02T04:14:57.162507+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 424,
+  "category_counts": {
+    "conflict": 12,
+    "economic_indicator": 61,
+    "humanitarian": 5,
+    "investment": 324,
+    "other": 13,
+    "political_violence_targeting_civilians": 5,
+    "protest_civil_unrest": 2,
+    "strategic_development": 2
+  },
+  "analysis": {
+    "trend_summary": "The bulk of substantive, country-specific data for Ethiopia in this window is economic and investment-related: strong reported real GDP growth (9.2-9.8% in 2025-2026, IMF/WorldBank), moderating but still-elevated inflation (11.8-13.2%), a widening current account deficit (-0.9% to -2.4% of GDP), and a slight decline in government debt-to-GDP (43.1% to 40.4%). Investment activity is dominated by a long history of Chinese state financing and grants (Eximbank, China Development Bank, Ministry of Commerce, CIDCA) alongside a smaller number of World Bank PPI-tracked private infrastructure projects (Safaricom telecom, Raxio data centers, Tulu Moye geothermal). By contrast, the 'conflict,' 'humanitarian,' and 'political_violence_targeting_civilians' categories are almost entirely GDELT entries where 'Ethiopia/Ethiopian' appears as an actor tag in stories that are not actually about events inside Ethiopia (e.g., South African migrant crackdowns, UK asylum-related sentencing, a US congressional race, and a Sudan-related UN meeting), which limits their value as indicators of domestic unrest. Overall the data window shows an economy with continued high-growth/high-financing engagement (particularly with China) but very thin, low-confidence signal on domestic security conditions.",
+    "key_relationships": [
+      "Government of Ethiopia is the top-linked actor in investment data (n=159), consistently paired with Chinese state financiers -- Unspecified Chinese Government Institution (n=92), China Eximbank (n=71), China Ministry of Commerce (n=48) -- reflecting a heavily China-financed development-finance relationship (AidData records: debt cancellation 2021-10-13, debt rescheduling 2021-07-01 for Omo Kuraz Sugar Factory, Eximbank debt-service suspension 2021-01-01).",
+      "Nearly all 'conflict' and 'political_violence_targeting_civilians' entries tagged to Ethiopia in this window are actually about events elsewhere: a South Africa migrant-deadline/crackdown story (GDELT, 2026-06-30/07-01, citizen.co.za and hngn.com) and a UK 'Bell Hotel' violent-disorder sentencing story involving an Ethiopian asylum seeker (gazette-news.co.uk, 2026-06-30), indicating diaspora/migration exposure rather than domestic Ethiopian instability.",
+      "Humanitarian/OSINT signals in this window are dominated by a single US news story about an Ethiopian-born Colorado politician (nypost.com/middleeasteye.net, 2026-07-01) rather than any humanitarian condition inside Ethiopia itself.",
+      "Health-sector investment/aid is almost exclusively Chinese grant-based (COVID vaccine donations totaling tens of millions of dollars across 2021, AidData), pointing to China as the principal external humanitarian-adjacent financier alongside its infrastructure lending."
+    ],
+    "risk_flags": [
+      "Debt-servicing stress history: China Eximbank suspended debt-service payments from the Government of Ethiopia in 2021 and later cancelled RMB 310 million in obligations (AidData, 2021-01-01 and 2021-10-13), alongside a $290M buyer's-credit rescheduling for the Omo Kuraz Sugar Factory (AidData, 2021-07-01) -- signaling prior debt distress even though reported government debt-to-GDP has since declined to 40.4% (IMF, 2026-12-31).",
+      "Widening current account deficit from -0.9% (2025) to -2.4% of GDP (2026, IMF) combined with persistently high inflation (11.8-13.2%) suggests external-balance pressure despite strong headline growth.",
+      "Diaspora/migrant exposure: Ethiopian nationals are reported subject to a mass foreign-national crackdown in South Africa (citizen.co.za, 2026-06-30) and criminal/asylum proceedings in the UK (gazette-news.co.uk, 2026-06-30) -- these are reputational/diaspora risks rather than confirmed domestic unrest, but they recur multiple times in the window.",
+      "Apparent over-reliance on a narrow set of Chinese financiers for investment inflows (5 of the top 8 most-active actors are Chinese state institutions), which concentrates financing-source risk relative to more diversified financiers like the U.S. DFC (n=6) or private sector (n=7)."
+    ],
+    "data_caveats": "The conflict, humanitarian, and political-violence categories are dominated by GDELT entries that reference 'Ethiopia/Ethiopian' as an actor label in stories physically located in South Africa, the UK, and the US, not in Ethiopia itself; these should not be read as evidence of domestic unrest. Investment data is also heavily historical (mostly 2020-2023, with one entry from 2023 and much of the Chinese aid detail from 2020-2021), so it may not reflect current-year financing activity, and no fatality counts or geolocated in-country incident data are present in this window to assess actual internal conflict severity."
+  }
+}

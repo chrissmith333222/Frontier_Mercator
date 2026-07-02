@@ -1,0 +1,31 @@
+{
+  "iso3": "TGO",
+  "country": "Togo",
+  "generated_at": "2026-07-02T11:50:04.286426+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 243,
+  "category_counts": {
+    "conflict": 5,
+    "economic_indicator": 57,
+    "humanitarian": 1,
+    "investment": 180
+  },
+  "analysis": {
+    "trend_summary": "Togo's data window shows macroeconomic indicators pointing to moderate stability (5.0% real GDP growth and 2.8% inflation for 2026 per IMF, though rising government debt from 63.0% to 64.7% of GDP between 2025-2026), alongside a heavily China-dominated investment/development-finance landscape spanning health aid, education, agriculture, and debt actions. Conflict data is thin and low-severity, consisting entirely of a single cross-border incident cluster (Togolese army deserters arrested in Lagos, Nigeria) rather than domestic unrest. Investment activity is dominated by Chinese state actors and grant-based aid (largely COVID-era health donations 2020-2021) with limited large-scale private/greenfield capital beyond a few energy and ICT projects. Humanitarian/OSINT coverage is nearly absent, limited to a single 2019 flood-mapping product with no recent signal.",
+    "key_relationships": [
+      "Chinese government institutions (Unspecified Chinese Government Institution, n=79; China Ministry of Commerce, n=28; China Eximbank, n=25; Chinese Embassy, n=15) collectively account for the large majority of investment-category activity, concentrated in health grants (e.g. AidData, 2021-10-25 vaccine donation $12.6M; AidData, 2021-08-21 $3.6M) and technical assistance (AidData, 2020-07-01 agriculture program).",
+      "China Eximbank suspended Togo's debt service payments in 2021 (AidData, 2021-01-01), occurring alongside continued Chinese grant inflows the same year, suggesting parallel debt-relief and aid channels from the same financier ecosystem.",
+      "The Government of Togo is the top recipient_agency (n=90) across investment records, with smaller sector-specific recipients (Togo Ministry of Health, n=3; Togo Ministry of Economy and Finance, n=4) indicating aid is channeled both centrally and through line ministries.",
+      "The five recorded conflict events (all dated 2026-06-30, GDELT/Nigerian news sources) involve Togolese army deserters and cable vandalism arrested in Lagos, Nigeria -- an extraterritorial incident, not evidence of unrest inside Togo itself.",
+      "Non-Chinese private investment is comparatively minor: 'Private sector (World Bank PPI Database)' actor recorded only n=13 versus Chinese financiers' combined n=149+."
+    ],
+    "risk_flags": [
+      "Rising government debt (IMF, GGXWDG_NGDP: 63.0% of GDP in 2025 to 64.7% in 2026) combined with a widening current account deficit (IMF, BCA_NGDPD: -1.0% in 2025 to -3.2% in 2026) suggests deteriorating external and fiscal balances over the one-year window.",
+      "Heavy concentration of investment/aid activity in a single external financier bloc (Chinese state institutions, combined n=149 of 180 investment records) indicates limited financier diversification visible in this dataset.",
+      "A China Eximbank debt service suspension (AidData, 2021-01-01) is present in the data without follow-up records clarifying current repayment status, leaving debt-sustainability implications unresolved from this dataset alone.",
+      "Conflict data (GDELT, 2026-06-30) involves Togolese military deserters engaged in vandalism/cable theft in Nigeria -- this is a foreign-soil event and its relevance to in-country investment risk in Togo is not established by the data provided.",
+      "Humanitarian/OSINT coverage is effectively a single 2019 flood-mapping data point (UNOSAT, 2019-10-31), providing no recent humanitarian situational awareness for Togo."
+    ],
+    "data_caveats": "The conflict dataset (n=5) is extremely thin, entirely dated 2026-06-30, and describes an event in Nigeria involving Togolese nationals rather than unrest within Togo -- it cannot be used to assess domestic instability. Humanitarian/OSINT data is limited to one 2019 satellite flood-mapping record, meaning no recent humanitarian conditions are captured. Investment data is heavily skewed toward older (2020-2022) Chinese aid/grant records with many 'amount undisclosed' entries, limiting quantitative comparison of financing scale and current relevance to 2026 conditions."
+  }
+}

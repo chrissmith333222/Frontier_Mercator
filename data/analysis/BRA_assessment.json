@@ -1,0 +1,33 @@
+{
+  "iso3": "BRA",
+  "country": "Brazil",
+  "generated_at": "2026-07-02T04:05:48.660791+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 2485,
+  "category_counts": {
+    "conflict": 29,
+    "economic_indicator": 69,
+    "humanitarian": 1,
+    "investment": 2357,
+    "other": 23,
+    "political_violence_targeting_civilians": 1,
+    "protest_civil_unrest": 1,
+    "strategic_development": 4
+  },
+  "analysis": {
+    "trend_summary": "The dataset is overwhelmingly dominated by investment/development-finance records (2,357 of ~2,484 total events), concentrated in energy (wind, solar, transmission) and transport (toll roads, metro rail) projects, with private-sector financiers and multiple Chinese state banks prominent among top actors. Economic indicators show a moderating growth trajectory (real GDP growth 2.3% in 2025 to 1.9% projected 2026, IMF), easing but still elevated inflation (5.0%\u21924.0%), a persistent current account deficit (~-2.7% to -3.0% of GDP), and rising government debt (93.3%\u219296.5% of GDP, IMF). Conflict, political violence, protest, and humanitarian categories are extremely thin (29, 1, 1, and 1 events respectively) and, on inspection, many of the GDELT-sourced entries appear to be scraping artifacts with narrative content unrelated to Brazil (e.g., references to Netflix/New York, Karnataka/India monsoons, US Supreme Court rulings, and Africa-tagged crime stories). This suggests the security/unrest signal for Brazil in this window is not well-populated with country-specific, verifiable events, while the economic and investment picture is comparatively data-rich and internally consistent.",
+    "key_relationships": [
+      "Chinese state financiers (China Development Bank n=61, Bank of China n=23, ICBC n=21, China Eximbank n=13, People's Bank of China n=8) appear as top active actors in the investment category alongside State Grid Brazil Holding S.A. (n=24, recipient_agency), suggesting sustained Chinese capital linkage to Brazilian grid/energy infrastructure (actor list; WorldBankPPI investment entries dated 2024-01-01 on transmission line projects e.g. 'Lot 1 Transmission Line in Esp\u00edrito Santo...' $531.0M and 'Morro do Chapeu Transmission Line' $74.3M).",
+      "The 'Private sector (World Bank PPI Database)' actor (n=2,143) accounts for the vast majority of recorded investment activity, spanning large transport concessions (Presidente Dutra Highway, $2.70B, WorldBankPPI 2024-01-01) and renewable energy greenfield projects (Serra do Assurua Wind Complex, $638.2M; Belo Horizonte Metro Line 2, $666.0M), indicating infrastructure financing is the dominant recorded activity type for Brazil in this dataset.",
+      "GDELT-tagged conflict and political-violence entries dated 2026-06-30/2026-07-01 show narrative content mismatched to Brazil (e.g., 'GOVERNMENT <-> SUPREME COURT' and 'SUPREME COURT <-> PRESIDENT' sourced from US birthright-citizenship coverage, and 'unspecified actor <-> KARNATAKA' from an India monsoon article), indicating the conflict feed for this country window is contaminated by unrelated global news items rather than reflecting verified Brazil-specific unrest.",
+      "Humanitarian/OSINT entries dated 2026-07-01 reference 'COMPANY <-> BRAZIL' tied to a reported BPCL acquisition of a Brazil-based oil asset (newkerala.com) and repeated 'SENATOR <-> BRAZIL' / 'BRAZIL <-> BRAZIL' interactions (suncommercial.com), pointing to some genuine political/economic news flow, though the CAMEO codes involved (010, 030, 040, 057) do not indicate clear conflict or humanitarian distress."
+    ],
+    "risk_flags": [
+      "Rising general government gross debt (93.3% of GDP in 2025 to 96.5% in 2026, IMF) combined with decelerating real GDP growth (2.3%\u21921.9%, IMF) points to a gradual fiscal-trajectory risk worth monitoring, even as inflation eases (5.0%\u21924.0%, IMF).",
+      "The sole 'political_violence_targeting_civilians' record (severity 9.5, 2026-06-30, GDELT) is narratively tied to a US Supreme Court birthright-citizenship story rather than any identifiable Brazilian civilian-targeting incident, making this data point unreliable for assessing civilian violence risk in Brazil.",
+      "Conflict-category entries frequently pair Brazil with unrelated global actors/topics (e.g., 'MEXICO <-> GOVERNMENT', 'NETFLIX <-> NEW YORK', 'AFRICA <-> AFRICA', all dated 2026-06-30/07-01, GDELT), suggesting possible feed misattribution that could distort any severity-based risk scoring drawn from this conflict dataset.",
+      "Humanitarian and protest/civil-unrest categories each contain only a single event in the entire window, which is too sparse to establish any pattern, trend, or baseline for social-stability risk assessment."
+    ],
+    "data_caveats": "Humanitarian (1 event) and protest/civil-unrest (1 event) categories are far too sparse to support any trend analysis, and several conflict/political-violence entries appear to be GDELT scraping artifacts with content unrelated to Brazil (e.g., US Supreme Court, India monsoon, Africa crime stories), meaning conflict severity figures in this window should be treated with low confidence. Investment data is concentrated at a single reported date (2024-01-01, WorldBankPPI) and may not reflect project status changes through the 2026 economic-indicator period covered elsewhere in the dataset."
+  }
+}

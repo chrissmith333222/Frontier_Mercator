@@ -1,0 +1,30 @@
+{
+  "iso3": "LBR",
+  "country": "Liberia",
+  "generated_at": "2026-07-02T11:43:57.676606+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 301,
+  "category_counts": {
+    "conflict": 11,
+    "economic_indicator": 61,
+    "investment": 228,
+    "political_violence_targeting_civilians": 1
+  },
+  "analysis": {
+    "trend_summary": "The data shows two disconnected time windows: investment/development-finance records cluster in 2020-2022 (dominated by Chinese grants and a handful of US DFC transactions), while conflict and political events cluster in mid-2026, centered on a drug-trafficking investigation touching state institutions (NOCAL, the Capitol) and a local dispute over concession revenue-sharing. Macroeconomic indicators show real GDP growth holding near 5% and inflation easing (IMF: 8.3% to 5.7%, 2025-2026), but IMF current-account data shows a sharp deterioration from -6.3% of GDP (2025) to -12.0% (2026), even as an older World Bank figure shows a positive current account (+2.5%, 2024) -- these sources are not reconcilable within this dataset. The conflict feed (GDELT) contains several entries that appear unrelated to Liberia (e.g., a Culver City, California arson story), which materially undermines confidence in the conflict count. Humanitarian/OSINT signals are entirely absent for this window. Overall, the investment record shows heavy Chinese grant/in-kind activity relative to modest US DFC financing, but this predates the 2026 governance-related unrest, so the two data streams cannot be directly correlated.",
+    "key_relationships": [
+      "President Boakai's suspension of a NOCAL board member pending a drug investigation (emansion.gov.lr, 2026-06-30) and a related '$19.2M drug probe' story about the Capitol (thenewdawnliberia.com, 2026-07-01) form a cluster of governance-integrity events involving the presidency and a state-linked entity (NOCAL) within a 48-hour window.",
+      "A Margibi County legislative caucus threatened to block concession deals unless funds support a university (Liberian Observer, 2026-06-30, severity 6.5) -- a direct intersection of the conflict/unrest category with the concession/investment space, though no specific concessionaire is named in the data.",
+      "Chinese government institutions collectively account for the large majority of catalogued investment activity (Unspecified Chinese Government Institution n=118, China MOFCOM n=36, Chinese Embassy n=18, plus smaller PLA/CDB/FPU entries), almost entirely grants to health, education, and government-and-civil-society sectors between 2020-2022 (AidData records), contrasting with a much smaller US footprint (DFC n=9, ~$22M across two 2021-2022 transactions).",
+      "The Government of Liberia is the dominant recipient actor across investment records (n=89), consistent with the concentration of Chinese grants directed at state ministries and agencies (e.g., Ministry of Health, Ministry of Foreign Affairs) rather than private-sector recipients."
+    ],
+    "risk_flags": [
+      "IMF data shows a rapidly widening current account deficit, from -6.3% of GDP (2025) to -12.0% (2026), a pattern that stands in tension with an older World Bank figure of +2.5% (2024) -- the direction and magnitude of external imbalance is a flagged concern even allowing for source inconsistency.",
+      "A cluster of 2026-06-30/07-01 events (GDELT, emansion.gov.lr, thenewdawnliberia.com) points to an active drug-trafficking/corruption investigation touching the presidency and a state-owned entity (NOCAL), which is a governance-risk signal for state-linked counterparties.",
+      "Local political resistance to concession arrangements is directly evidenced (Margibi caucus blocking concession deals pending university funding, Liberian Observer, 2026-06-30), indicating subnational friction around at least one extractive/concession-type project.",
+      "The conflict dataset contains at least two entries that reference clearly non-Liberian events (a Culver City, CA arson case dated 2026-06-30 from westsidetoday.com), indicating source/geocoding noise that reduces confidence in the conflict severity counts for this country.",
+      "The lone entry in 'political_violence_targeting_civilians' (Samuel P. Jackson autopsy-delay case, Liberian Observer, 2026-06-29, severity 9.2) is an ambiguous fit for that category -- it reads as a domestic/obituary dispute rather than clear political violence, so this category's single high-severity score should be treated with caution."
+    ],
+    "data_caveats": "Humanitarian/OSINT signals are empty for this window, and investment/development-finance records are almost entirely dated 2020-2022, leaving a multi-year gap before the 2026 conflict/political events -- the two cannot be correlated in time. Several GDELT conflict entries appear to be misattributed to Liberia (referencing unrelated US domestic incidents), and the single political-violence-targeting-civilians event is of uncertain relevance, both of which lower confidence in the conflict-side counts and severities reported here."
+  }
+}

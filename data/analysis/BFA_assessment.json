@@ -1,0 +1,30 @@
+{
+  "iso3": "BFA",
+  "country": "Burkina Faso",
+  "generated_at": "2026-07-02T12:00:42.987041+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 145,
+  "category_counts": {
+    "conflict": 2,
+    "economic_indicator": 61,
+    "investment": 74,
+    "strategic_development": 8
+  },
+  "analysis": {
+    "trend_summary": "The data window shows a sharp disjunction between macro-level economic indicators and geopolitical/security signals. IMF figures for 2025-2026 show moderate real GDP growth (4.9-5.3%), low or negative inflation, an improving current account surplus (6.7% to 8.6% of GDP), and declining government debt (52.0% to 48.8% of GDP), while WorldBank figures for 2024 show a negative current account (-4.0% of GDP) and negative net FDI inflows (-0.9% of GDP), an inconsistency that undercuts confidence in the macro picture. Investment/development-finance activity in the dataset is heavily concentrated in Chinese state financing (grants, loans, and in-kind aid) and World Bank PPI-tracked solar energy projects, but nearly all recorded investment events date 2020-2024, with no investment-category data covering the 2025-2026 period when conflict and diplomatic-rupture signals appear. The only conflict events in the window (both 2026-07-01, GDELT) and a cluster of strategic-development/OSINT signals (2026-06-29 to 07-01, GDELT) point to a diplomatic break between Burkina Faso and France, occurring alongside a government-vs-terrorist-group event coded at the same severity and date.",
+    "key_relationships": [
+      "The two recorded conflict events (2026-07-01, GDELT, severity 9.0) both use CAMEO 190 codes for 'GOVERNMENT <-> TERRORIST GROUP' and 'FRANCE <-> TERRORIST GROUP', linked to reporting on the Burkina Faso-France diplomatic rupture (africanews.com, 2026-07-01), suggesting the security narrative and the France split are being reported together rather than as fully independent events.",
+      "Chinese state entities (Unspecified Chinese Government Institution, n=41; China Ministry of Commerce, n=7; China Eximbank, n=5) collectively account for the large majority of tracked investment events, spanning energy (solar PV pledges), health (e.g., Sinopharm vaccine donation, AidData, 2021-09-18), water supply (China Eximbank $57.9M loan, AidData, 2020-12-28), and a $2B housing pledge (China Eximbank, AidData, 2021, Pipeline: Pledge status, not confirmed implemented).",
+      "OSINT/strategic-development signals show a concentrated burst of France-Burkina Faso interaction (CAMEO 161) across 2026-06-29 to 2026-07-01 (GDELT, globalsecurity.org and africa.com sources), described as a diplomatic-tie cut with 'public support growing in Ouagadougou', occurring in the same narrow window as the only conflict events in the dataset.",
+      "Government of Burkina Faso (recipient_agency, n=39) and its line ministries (Health n=5, Agriculture n=2) are the dominant recipient counterparts to Chinese financing, indicating that most tracked investment flows are state-to-state rather than private-sector (Private sector/WorldBankPPI, n=11, limited to solar energy projects)."
+    ],
+    "risk_flags": [
+      "Diplomatic rupture with France (GDELT, 2026-06-29 to 2026-07-01) coincides temporally with the dataset's only conflict events involving a 'terrorist group' actor (GDELT, 2026-07-01), a pattern worth monitoring though causality cannot be established from this data alone.",
+      "Investment/development-finance records show no events dated after 2024-01-01, meaning the dataset provides no visibility into investment activity during the 2025-2026 period when the France rupture and conflict signals occur -- a significant gap for assessing current investment climate.",
+      "Economic indicators show a direct conflict between IMF (current account +6.7% to +8.6% of GDP, 2025-2026) and WorldBank (current account -4.0% of GDP, 2024; FDI net inflows -0.9% of GDP, 2024) sources, which reduces confidence in any single macro narrative drawn from this data.",
+      "Investment activity is heavily concentrated among Chinese state financiers (n=41+7+5+2=55 of 74 investment events) with limited diversification from other financiers besides an 11-event World Bank PPI private-sector solar cohort, indicating potential concentration risk in external financing relationships as reflected in this dataset.",
+      "Conflict-category data is extremely thin (only 2 events, both same date/source), so no pattern of frequency, geographic spread, or fatality trends can be established from this window alone."
+    ],
+    "data_caveats": "The conflict dataset contains only two GDELT-derived events on a single date with no fatality figures, so it cannot support conclusions about the intensity, frequency, or geographic distribution of unrest in Burkina Faso. Investment data is dominated by Chinese-financier and World Bank PPI records through 2024, with no entries in 2025-2026, leaving the period coinciding with the France rupture and conflict signals uncovered. Economic indicators show unresolved discrepancies between IMF and WorldBank series (particularly current account and FDI), which should be treated as a data-quality issue rather than a resolved macro trend."
+  }
+}

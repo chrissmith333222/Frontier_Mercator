@@ -1,0 +1,33 @@
+{
+  "iso3": "COL",
+  "country": "Colombia",
+  "generated_at": "2026-07-02T04:09:53.208509+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 585,
+  "category_counts": {
+    "conflict": 22,
+    "economic_indicator": 69,
+    "humanitarian": 12,
+    "investment": 440,
+    "other": 37,
+    "political_violence_targeting_civilians": 4,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset is dominated by investment activity (440 of ~585 events), concentrated in 2023-2024 World Bank PPI infrastructure projects (toll roads, solar energy, telecom) alongside sustained US (DFC) and diversified Chinese financier engagement. Economic indicators show a mild but consistent softening: inflation rising from 5.1% (2025) to 5.9% (2026, IMF), unemployment rising from 8.0% to 9.0% (IMF) or 8.3% (2025, WorldBank), and gross government debt climbing from 59.9% to 60.9% of GDP, against modest real GDP growth (~2.3-2.6%). Conflict and political-violence-targeting-civilians categories are comparatively sparse (22 and 4 events respectively) and cluster almost entirely on 2026-06-30/07-01, sourced from GDELT with several entries only tangentially connected to Colombia (e.g., Houston/Texas gang enforcement, a British murder suspect, Ecuadorian-Interpol matters). Humanitarian/OSINT signals are largely institutional (UN Security Council, OHCHR monitoring of Colombia) rather than ground-level crisis indicators. Overall the data shows an active, diversified infrastructure-investment pipeline set against a backdrop of gradually deteriorating macro fundamentals and a thin, noisy, and low-verification conflict signal.",
+    "key_relationships": [
+      "Chinese state financiers (Unspecified Chinese Government Institution, Chinese Embassy, China Ministry of Commerce, ICBC, China Development Bank, Bank of China) collectively account for roughly 73 investment-category actor mentions, appearing alongside the U.S. DFC (37 mentions) as parallel external financing channels, per the actor list.",
+      "Infrastructure investment in the sample clusters in 2023-2024 around transport toll roads (Puerto Salgar-Barrancabermeja corridor, $1.14B; Buenaventura-Loboguerrero-Buga, $889M; Troncal Magdalena 2, $866M) and renewable energy (Shangri-La, La Mesa, Caldas, Erco, La Dorada, Sabanalarga solar plants), all sourced from WorldBankPPI dated 2023-01-01/2024-01-01.",
+      "High-severity (9.0-9.5) political-violence-targeting-civilians events dated 2026-06-30 and 2026-07-01 -- 'ARMY <-> CIVILIAN' (GDELT, 2026-06-30) and 'PRESIDENT <-> TRADE UNION' (GDELT, 2026-07-01) -- are sourced from single opinion/advocacy outlets (oswegocountytoday.com, marxist.com), indicating narrative-driven rather than incident-verified reporting.",
+      "UN-level institutional attention persists into mid-2026, with the Security Council, OHCHR, and 'THE US' all recorded interacting with Colombia on 2026-07-01 (securitycouncilreport.org sources), consistent with ongoing multilateral monitoring rather than a new crisis trigger.",
+      "Several 'conflict' category entries dated 2026-06-30/07-01 involve actors with no direct Colombia nexus in the narrative itself (e.g., 'HOUSTON <-> UNITED STATES', GDELT, 2026-07-01, referencing a Texas Tren de Aragua enforcement story), suggesting country-tagging noise in the underlying GDELT feed."
+    ],
+    "risk_flags": [
+      "Macro indicators show simultaneous deterioration in inflation (5.1%\u21925.9%, IMF, 2025\u21922026), unemployment (8.0%\u21929.0%, IMF, 2025\u21922026), and government debt (59.9%\u219260.9% of GDP, IMF, 2025\u21922026), a pattern worth monitoring even though growth remains positive.",
+      "A cluster of high-severity (9.0+) political violence/conflict events tagged 2026-06-30 to 2026-07-01 (GDELT) centers on army-civilian and president-trade union friction, but none report fatalities and all derive from a small number of opinion-oriented sources, limiting confidence that this reflects a verified escalation.",
+      "The investment sample contains no dated events from 2025 or 2026, creating a gap between the (dated) conflict/political signal window and the (older) investment window that limits any direct correlation analysis between unrest and capital flows in this dataset.",
+      "The 'conflict' category mixes genuinely country-relevant items with apparently mis-tagged or tangential stories (e.g., 'HOUSTON <-> UNITED STATES', GDELT, 2026-07-01; 'BRITISH <-> COLOMBIA', GDELT, 2026-06-30, referencing a British murder suspect), indicating the raw conflict count of 22 likely overstates genuine Colombia-specific unrest signal."
+    ],
+    "data_caveats": "No ACLED-sourced conflict records are present despite the category label; all conflict and political-violence entries derive from GDELT news-tone tagging with null fatality fields and several sources of uncertain relevance to Colombia specifically. Investment data is skewed toward 2023-2024 vintage with no entries in the 2025-2026 window that overlaps the conflict/political data, so temporal correlation between unrest and investment activity cannot be assessed from this dataset alone."
+  }
+}

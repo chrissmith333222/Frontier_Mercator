@@ -1,0 +1,27 @@
+{
+  "iso3": "GNB",
+  "country": "Guinea-Bissau",
+  "generated_at": "2026-07-02T11:57:21.204935+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 186,
+  "category_counts": {
+    "economic_indicator": 61,
+    "investment": 125
+  },
+  "analysis": {
+    "trend_summary": "The data shows a country with no recorded conflict, unrest, or humanitarian/OSINT events in this window, alongside a macroeconomic profile of moderate real GDP growth (4.9-5.8% in 2025-2026, IMF/WorldBank), declining but still present inflation (0.9-2.5%), very low official unemployment (2.6-2.7%), but persistent structural imbalances: a current account deficit around -6 to -7.4% of GDP and high government gross debt (73.6-75.3% of GDP, IMF 2025-2026). Investment activity is heavily skewed toward small-scale, often undisclosed-value Chinese government grants (94 of 125 investment records tied to 'Unspecified Chinese Government Institution'), concentrated in health/COVID response, food aid, and government-materials support during 2020-2021, with the Government of Guinea-Bissau as the dominant recipient actor (73 records). Large-scale private or diversified foreign investment is scarce, with the Orange Guinea-Bissau telecom expansion ($29.1M, WorldBankPPI, 2023-01-01) standing out as the only sizable non-Chinese, non-aid investment in the dataset. FDI net inflows remain low at 1.2% of GDP (WorldBank, 2024-12-31), consistent with the thin private-investment footprint visible in the event data.",
+    "key_relationships": [
+      "China's government institutions and the Guinea-Bissau state form the dominant investment relationship in this dataset: 94 of 125 investment events are attributed to 'Unspecified Chinese Government Institution' and 73 to 'Government of Guinea-Bissau' as recipient, spanning health, food security, education, and government-support grants from 2020-2021 (AidData, multiple dates e.g. 2021-10-04, 2021-11-05, 2021-11-17).",
+      "Chinese aid activity is heavily clustered around the COVID-19 period, with repeated vaccine and anti-epidemic material donations (AidData, 2020-08-27, 2020-11-09, 2020-12-01, 2020-12-16, 2021-06-08, 2021-06-15, 2021-06-16, 2021-08-30, 2021-10-04), suggesting a pandemic-driven aid surge rather than sustained development financing.",
+      "A single larger pipeline commitment ($7.5M, AidData, 2021-03-16, via ETCA for 'multiple projects, unallocated/unspecified') and one commercial telecom investment (Orange Guinea Bissau, $29.1M, WorldBankPPI, 2023-01-01) represent the only investment records with disclosed dollar values above single-digit millions, indicating most Chinese engagement is in-kind or undisclosed rather than large capital commitments.",
+      "High government debt (GGXWDG_NGDP: 75.3% of GDP in 2025, 73.6% in 2026, IMF) coexists with a persistent current account deficit (-6.2% in 2025, -6.3% in 2026, IMF) and low FDI (1.2% of GDP, WorldBank 2024-12-31), suggesting external financing needs are not being met primarily through private investment inflows visible in this data."
+    ],
+    "risk_flags": [
+      "Government gross debt remains elevated at over 73% of GDP through 2026 (IMF, GGXWDG_NGDP, 2025-12-31 and 2026-12-31) alongside a widening/persistent current account deficit, which the data does not show being offset by significant private investment inflows.",
+      "The investment dataset shows heavy concentration in a single external financier type (Chinese government institutions, 94/125 records) with most amounts undisclosed, limiting visibility into total capital exposure and creating a data-quality risk for any actor-concentration assessment.",
+      "The most recent investment record in the dataset is dated 2023-01-01, while economic indicators extend to 2026-12-31; this gap of roughly three years in investment-activity data means recent capital flows, project completions, or new commitments are not captured, understating or overstating current investment risk.",
+      "The complete absence of conflict/unrest and humanitarian/OSINT events in this window could reflect genuine stability but could equally reflect a data collection gap for this country/category, which should not be read as a confirmed all-clear signal."
+    ],
+    "data_caveats": "No conflict/unrest or humanitarian/OSINT events were returned at all, which is unusual and likely reflects incomplete data collection for those categories rather than confirmed absence of such activity; the investment/development-finance feed is dominated by AidData records ending in 2023 and skewed toward China, so non-Chinese private capital flows and any 2024-2026 investment activity are not represented despite economic indicators covering that period. Many Chinese-sourced investment records list 'amount undisclosed,' preventing precise quantification of financial exposure."
+  }
+}

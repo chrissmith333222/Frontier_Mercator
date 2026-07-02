@@ -1,0 +1,35 @@
+{
+  "iso3": "SOM",
+  "country": "Somalia",
+  "generated_at": "2026-07-02T11:46:10.804926+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 287,
+  "category_counts": {
+    "conflict": 51,
+    "economic_indicator": 43,
+    "humanitarian": 66,
+    "investment": 81,
+    "other": 32,
+    "political_violence_targeting_civilians": 12,
+    "protest_civil_unrest": 1,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The data window shows an active counter-insurgency campaign (Turkiye-Somalia joint airstrikes against al-Shabab in Lower Shabelle, all dated 2026-07-01) sitting alongside a steady but externally-dependent economy: persistent current account deficits (-8.7% to -9.5% of GDP, IMF 2024-2026), moderate GDP growth (2.6%-4.1%), elevated inflation (3.7%-5.9%), and high unemployment (18.9%, WorldBank 2024-2025). Investment activity is dominated by Chinese grant financing (health, food aid, disaster relief) and a small number of large World Bank PPI transport/energy projects (Berbera, Mogadishu, Hobyo ports; Baidoa solar plant), with US DFC direct lending to the Government of Somalia appearing intermittently through FY2020. Humanitarian/OSINT signals in this window are dominated by low-intensity diplomatic and commemorative events (Somalia's independence anniversary, 2026-07-01) rather than distress indicators. Overall the pattern is one of continued security operations against al-Shabab layered on top of ongoing but modest, aid/grant-heavy investment flows, with limited protest/civil-unrest signal in the dataset.",
+    "key_relationships": [
+      "Government of Somalia conducted joint airstrikes with Turkiye against al-Shabab in Lower Shabelle, reported with severity scores of 9.0-9.2 across nearly a dozen entries all dated 2026-07-01 (GDELT, horseedmedia.net and radiodalsan.com).",
+      "Chinese state actors (Chinese Embassy, Unspecified Chinese Government Institution, China Ministry of Commerce) account for over 60 of the 81 recorded investment events, concentrated in health/COVID vaccine grants (2020-2021, AidData) and food aid/social infrastructure donations (2018-2019, AidData), making them the most active financiers by count in the dataset.",
+      "World Bank PPI-recorded seaport investments recur across years in the same coastal/security-relevant geography as the conflict events: Port of Berbera ($442.0M, 2018), Port of Mogadishu ($50.0M, 2020), and Hobyo Port Phase 1 ($70.0M, 2024), indicating sustained infrastructure commitments in areas also subject to al-Shabab-related conflict activity.",
+      "US International Development Finance Corporation issued multiple direct lending tranches to the Government of Somalia in FY2020 ($1.3M, $2.2M, $2.9M, $15.2M), a distinct financing channel from the Chinese grant-based activity noted above.",
+      "A regional dimension appears via an Ethiopia-Community conflict entry (2026-07-01, thereporterethiopia.com) recorded in the same date cluster as the Somalia-al-Shabab airstrike reporting, suggesting cross-border relevance though the data does not elaborate further."
+    ],
+    "risk_flags": [
+      "High-severity, active conflict events (severity 9.0-9.2) tied to ongoing airstrikes against al-Shabab in Lower Shabelle (GDELT, 2026-07-01, horseedmedia.net/radiodalsan.com) indicate persistent insurgency-related security risk in a region that also hosts major port investment (Hobyo, Mogadishu).",
+      "Current account balance has remained deeply negative for three consecutive years (-9.1% in 2024, -9.5% in 2025, -8.7% in 2026, IMF), signaling sustained external financing dependency.",
+      "Unemployment held flat at 18.9% across 2024 and 2025 (WorldBank), showing no labor-market improvement despite reported GDP growth.",
+      "Several 'conflict' category entries dated 2026-07-01 are evident GDELT false positives unrelated to Somalia (e.g., 'MINNEAPOLIS <-> CHRISTIAN' and 'AMISH <-> AMERICAN' from patriotpost.us and townhall.com), indicating meaningful noise/mislabeling in the conflict dataset that could distort severity aggregates if not filtered.",
+      "Investment activity in this dataset skews heavily toward grants and small-value Chinese donations rather than large-scale committed capital, with the largest single project (Berbera port, $442.0M) dated 2018 and no comparably large new investment entries after 2024."
+    ],
+    "data_caveats": "The conflict and humanitarian categories are almost entirely concentrated on a single date (2026-07-01) sourced from GDELT, several of which appear to be actor-matching artifacts unrelated to Somalia (Amish/Minneapolis references), so the true current conflict trend cannot be reliably assessed from this window alone. Protest/civil unrest and strategic development categories each contain only a single event, providing essentially no signal, and investment data is sparse after 2024 with no entries showing amounts for several recent Chinese-linked projects, limiting confidence in recent investment volume trends."
+  }
+}

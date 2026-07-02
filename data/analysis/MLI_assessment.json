@@ -1,0 +1,30 @@
+{
+  "iso3": "MLI",
+  "country": "Mali",
+  "generated_at": "2026-07-02T11:47:40.744603+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 268,
+  "category_counts": {
+    "conflict": 3,
+    "economic_indicator": 61,
+    "humanitarian": 3,
+    "investment": 188,
+    "other": 13
+  },
+  "analysis": {
+    "trend_summary": "The data shows a stark contrast between a stable macroeconomic profile (moderate GDP growth of 4.9-5.5% in 2025-2026, low inflation of 2.2-3.3%, government debt around 40-42% of GDP per IMF/WorldBank) and a narrow but severe set of 2026 conflict/humanitarian signals centered on press freedom and rule-of-law concerns (junta suspension of a radio show, journalist-authorities tension, HRW abuse allegations). Investment activity is overwhelmingly dominated by Chinese state and quasi-state actors (aid grants, technical assistance, and one debt-rescheduling action), with limited World Bank PPI-tracked private/greenfield energy projects and negligible US DFC presence. Nearly all investment records are dated 2019-2022, well before the 2026 conflict/humanitarian events, creating a temporal gap between the political-risk signals and the investment dataset. The humanitarian signal set is thin and consists entirely of GDELT actor-pairs traceable to a single HRW story dated 2026-07-01.",
+    "key_relationships": [
+      "Government of Mali appears as the dominant investment counterpart (92 events) almost entirely paired with Chinese financiers (Unspecified Chinese Government Institution, 122 events; China Ministry of Commerce, 17; China Eximbank, 14; Chinese Embassy, 10) across AidData records from 2019-2022, indicating heavy bilateral concentration in the investment dataset.",
+      "China Eximbank suspended debt service payments from the Government of Mali in 2021 (AidData, 2021-01-01, DSSI documentation) at the same time China was delivering a large volume of health/COVID-related grants (AidData, multiple entries 2020-2021), suggesting concurrent debt relief and aid-based engagement during that period.",
+      "Judicial and press-freedom actors (Prosecutor, Lawyer, Mali/JUD, Journalist/MED) all cluster around a single 2026-07-01 event -- the junta's suspension of a radio show and related authorities-journalist tension (GDELT/HRW, 2026-07-01) -- meaning the entire conflict and humanitarian signal set for this window is essentially one incident reported through multiple actor-pair permutations.",
+      "A HRW report dated 2026-06-29 (medafricatimes/GDELT) describes 'Liberation Front <-> Mali' interaction with a high severity score of 9.0, alleging abuses by all sides amid escalating conflict, but no corroborating fatality data or additional conflict events are present to substantiate scale."
+    ],
+    "risk_flags": [
+      "Press freedom and civil-liberties risk: junta suspension of a popular radio show and authorities-journalist conflict recorded on 2026-07-01 (GDELT/HRW), alongside a severity-9.0 HRW allegation of abuses by all sides on 2026-06-29 (medafricatimes/GDELT).",
+      "Investor concentration risk: the overwhelming majority of investment/development-finance events (roughly 165+ of 188) trace to Chinese state financiers, many with undisclosed dollar amounts, limiting transparency into actual capital exposure (AidData, 2019-2022 entries).",
+      "Sovereign debt stress signal: China Eximbank debt service suspension for the Government of Mali recorded in 2021 (AidData, 2021-01-01), occurring alongside a rising external debt stock of $6.44B (WorldBank, 2024-12-31) and a current account balance that has moved from -0.8% (2025, IMF) to a projected -1.5% (2026, IMF).",
+      "Temporal data gap: virtually all investment records predate 2023, while the only conflict and humanitarian signals are from mid-2026, meaning the dataset cannot show whether investment activity has continued, paused, or shifted in response to the 2026 political/press-freedom developments."
+    ],
+    "data_caveats": "The conflict category contains only 3 events and the humanitarian category only 3 distinct source events (expanded into 10 actor-pair records from a single HRW article), which is too thin to establish a trend or corroborate severity claims independently. Investment data is heavily skewed toward 2019-2022 Chinese aid/grant activity with many undisclosed amounts, and there is a multi-year gap between the latest investment records and the 2026 conflict/humanitarian signals, so no direct link between recent unrest and capital flows can be established from this data alone."
+  }
+}

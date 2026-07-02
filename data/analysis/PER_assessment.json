@@ -1,0 +1,31 @@
+{
+  "iso3": "PER",
+  "country": "Peru",
+  "generated_at": "2026-07-02T04:10:29.716331+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 524,
+  "category_counts": {
+    "conflict": 20,
+    "economic_indicator": 69,
+    "humanitarian": 3,
+    "investment": 429,
+    "other": 2,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "Peru's data window shows a bifurcated picture: macroeconomic indicators are stable and unremarkable (IMF/WorldBank figures show GDP growth of 2.8-3.4%, low inflation of 1.5-2.5%, government debt around 30% of GDP, and a persistent current account surplus through 2025-2026), while investment activity is dense and dominated by large-scale energy transmission, solar, port, and mining projects, with heavy involvement of Chinese state-linked financiers (China Development Bank, ICBC, Bank of China, China Eximbank) alongside private-sector financiers tracked via WorldBankPPI. Conflict and humanitarian signal categories are comparatively thin and noisy: most GDELT conflict entries carry generic, unspecified-actor codes, and several entries appear mistagged to US locations (Ohio, Bluffton, Cleveland) rather than Peru. The one substantive conflict/political cluster centers on the 2026-06-30/07-01 presidential election of Keiko Fujimori, which triggers repeated CAMEO 173 references to 'PRISON,' 'ALBERTO FUJIMORI,' and 'REGIME,' plus a CAMEO 170 'ORGANIZED CRIME' code in the same news cycle. Humanitarian data is limited to three entries, two of which are 2023 UNOSAT flood-extent satellite maps (Tumbes/Zarumilla and Lambayeque/Piura provinces) with no recent humanitarian reporting.",
+    "key_relationships": [
+      "Chinese state-linked financiers (China Ministry of Commerce n=36, Unspecified Chinese Government Institution n=36, China Development Bank n=18, ICBC n=13, Bank of China n=7, China Eximbank n=5) cluster around mining-sector recipients Minera Las Bambas S.A.C. (n=14) and Minera Chinalco Peru S.A. (n=11) in the actor list, indicating concentrated Chinese exposure to Peru's extractive sector.",
+      "The 2026-06-30 election of Keiko Fujimori (GDELT via riotimesonline.com, news.az, perthnow.com.au) coincides same-day with CAMEO 173 codes referencing 'PRISON,' 'REGIME,' and 'ALBERTO FUJIMORI,' and a CAMEO 170 'ORGANIZED CRIME' reference (GDELT, 2026-06-30, yahoo.com) tied to the same election coverage, suggesting the political transition is entangled with legacy imprisonment/legitimacy narratives.",
+      "Large infrastructure investments cluster in energy transmission and generation (WorldBankPPI, 2022-2024) -- e.g. Chancay Multipurpose Terminal Phase I ($975.0M, 2023) and Lima Jorge Chavez Airport PPP ($800.0M, 2022) -- reflecting diversification of foreign/private capital into transport and logistics alongside mining and power.",
+      "Humanitarian signal is limited to environmental/flood monitoring (UNOSAT, 2023-03-23 and 2023-04-03/04) in Tumbes, Zarumilla, Lambayeque, and Piura provinces, with no linkage evident to the conflict or investment datasets in this window."
+    ],
+    "risk_flags": [
+      "Political transition risk: the narrow 2026 presidential election win by Keiko Fujimori (GDELT, 2026-06-30, multiple sources) surfaces repeated references to imprisonment and 'regime' framing (CAMEO 173), which may indicate contested legitimacy or unresolved legal/political history relevant to governance continuity, though the data does not specify fatalities or violence.",
+      "An 'ORGANIZED CRIME' CAMEO code (170) appears in direct connection with election-related reporting (GDELT, 2026-06-30, yahoo.com), a pattern worth monitoring though the underlying narrative detail is not resolved in this dataset.",
+      "Sectoral/counterparty concentration: mining recipients (Minera Las Bambas, Minera Chinalco Peru) are linked to a dense cluster of Chinese state financiers across multiple institutions, indicating investment exposure concentrated in a small number of extractive assets tied to a single country of origin for capital.",
+      "Conflict data quality issue: multiple 2026-07-01 and 2026-06-30 GDELT conflict entries reference locations outside Peru (Ohio, Bluffton, Cleveland) under generic CAMEO codes, suggesting tagging/attribution errors that undermine confidence in the conflict category's relevance to Peru specifically."
+    ],
+    "data_caveats": "Several conflict and humanitarian entries in this dataset appear mistagged or unrelated to Peru (e.g., Ohio and Ohio-adjacent US local news items under Peru's conflict category), reducing confidence in the raw conflict event count. Humanitarian coverage is sparse (only 3 records, mostly 2023 flood satellite imagery) with no recent (2025-2026) humanitarian reporting, and investment records are concentrated in 2022-2024, predating the 2026 election, so no data here captures post-election investment climate effects."
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "iso3": "HTI",
+  "country": "Haiti",
+  "generated_at": "2026-07-02T12:06:58.928513+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 222,
+  "category_counts": {
+    "conflict": 43,
+    "economic_indicator": 61,
+    "humanitarian": 18,
+    "investment": 45,
+    "other": 38,
+    "political_violence_targeting_civilians": 11,
+    "protest_civil_unrest": 2,
+    "strategic_development": 4
+  },
+  "analysis": {
+    "data_caveats": "GDELT-derived \"conflict\" and \"political_violence_targeting_civilians\" records are dominated by high-level CAMEO-coded diplomatic/media events (e.g., US TPS/immigration court rulings, US political commentary pieces referencing JD Vance/Trump) rather than ground-truth Haiti conflict incidents; nearly all entries lack fatality counts and several (Syria, Chile, DRC, Canada/Moncton stabbing) appear to be GDELT co-mentions unrelated to on-the-ground Haitian violence. The protest_civil_unrest category has only 2 recorded events despite widespread expectation of unrest, suggesting significant undercoverage in that category. Investment data is heavily historical (2010-2019, mostly Chinese grants/scholarships and a few DFC/PPI deals) with no recorded investment activity after 2019, leaving a multi-year gap in understanding current investment climate. Confidence in specific event-level conflict dynamics (e.g., gang control, security incidents) is low given the dataset's apparent skew toward US-centric political/media narratives rather than localized ACLED-style ground reporting.",
+    "key_relationships": [
+      "Gang and Population/Port-au-Prince actors appear together in conflict entries dated 2026-07-01 (GDELT, securitycouncilreport.org), consistent with continued gang-related insecurity noted in a UN Security Council monthly forecast on Haiti.",
+      "Haiti and United States are jointly the two most-cited actors across categories (28 and 17 mentions respectively) with heavy overlap in 2026-06-30/07-01 events tied to US Supreme Court TPS ruling coverage (peoplesworld.org, salon.com, jamaicaobserver.com), indicating current dataset activity is substantially driven by US immigration/TPS policy news rather than domestic Haitian developments.",
+      "Chinese Government institutions are the single most active actor overall (n=32, AidData) but all recorded activity is dated 2010-2019 (scholarships, grants, a $1.2B energy MoU in 2016, an $800M agriculture MoU in 2015), with no Chinese investment events reported in the most recent years.",
+      "DFC and World Bank PPI private-sector investment (e.g., Marriott Autograph Collection hotel loan, $19.5M, DFC FY2019; Port Lafito seaport project, $57.2M, WorldBankPPI 2014) represent the more recent Western/private capital, but both predate 2020, showing a gap in newer investment data points.",
+      "Economic indicators show a consistent multi-year contraction: IMF reports real GDP growth of -2.7% (2025) and -1.7% (2026 est.) alongside high inflation (28.3% IMF/28.6% WorldBank in 2025, moderating to 23.5% IMF in 2026), while government debt is comparatively low (12.3% of GDP 2025, 10.7% 2026)."
+    ],
+    "risk_flags": [
+      "Security Council Report (2026-07-01, securitycouncilreport.org) and GDELT entries pairing 'ARMED GANG <-> PORT AU PRINCE' and 'POPULATION <-> GANG' (both 2026-07-01) point to ongoing gang-related insecurity in the capital as a persistent risk theme.",
+      "US policy shift ending Temporary Protected Status for Haitians, reported 2026-06-30/07-01 across multiple outlets (jamaicaobserver.com, peoplesworld.org, courant.com), could affect remittance flows and diaspora-linked economic activity, though the data does not quantify this link directly.",
+      "Macroeconomic deterioration is evident: back-to-back years of negative real GDP growth (-2.7% in 2025, -1.7% projected 2026, IMF) combined with elevated inflation (~23-29%, IMF/WorldBank 2025-2026) signals sustained economic stress.",
+      "FDI net inflows were negligible at 0.1% of GDP in 2024 (WorldBank), and the investment dataset shows no recorded new investment activity since 2019, suggesting a possible slowdown or data gap in capital inflows during the most recent period.",
+      "Unemployment remains elevated and rising slightly (14.6% in 2024 to 14.9% in 2025, WorldBank), a secondary indicator of economic strain alongside conflict signals."
+    ],
+    "trend_summary": "The dataset presents a bifurcated picture: macroeconomic indicators show measurable, recent (2025-2026) contraction with high inflation and negligible FDI, while the conflict/political-violence and humanitarian feeds are dominated by GDELT-coded events that appear to reflect US political/media discourse (Supreme Court TPS rulings, commentary on US administration figures) rather than granular on-the-ground Haitian unrest, limiting the ability to assess conflict intensity directly. A narrower set of entries (e.g., Security Council Report, 2026-07-01) does point to continuing gang activity in Port-au-Prince as a live concern. Investment/development-finance activity is almost entirely historical (2010-2019), concentrated in Chinese government grants/scholarships and a handful of Western private-sector deals (DFC, World Bank PPI), with no recorded transactions in the 2020s, creating a substantial gap in understanding current investment posture. Protest/civil unrest is very thinly represented (only 2 events), which may reflect data collection gaps rather than an actual absence of unrest given other signals. Overall, the pattern suggests economic stress and unresolved security risk (gangs, capital insecurity) but the evidentiary base for recent conflict dynamics and current investment flows is weak within this data window."
+  }
+}

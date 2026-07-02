@@ -1,0 +1,29 @@
+{
+  "iso3": "GAB",
+  "country": "Gabon",
+  "generated_at": "2026-07-02T11:56:53.738806+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 191,
+  "category_counts": {
+    "economic_indicator": 56,
+    "investment": 133,
+    "other": 1,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The data shows a country with no recorded conflict/unrest events, moderate but slowing macroeconomic performance, and an investment landscape overwhelmingly shaped by Chinese state financiers alongside sporadic World Bank PPI, AfDB, and US DFC activity. Economic indicators point to steady but modest GDP growth (2.5% in 2025, projected 2.7% in 2026, per IMF) accompanied by a widening current account deficit and a sharp rise in government debt. Investment activity is dominated by a large volume of Chinese COVID-era health grants (2020-2021) and several large infrastructure projects (hydropower, water treatment, rail) financed through AfDB-linked vehicles and World Bank PPI, with a notable single large DFC political risk insurance deal in 2023. Humanitarian/OSINT coverage is minimal and of uncertain relevance to on-the-ground conditions.",
+    "key_relationships": [
+      "Government of Gabon (recipient_agency, n=83) is paired overwhelmingly with Chinese financiers -- 'Unspecified Chinese Government Institution' (n=50) and 'China Ministry of Commerce' (n=23) -- reflecting a dense bilateral financing relationship, largely built on COVID-19 health grants dated 2020-04-24 through 2021-05 (AidData).",
+      "The African Development Bank's 'Africa Growing Together Fund' recurs across multiple sectors under Umbrella Project ID#36104, financing water (AidData, 2019-02-07, $36.0M), transport infrastructure (AidData, 2020-03-17, $51.0M), and hydropower (AidData, 2021-07-02, $11.8M) -- indicating a sustained multi-sector AfDB engagement distinct from the Chinese grant activity.",
+      "The U.S. International Development Finance Corporation's $747.8M Political Risk Insurance commitment to the 'Blue Bonds for Marine Conservation' project (DFC, 2023-01-01) is the single largest financial figure in the dataset and represents the primary non-Chinese, non-multilateral large-scale engagement recorded.",
+      "World Bank PPI records a cluster of energy and water greenfield projects (Ayeme Plaine solar, $152.4M, 2022-01-01; Ntoum water treatment, $183.2M, 2022-01-01; Kingu\u00e9l\u00e9 Aval hydroelectric dam, $211.0M, 2021-01-01) suggesting continued private-sector-backed infrastructure buildout in the energy/water space through 2022-2023."
+    ],
+    "risk_flags": [
+      "General government gross debt rose sharply from 78.9% of GDP (IMF, 2025-12-31) to a projected 86.1% (IMF, 2026-12-31), alongside a widening current account deficit from -3.1% to -4.3% of GDP over the same period -- a fiscal trajectory worth monitoring.",
+      "Unemployment remains persistently high at roughly 20% (WorldBank, 2024-12-31: 20.1%; 2025-12-31: 20.2%) despite positive GDP growth figures, indicating limited labor-market absorption of macroeconomic gains.",
+      "Investment financing is heavily concentrated among Chinese state-linked actors, who account for over 100 of the 133 recorded investment events (summed across 'Unspecified Chinese Government Institution,' 'China Ministry of Commerce,' 'China Eximbank,' 'ICBC,' 'Chinese Embassy,' 'PBC,' 'CCB,' and 'National People's Congress' entries) -- a concentration that could pose diversification risk for the financing base.",
+      "A GDELT-sourced signal labeled 'REBELLION <-> GABON' (2026-07-01) is linked to a source article about Catholic bishop consecrations with no discernible connection to unrest in Gabon, suggesting this data point may be a mislabeled or low-relevance automated tag rather than a genuine unrest indicator."
+    ],
+    "data_caveats": "No conflict/unrest events (e.g., ACLED-style records) were present in this window, and the humanitarian/OSINT feed contains only two GDELT entries, one of which appears mismatched to its cited source content -- overall confidence in unrest/humanitarian signals for Gabon is very low. Investment data is also heavily weighted toward 2019-2023 with a gap in recent (2024-2026) investment-specific events, limiting insight into current-year financing activity despite more up-to-date economic indicators."
+  }
+}

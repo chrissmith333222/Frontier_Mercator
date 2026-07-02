@@ -1,0 +1,26 @@
+{
+  "iso3": "SWZ",
+  "country": "Eswatini",
+  "generated_at": "2026-07-02T12:03:36.231221+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 57,
+  "category_counts": {
+    "economic_indicator": 55,
+    "investment": 2
+  },
+  "analysis": {
+    "trend_summary": "The dataset for Eswatini shows no recorded conflict/unrest or humanitarian/OSINT events in this window, with virtually all signal coming from macroeconomic indicators (55 entries) and a thin investment record (2 entries). Economic indicators point to moderate GDP growth (3.0%-4.2% across 2024-2026 per WorldBank/IMF) alongside persistently high unemployment (34.6% in 2024, 34.2% in 2025, WorldBank) and inflation in the 3-3.5% range (IMF, 2025-2026). Government debt is projected to rise from 44.9% of GDP (2025) to 50.0% (2026, IMF), while current account balance figures diverge between sources. Investment/development-finance activity is limited to two legacy projects with no new entries in the recent period, and the only tracked actor is a generic 'private sector' category from the World Bank PPI Database.",
+    "key_relationships": [
+      "The only identified actor across all categories is 'Private sector (World Bank PPI Database)', linked solely to two investment projects: the Frazium solar plant ($115.0M, Energy/Electricity, active since 2021, WorldBankPPI) and MTN Swaziland ($17.2M, ICT/Telecom, active since 1998, WorldBankPPI) -- both greenfield projects with no subsequent updates or new entrants recorded.",
+      "IMF data (2026-12-31) projects government gross debt rising to 50.0% of GDP from 44.9% (2025-12-31, IMF), occurring in the same window as no new investment or development-finance activity is recorded, suggesting a data gap around whether rising debt corresponds to any tracked capital inflows.",
+      "WorldBank (2025-12-31) and IMF (2025-12-31) current account balance figures diverge sharply for overlapping reference periods (WorldBank BN.CAB.XOKA.GD.ZS: +1.6% for 2024 vs. IMF BCA_NGDPD: -0.6% for 2025), indicating inconsistent source methodology rather than a clear trend."
+    ],
+    "risk_flags": [
+      "Unemployment remains persistently high at 34.2%-34.6% across 2024-2025 (WorldBank), a structural indicator not offset by reported GDP growth of 3.0%-4.2% in the same period.",
+      "General government gross debt is projected to increase from 44.9% (2025, IMF) to 50.0% of GDP (2026, IMF), a five-point jump in a single year with no accompanying data explaining the driver.",
+      "Investment/development-finance activity is extremely sparse (only 2 events total) and dated (1998 and 2021), with no new projects recorded in the 2022-2026 window despite continued economic indicator reporting, suggesting either a genuine slowdown in tracked FDI or a significant data collection gap for this source category.",
+      "Complete absence of conflict/unrest and humanitarian/OSINT events could reflect either genuine stability or simply a lack of coverage for Eswatini in these source feeds; the data cannot distinguish between the two."
+    ],
+    "data_caveats": "This window contains zero conflict/unrest and zero humanitarian/OSINT events, which may reflect either actual stability or a coverage gap in these feeds for Eswatini -- the data alone cannot confirm which. Investment data is limited to two legacy entries (1998, 2021) with no recent activity, so conclusions about current investment climate are not well supported. Current account balance figures conflict between WorldBank and IMF sources for adjacent years, indicating differing methodologies that should not be treated as a consistent trend."
+  }
+}

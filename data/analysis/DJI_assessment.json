@@ -1,0 +1,30 @@
+{
+  "iso3": "DJI",
+  "country": "Djibouti",
+  "generated_at": "2026-07-02T11:55:28.102473+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 199,
+  "category_counts": {
+    "conflict": 3,
+    "economic_indicator": 61,
+    "investment": 131,
+    "other": 4
+  },
+  "analysis": {
+    "trend_summary": "Djibouti's data shows a bifurcated picture: macro indicators point to solid nominal growth (6.0-6.5% real GDP growth in 2025-2026), a large current account surplus (10.1-14.7% of GDP), and moderate/declining public debt (29.6-32.1% of GDP), alongside persistently high unemployment (26.0% in 2024-2025) and near-zero to negative inflation. Investment activity is overwhelmingly dominated by Chinese state-linked financiers (Unspecified Chinese Government Institution, China Ministry of Commerce, China Eximbank, China Development Bank, China Merchants Group) engaging the Government of Djibouti primarily through health/COVID-era grants (2020-2021) and infrastructure financing, with China Eximbank also having restructured/suspended debt service on at least two occasions. Separately, a small but high-severity cluster of conflict/OSINT signals from 2026-07-01 (all GDELT-sourced, severity 9.0) reflects Red Sea/Yemen maritime security concerns and US/allied naval activity rather than domestic Djiboutian unrest. Non-Chinese investment is present but comparatively minor (World Bank PPI-listed private-sector energy and ICT projects in 2020 and 2023).",
+    "key_relationships": [
+      "Government of Djibouti is the top recipient actor (n=79, investment category) and is matched almost entirely by Chinese financiers -- Unspecified Chinese Government Institution (n=67), China Ministry of Commerce (n=22), and China Eximbank (n=14) -- indicating a concentrated bilateral financing relationship (AidData records, 2019-2023).",
+      "China Eximbank restructured and suspended Djibouti's debt service on multiple occasions: a 2013 buyer's credit loan for the Addis Ababa-Djibouti Railway restructured 2020-09-02, and separate debt service suspensions recorded for 2020-01-01 and 2021-01-01 (AidData/World Bank DSSI).",
+      "Repeated Chinese health-sector grants and technical assistance to the Djibouti Ministry of Health cluster in 2020-2021 (e.g., Sinovac vaccine donations dated 2021-01-01, epidemic material donations 2020-04-07 through 2020-09-07, AidData), coinciding with the debt rescheduling actions in the same window.",
+      "The 2026-07-01 conflict/OSINT cluster (GDELT) ties Djibouti's data profile to regional Red Sea/Yemen maritime incidents (cargo ship vs. Yemen, Israel/Liberia-linked CAMEO 190/193 events) and to US/Japan naval activity (Arabian Sea helicopter search, CAMEO 073/090/057), consistent with the 'Navy' MIL actor appearing in the 'other' category (n=3).",
+      "Non-Chinese infrastructure investment is limited to a few World Bank PPI-listed projects -- Ghoubet Wind Farm ($123.5M, 2020-01-01) and Grand Bara solar plus SEACOM broadband ($29.6M, 2023-01-01) -- showing some diversification but far smaller in count than Chinese-linked activity."
+    ],
+    "risk_flags": [
+      "Debt rescheduling/suspension actions with a single external creditor (China Eximbank) recorded in 2020-01-01, 2020-09-02, and 2021-01-01 (AidData) suggest recurring debt-service strain despite official gross debt/GDP figures showing a moderate and declining ratio (32.1% in 2025 to 29.6% in 2026, IMF).",
+      "High unemployment (26.0% in both 2024 and 2025, World Bank) persists despite strong reported real GDP growth (6.0-6.5%, IMF/World Bank 2025-2026), indicating a possible disconnect between macro growth and labor-market absorption.",
+      "Conflict/OSINT signals dated 2026-07-01 (GDELT, severity 9.0) reference active Red Sea/Yemen maritime threats and naval search operations near Djibouti's strategic waters, a potential risk to port- and shipping-dependent economic activity, though the data does not show direct attacks on Djiboutian territory or assets.",
+      "Investment financier concentration is heavily skewed toward Chinese state institutions (three of the top four actors by count are Chinese financiers totaling n=103 of tracked investment activity), representing a potential single-country financing/geopolitical concentration risk not offset by comparable volumes from other financiers in this dataset."
+    ],
+    "data_caveats": "The three conflict events are all dated the same day (2026-07-01), sourced entirely from GDELT, and describe regional/maritime actors (Yemen, Israel, Liberia) rather than confirmed domestic Djiboutian unrest, so their direct relevance to in-country conflict risk is uncertain. Investment data is dominated by AidData entries concentrated in 2019-2023 with many 'amount undisclosed' grants, limiting quantitative comparison, and there is a gap in investment-specific narrative detail for 2024-2026 despite economic indicators extending through 2026; overall confidence in characterizing recent (post-2023) investment flows is low."
+  }
+}

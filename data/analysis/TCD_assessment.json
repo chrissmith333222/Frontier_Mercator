@@ -1,0 +1,32 @@
+{
+  "iso3": "TCD",
+  "country": "Chad",
+  "generated_at": "2026-07-02T11:49:46.100869+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 245,
+  "category_counts": {
+    "conflict": 12,
+    "economic_indicator": 56,
+    "humanitarian": 18,
+    "investment": 153,
+    "other": 2,
+    "political_violence_targeting_civilians": 3,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The data for Chad shows a sharp contrast between macroeconomic indicators, which appear stable-to-positive (IMF/World Bank figures show GDP growth near 5.2-5.6% for 2025-2026, moderate government debt around 30% of GDP, and a positive current account balance), and a conflict/political-violence data stream that is largely low-quality GDELT noise rather than substantiated unrest reporting. Investment activity is dominated by a long history of small, in-kind Chinese government grants to Chadian ministries and institutions, alongside a handful of larger World Bank PPI-tracked solar energy greenfield projects. Humanitarian signals in this window are limited almost entirely to 2024 UNOSAT satellite flood-monitoring products covering N'Djamena and other cities, with no recent (2025-2026) humanitarian reporting provided. Overall the dataset supports observations about financing patterns and flood exposure but offers weak evidence on the conflict/security dimension due to data quality issues described below.",
+    "key_relationships": [
+      "The Chinese Government/Embassy is the most active financier in the dataset, providing repeated in-kind grants (medical supplies, vaccines, office equipment, vehicles) to Government of Chad bodies including the Ministry of Foreign Affairs, Ministry of Public Health, and University of N'Djamena (AidData, 2020-06-01 through 2021-07-14).",
+      "World Bank PPI records show three greenfield solar energy projects -- Djermaya Solar PV Plant ($41.4M, 2021-01-01), Qair solar plants ($30.0M, 2021-01-01), and a further solar/battery storage portfolio ($50.0M, 2023-01-01) -- indicating a distinct private/development-finance energy investment channel separate from Chinese state grants.",
+      "GDELT conflict and political-violence-targeting-civilians records repeatedly pair 'CHADIAN' with 'LIBYA' under CAMEO code 181 across 2026-06-29, 2026-06-30, and 2026-07-01, suggesting a recurring Chad-Libya interaction theme in the wire feed, though underlying source articles (e.g., Al Jazeera 2026-06-29 on a US-Libya diplomatic meeting) do not clearly describe an event inside Chad itself.",
+      "UNOSAT flood-monitoring outputs cluster around N'Djamena, Bongor, and Koukou Angarana between August and October 2024, indicating recurring water/flood exposure in populated areas relevant to infrastructure and investment siting."
+    ],
+    "risk_flags": [
+      "A large share of 'conflict' events dated 2026-06-29 to 2026-07-01 carry high severity scores (8.8-9.2) but pair Chad with unrelated or generic actors (e.g., 'AFGHANISTAN <-> CHAD', 'unspecified actor <-> CHADIAN', CAMEO 190/192/193, GDELT) and link to source URLs with no evident Chad content (e.g., a Florida alligator attack story, a WWE Raw recap, a child pornography sentencing article), indicating substantial noise/mis-tagging in the conflict feed that undermines confidence in any security-risk conclusion for this window.",
+      "Investment activity in the provided sample is dominated by undisclosed-amount, small-scale Chinese in-kind grants (e.g., AidData 2020-11-01, 2020-12-01, 2021-06-06 entries with 'amount undisclosed'), which limits visibility into the true scale and terms of financing exposure, including any debt-generating components.",
+      "Recurring flood events documented by UNOSAT in N'Djamena and other cities (2024-08-29, 2024-09-05, 2024-10-08, 2024-10-18) point to a recognized climate/water hazard pattern that could affect infrastructure and investment projects sited in or near these areas, though no 2025-2026 humanitarian follow-up data is present to indicate current status.",
+      "Economic indicator series show a swing from 8.9% consumer price inflation (World Bank, 2024-12-31) to negative inflation readings of -3.9% (World Bank) and -2.6% (IMF) for 2025, a volatility pattern in price data that warrants scrutiny given no explanatory events are provided in this dataset."
+    ],
+    "data_caveats": "The conflict and political-violence categories in this window are dominated by GDELT entries with generic CAMEO codes and source articles that frequently do not correspond to identifiable Chad-specific events (including several with unrelated countries or unrelated subject matter), so these should not be read as a validated unrest signal; no fatality counts are provided for any conflict event. Humanitarian data is restricted to 2024 flood-monitoring products with no coverage of 2025-2026, and the investment sample, while large in count (153), is weighted toward older (2020-2023) Chinese grant records with many undisclosed dollar amounts, limiting assessment of recent or large-scale financing trends."
+  }
+}

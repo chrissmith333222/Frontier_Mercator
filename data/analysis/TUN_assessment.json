@@ -1,0 +1,31 @@
+{
+  "iso3": "TUN",
+  "country": "Tunisia",
+  "generated_at": "2026-07-02T11:56:24.610587+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 196,
+  "category_counts": {
+    "conflict": 1,
+    "economic_indicator": 67,
+    "humanitarian": 5,
+    "investment": 121,
+    "political_violence_targeting_civilians": 1,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The Tunisia dataset is dominated by investment/development-finance activity (121 events) and economic indicators (67 events), with very sparse conflict, humanitarian, and political-violence signal (1-5 events each). Economic indicators show modest but slowing real GDP growth (2.5% in 2025 to 2.1% in 2026, IMF), persistently high unemployment (~15.1-15.3%, WorldBank/IMF 2024-2025), elevated inflation (5.2-6.5%, WorldBank/IMF 2025-2026), a widening current account deficit (-2.8% in 2025 to -4.2% in 2026, IMF), and rising government debt (81.3% to 84.9% of GDP, IMF 2025-2026). Investment activity is concentrated in Chinese health-sector grants (2019-2021 COVID-related donations, AidData) and World Bank PPI-tracked renewable energy greenfield projects (solar/wind, 2020-2024), alongside smaller US DFC guarantees and technical assistance (2022). The two conflict/political-violence records dated 2026-07-01 appear to be data-quality anomalies unrelated to Tunisia (see caveats), and humanitarian signals are limited to recurring UNOSAT wildfire damage assessments in Jendouba Governorate (2021, 2023).",
+    "key_relationships": [
+      "Government of Tunisia is the top-listed recipient actor (n=50, investment category) intersecting heavily with Chinese financier entities (Unspecified Chinese Government Institution n=41; China Ministry of Commerce n=23; Chinese Embassy n=8; China Eximbank n=6), reflecting a sustained China-Tunisia aid/investment channel, largely health-sector grants from 2020-2021 (AidData, e.g. 2021-08-02, 2021-03-25, 2020-12-30, 2020-06-10, 2020-06-03, 2020-04-15).",
+      "World Bank PPI Database records a cluster of solar energy greenfield projects (Sidi Bouzid/Tozeur $87.9M 2024; Kairouan $86.0M 2023; Scatec Tozeur and Sidi Bouzid Mezzouna $52.5M each 2022; Sidi Mansour Wind Farm $40.0M 2020), indicating a consistent renewable-energy investment pipeline spanning 2020-2024.",
+      "U.S. DFC activity (n=9) is comparatively small-scale and finance-sector focused, including a $13.0M unfunded guaranty and $382,500 technical assistance to Advans Tunisia (2022-01-01, DFC) and $2.0M political risk insurance to DAI (2022-01-01, DFC), suggesting limited but present US development-finance engagement alongside the larger Chinese and multilateral footprint.",
+      "The only conflict/political-violence entries (GDELT, 2026-07-01) reference 'SWISS <-> JEWISH' and an unspecified actor tied to Jewish-actor coding, sourced from a Swiss antisemitism trial report and an Israeli news obituary -- these do not describe events occurring in or connected to Tunisia and appear to be a geocoding/actor-tagging artifact rather than a genuine Tunisia security event."
+    ],
+    "risk_flags": [
+      "Widening current account deficit combined with rising government debt (IMF: CAB -2.8%-of-GDP in 2025 to -4.2% in 2026; debt 81.3% to 84.9% of GDP over the same period) signals deteriorating macro-fiscal buffers even as growth is reported positive.",
+      "Persistently high unemployment (WorldBank/IMF: 15.1-15.3% across 2024-2025) alongside decelerating GDP growth (2.5% to 2.1%, IMF 2025-2026) points to a labor-market/growth mismatch that is not offset by the investment activity recorded.",
+      "Recurring wildfire damage in Jendouba Governorate (UNOSAT, 2021-07-30, 2021-08-03, 2023-07-27, 2023-07-28, 2023-07-31) indicates a repeated environmental hazard pattern in the same northwestern region over multiple years, though the dataset does not quantify economic or infrastructure loss.",
+      "The dataset's only 'conflict' and 'political_violence_targeting_civilians' entries (GDELT, 2026-07-01) are very likely misattributed to Tunisia given their Swiss/Israeli sourcing and subject matter, which undermines confidence in the conflict-category tagging for this country in the current window."
+    ],
+    "data_caveats": "The conflict and political_violence_targeting_civilians entries dated 2026-07-01 reference Swiss and Israeli/Jewish-related news sources with no apparent link to Tunisia, indicating likely GDELT actor/geocoding misclassification -- these should not be treated as evidence of unrest in Tunisia. Humanitarian signals are limited to environmental (wildfire) satellite assessments from 2021 and 2023 with a gap through 2026, and investment data is skewed toward older Chinese health-aid grants (2019-2022) and periodic World Bank PPI energy projects, leaving limited visibility into 2025-2026 investment or security developments specifically within Tunisia."
+  }
+}

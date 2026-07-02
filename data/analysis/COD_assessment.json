@@ -1,0 +1,29 @@
+{
+  "iso3": "COD",
+  "country": "Democratic Republic of Congo",
+  "generated_at": "2026-07-02T12:04:20.884241+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 470,
+  "category_counts": {
+    "conflict": 37,
+    "economic_indicator": 56,
+    "explosion_remote_violence": 2,
+    "humanitarian": 29,
+    "investment": 315,
+    "other": 23,
+    "political_violence_targeting_civilians": 6,
+    "protest_civil_unrest": 2
+  },
+  "analysis": {
+    "data_caveats": "This dataset is heavily skewed by volume toward GDELT-derived conflict/political-violence events, which are largely generic CAMEO-coded pairings (e.g., \"AUTHORITIES <-> DEMOCRATIC REPUBLIC OF THE CONGO\") lacking fatality counts, specific locations beyond province names, or clear actor identification -- these should be read as signals of media/diplomatic attention rather than confirmed ground-truth incidents. The investment data is dominated by Chinese state financiers and Sicomines-linked flows (mostly 2020-2023) with a large gap between 2023 and the 2026 conflict window, making it hard to assess whether investment activity has continued or shifted during the most recent unrest. No ACLED-style event-level fatality data is present despite conflict/humanitarian categories being populated, and protest_civil_unrest has only 2 recorded events, likely undercounting civil unrest.",
+    "key_relationships": "\n<parameter name=\"key_relationships\">[\"Sicomines SARL (n=60, recipient_agency) and Chinese state financiers (Unspecified Chinese Government Institution n=123, China Eximbank n=84, China Ministry of Commerce n=32) dominate the investment actor list, consistent with concentrated resource-linked Chinese financing rather than diversified private investment.\", \"UN-linked political violence targeting civilians spikes on 2026-06-30 in Kasai province (three CAMEO 186 events, severity 9.5, allafrica.com sources) alongside UN-unspecified-actor events (CAMEO 181, severity 9.2), suggesting a discrete incident involving UN personnel/peacekeepers around that date.\", \"Conflict events on 2026-07-01 (CAMEO 172, severity 6.5, Independent.co.uk) are tied to Ebola/health-crisis reporting rather than kinetic conflict, indicating category-labeling overlap between health emergencies and 'conflict' in this dataset.\", \"Security Council and ICC engagement on DRC natural resources and women-peace-and-security agenda items cluster on 2026-07-01 (securitycouncilreport.org), occurring in the same window as the Kasai/UN incidents, pointing to elevated international diplomatic attention concurrent with the unrest.\", \"Armed group activity in Haut Uele (CAMEO 190, severity 9.0, 2026-06-30, koreaherald.com) and militia activity in Ituri (explosion_remote_violence, severity 10.0, 2026-06-30) occur same-day, indicating simultaneous instability in at least two eastern provinces.\"]",
+    "risk_flags": [
+      "Highest-severity event in the window is an explosion/remote violence incident in Ituri attributed to a militia, severity 10.0, dated 2026-06-30 (GDELT/koreaherald.com), with no fatality figure reported.",
+      "Multiple near-simultaneous high-severity (9.0-9.5) events involving UN actors and Kasai on 2026-06-30 (allafrica.com, x2 URLs) suggest a targeting-of-civilians or peacekeeping-related incident cluster that is likely to draw international scrutiny (consistent with ICC/Security Council activity on 2026-07-01).",
+      "Government-Kinshasa and Government-DRC 'AUTHORITIES' pairings (CAMEO 172, severity 6.5, 2026-07-01) recur four times same day with vague/unspecified counterpart actors, indicating either duplicate reporting or an unresolved authorities-vs-unspecified-actor tension worth monitoring for clarity.",
+      "IMF current account balance shows divergent trend from World Bank series for the same years (IMF: -2.0% in 2026, -3.7% in 2025; World Bank: -4.3% in 2025), a data inconsistency that complicates external-balance risk assessment.",
+      "Investment data shows a multi-year gap (2023 to present) with no recorded new project entries during the 2026 conflict spike, so it is not possible to determine from this data whether recent unrest has affected investment flows."
+    ],
+    "trend_summary": "The data shows a bifurcated picture: a heavily China-concentrated investment/development-finance history (2020-2023, dominated by Sicomines, China Eximbank, and Chinese government grants/debt actions) alongside a recent (late June-early July 2026) spike in conflict-coded and political-violence-targeting-civilians events concentrated in Kasai, Ituri, and Haut Uele provinces. Macroeconomic indicators reported by IMF/World Bank show continued real GDP growth (5.7-5.9% in 2025-2026) and moderating inflation (7.4% to 3.3%), alongside low government debt (20-25% of GDP) and modest FDI inflows (3.8% of GDP in 2024), suggesting the recent unrest has not yet been reflected in macro data (or postdates the most recent available economic series). Humanitarian/OSINT signals for July 2026 are dominated by Security Council, ICC, and UN diplomatic activity referencing DRC, natural resources, and women-peace-and-security themes, indicating elevated international institutional attention concurrent with the conflict spike. Protest/civil unrest is nearly absent from the dataset (n=2), which combined with sparse ACLED-style granularity limits confidence in characterizing ground-level social stability. Overall the pattern is one of an externally-financed resource economy showing continued macro growth metrics, set against a recent cluster of eastern/central-province violence and UN-related incidents that has drawn international diplomatic response but has not yet visibly registered in the investment or economic data series provided."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "iso3": "GTM",
+  "country": "Guatemala",
+  "generated_at": "2026-07-02T12:01:09.761534+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 133,
+  "category_counts": {
+    "conflict": 3,
+    "economic_indicator": 61,
+    "humanitarian": 7,
+    "investment": 61,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows a stable macroeconomic profile (IMF/WorldBank data through 2026: real GDP growth 3.9-4.3%, inflation 1.5-2.6%, government debt ~27-28% of GDP, positive current account balance 2.9-4.8% of GDP) alongside sustained, diversified investment activity concentrated in energy infrastructure and financial services. Investment activity (61 events) is dominated by World Bank PPI-tracked private-sector energy projects (solar, wind, hydro, biomass, 2014-2024) and U.S. DFC lending/guarantees to Guatemalan banks and finance companies. Conflict data is extremely thin (3 events) and of questionable relevance, largely low-fidelity GDELT entries rather than substantiated unrest. Humanitarian signals are dominated by older UNOSAT satellite disaster-mapping products (flooding 2020, Volc\u00e1n de Fuego damage 2018) with no recent humanitarian crisis indicators in this window. Overall the data paints a picture of steady economic/investment activity with no clear evidence of acute conflict or humanitarian deterioration, though coverage gaps limit confidence in the conflict/humanitarian picture for 2021-2026.",
+    "key_relationships": [
+      "Private sector actors tracked via World Bank PPI Database account for 49 of 61 investment events, concentrated in the energy sector (e.g., Yolanda Solar PV Plant $64.0M, 2024; Las Cumbres Wind Farm $56.4M, 2019; Horus Energy $100.0M, 2014) \u2014 indicating a long-running pattern of greenfield power generation investment (WorldBankPPI, 2014-2024).",
+      "U.S. International Development Finance Corporation (12 events) repeatedly finances Guatemalan financial institutions \u2014 Banco Promerica S.A. ($45.0M, FY2023 and $8.1M, FY2018), Banco Internacional S.A. ($15.0M, FY2021), BAC Guatemala-LPG ($12.5M, FY2023), COSAMI R.L. ($20.0M, FY2024) \u2014 suggesting sustained U.S. development-finance engagement with the banking sector (DFC records, 2018-2024).",
+      "One conflict-tagged item (riotimesonline, 2026-06-30) references reburial of victims from Guatemala's historical armed conflict in Chimaltenango rather than an active security incident, indicating the 'conflict' category here may be capturing commemorative/historical news rather than live unrest.",
+      "Humanitarian entries are almost entirely UNOSAT satellite disaster-mapping products tied to specific events \u2014 Tropical Storm-driven flooding in Izabal, Pet\u00e9n, Alta Verapaz and Zacapa (UNOSAT, 2020-11-20 to 2020-11-25) and Volc\u00e1n de Fuego pyroclastic-flow damage in San Miguel de Los Lotes (UNOSAT, 2018-06-07) \u2014 reflecting episodic natural-hazard response rather than ongoing conflict-driven humanitarian need."
+    ],
+    "risk_flags": [
+      "The three conflict-tagged events (GDELT, 2026-06-30 to 2026-07-01) carry high nominal severity scores (6.5-9.0) but involve ambiguous or non-security actors ('unspecified actor <-> AMERICAN', 'GUATEMALA CITY <-> CANADA' referencing a sports event), suggesting these severity scores may not reflect genuine security risk and should be treated with caution rather than as evidence of escalating unrest.",
+      "Strategic development data is limited to a single event (an ambassador-related GDELT entry, 2026-07-01), providing essentially no substantive coverage of policy, regulatory, or infrastructure planning signals for this window.",
+      "Humanitarian/OSINT coverage has a multi-year gap: aside from one ambiguous 2026 GDELT entry, the most recent substantive humanitarian data point is from 2020 (UNOSAT flooding, 2020-11-25), meaning any humanitarian developments since 2021 are not visible in this dataset."
+    ],
+    "data_caveats": "Conflict data relies on only 3 low-specificity GDELT entries with unclear or non-security actors, providing insufficient basis to assess actual unrest levels; there is no ACLED-style event data with fatalities or clear actor identification. Humanitarian signals are concentrated in 2017-2020 satellite disaster products with a large gap through 2025, so recent humanitarian conditions cannot be assessed from this data. Strategic development coverage is essentially absent (1 event), limiting insight into policy or governance trends."
+  }
+}

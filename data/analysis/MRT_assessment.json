@@ -1,0 +1,27 @@
+{
+  "iso3": "MRT",
+  "country": "Mauritania",
+  "generated_at": "2026-07-02T11:52:57.719416+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 223,
+  "category_counts": {
+    "economic_indicator": 61,
+    "investment": 162
+  },
+  "analysis": {
+    "trend_summary": "The dataset shows no recorded conflict/unrest or humanitarian/OSINT events for Mauritania, so this note is built almost entirely from economic indicators (IMF/WorldBank, 2024-2026) and investment/development-finance records (AidData, 2020-2021). Macroeconomic indicators point to moderate, steady growth (Real GDP growth 4.0-4.4%, IMF/WorldBank 2025-2026) with declining government debt (40.1% of GDP in 2025 to 37.1% in 2026, IMF) but a persistent current account deficit (-5.8% to -6.5% of GDP, IMF 2025-2026; -9.6% per WorldBank 2024). Investment activity is heavily dominated by Chinese state actors -- an 'Unspecified Chinese Government Institution' (n=65), China Ministry of Commerce (n=37), and the Chinese Embassy (n=30) account for the bulk of 162 investment records, almost entirely health/COVID-related grants and debt actions dated 2020-2021. There is a notable temporal gap between the investment data (2020-2021) and the economic indicator data (2024-2026), meaning the two data streams do not describe the same period and cannot be directly correlated.",
+    "key_relationships": [
+      "The Government of Mauritania appears as the dominant recipient_agency (n=101) almost exclusively in the investment category, paired repeatedly with Chinese financiers (Unspecified Chinese Government Institution n=65, China Ministry of Commerce n=37, Chinese Embassy n=30), indicating China is the primary bilateral development-finance partner recorded in this window (AidData, 2020-2021 entries).",
+      "China Eximbank suspended debt service payments from the Government of Mauritania in two consecutive periods (AidData, 2021-01-01 and 2021-07-01), and separately the Chinese Government cancelled RMB 59.29 million ($9.2M) of Mauritanian debt (AidData, 2021-10-26), signaling active debt-relief/restructuring engagement between these two actors.",
+      "Beyond health grants, China and the Government of Mauritania also engaged on infrastructure: a bridge-construction MOU (AidData, 2021-12-03) and a $15.1M grant for an 'Urban Security and Monitoring System Project' via ETCA (AidData, 2021-01-02), suggesting a mix of soft aid and harder infrastructure/security cooperation.",
+      "The FDI net inflows figure of 13.2% of GDP (WorldBank, 2024-12-31) is notably high relative to the current account deficit reported for the same year (-9.6% of GDP, WorldBank, 2024-12-31), though the investment dataset does not identify the source of this FDI, limiting the ability to link it to specific actors."
+    ],
+    "risk_flags": [
+      "Chinese development finance to Mauritania in this window is overwhelmingly grant-based COVID/health aid (multiple AidData entries, 2020-08-22 through 2021-12-21) rather than diversified productive investment, suggesting narrow sectoral concentration in the recorded activity.",
+      "China Eximbank debt service suspensions (AidData, 2021-01-01 and 2021-07-01) alongside a separate debt cancellation (AidData, 2021-10-26) indicate the Government of Mauritania required debt relief/restructuring from at least one major external creditor during this period.",
+      "Current account balance estimates diverge across sources -- WorldBank reports -9.6% of GDP for 2024 while IMF reports -5.8% for 2025 and -6.5% for 2026 -- indicating either a rapidly changing deficit or methodological inconsistency that warrants caution before drawing trend conclusions.",
+      "There is a complete absence of conflict/unrest and humanitarian/OSINT data in this dataset, which prevents any assessment of political or security risk despite this being a stated focus area of the report."
+    ],
+    "data_caveats": "No conflict/unrest or humanitarian/OSINT events were provided for Mauritania in this window, so political and security risk cannot be assessed from this data. The investment/development-finance records are concentrated in 2020-2021 and are dominated by a single bilateral partner (China) as captured by AidData, while economic indicators are drawn from 2024-2026 IMF/WorldBank series -- the two datasets do not overlap in time and should not be treated as describing the same period. Some economic figures (e.g., current account balance) show discrepancies between IMF and WorldBank sourcing, reducing confidence in a single consistent trend line."
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "iso3": "JAM",
+  "country": "Jamaica",
+  "generated_at": "2026-07-02T11:45:12.387124+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 295,
+  "category_counts": {
+    "conflict": 54,
+    "economic_indicator": 67,
+    "humanitarian": 4,
+    "investment": 141,
+    "other": 26,
+    "protest_civil_unrest": 2,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The data shows a country profile dominated by investment/development-finance activity (141 events) and economic indicators (67), with conflict-labeled events (54) that are almost entirely GDELT-derived crime/incident noise rather than organized unrest, and only 2 protest events recorded. Investment activity is heavily weighted toward Chinese state-linked financiers (Eximbank, China Harbour Engineering, China Development Bank, Chinese Embassy, Hanban) alongside World Bank PPI-tracked infrastructure projects in water, energy, and transport. Economic indicators point to a macro inflection: real GDP growth turned negative in 2025 and is forecast to worsen in 2026, while the current account swings from a small surplus to a sizeable forecast deficit. Humanitarian, protest, and strategic-development categories are all very thin (4, 2, and 1 events respectively), limiting confidence in any social-unrest or humanitarian narrative.",
+    "key_relationships": [
+      "Chinese state financiers dominate the investment actor list (Unspecified Chinese Government Institution, n=51; China Eximbank, n=13; China Harbour Engineering, n=10; Chinese Embassy, n=7; CDB, n=6; Hanban, n=6) with the Government of Jamaica as principal recipient (n=47), spanning COVID-era medical grants (AidData, 2020-04-23 through 2021-12-01) and earlier training/education programs (AidData, 2019-07-03, 2019-08-15, 2019-10-29) -- indicating a sustained bilateral aid relationship rather than large-scale new lending in the recent window.",
+      "Non-Chinese infrastructure financing continues via World Bank PPI-tracked private-sector projects: Rio Cobre Water Treatment Plant ($77.0M, active, WorldBankPPI 2024), JPS Electricity Grid Modernization ($100.0M, active, WorldBankPPI 2024), Soleco solar PV portfolio ($24.3M, active, WorldBankPPI 2022), and the Norman Manley International Airport concession ($110.0M, active, WorldBankPPI 2019), plus a DFC guaranty to Sygnus Credit Investments ($9.0M, FY2024).",
+      "IMF economic indicators show a deteriorating external and growth picture: real GDP growth of -0.1% (2025) worsening to a forecast -1.2% (2026), and current account balance flipping from +1.2% of GDP (2025) to a forecast -6.0% (2026) (IMF, 2026-12-31 series) -- a macro trend that is not yet reflected in any updated investment entries after 2024.",
+      "Conflict-category events on 2026-07-01 are overwhelmingly generic GDELT extractions tied to a single Clarendon stabbing/murder case (jamaicaobserver.com) and a Falmouth fire (jamaicaobserver.com), both assigned severity scores of 9.0 despite being routine crime/emergency-response incidents rather than organized political violence.",
+      "A judicial governance signal -- the Ruel Reid corruption trial resumption set for October (GDELT, 2026-07-01, jamaicaobserver.com) -- appears in the humanitarian/OSINT feed, the only item in this window touching institutional accountability."
+    ],
+    "risk_flags": [
+      "Macro deterioration: IMF data shows real GDP contraction forecast for 2026 (-1.2%) following a near-flat 2025 (-0.1%), combined with a current account swing from +1.2% of GDP (2025) to a forecast -6.0% (2026) (IMF, 2026-12-31 entries) -- a combination worth monitoring for external financing pressure.",
+      "Investment concentration: a large share of tracked investment/finance activity is attributed to Chinese state-linked actors (51+13+10+7+6+5 events across several Chinese financier entities) versus more limited private-sector and multilateral entries, suggesting potential concentration risk in financing relationships, though the data does not include loan terms or debt-sustainability detail to assess this further.",
+      "Data-quality risk in conflict signal: the 54 'conflict' events are dominated by miscoded GDELT items (a domestic stabbing case and a structure fire, both dated 2026-07-01, sourced to jamaicaobserver.com) rather than validated unrest events, meaning the conflict count should not be read as evidence of rising political violence.",
+      "Ongoing corruption-related judicial proceedings (Ruel Reid trial resumption, GDELT, 2026-07-01, jamaicaobserver.com) remain unresolved, a governance factor flagged but not elaborated elsewhere in the data.",
+      "Social-service strain: a single humanitarian item reports a mental-health system crisis at Bellevue Hospital (jamaicans.com, 2026-07-01), which is not corroborated by other humanitarian entries in this thin category."
+    ],
+    "data_caveats": "The humanitarian (4), protest/civil unrest (2), and strategic_development (1) categories are too sparse to support pattern-level conclusions. The conflict category appears heavily populated by generic GDELT event-extraction noise (crime and fire incidents mislabeled with high severity scores) rather than ACLED-style conflict/unrest records, which undermines confidence in using it as a unrest indicator. Investment data is dated no later than 2024, leaving a gap relative to the 2025-2026 economic indicators that show macro deterioration, so the relationship between recent economic trends and investment response cannot be assessed from this data."
+  }
+}

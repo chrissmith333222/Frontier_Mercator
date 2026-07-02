@@ -1,0 +1,36 @@
+{
+  "iso3": "SDN",
+  "country": "Sudan",
+  "generated_at": "2026-07-02T04:08:36.382469+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 717,
+  "category_counts": {
+    "conflict": 160,
+    "economic_indicator": 59,
+    "explosion_remote_violence": 26,
+    "humanitarian": 57,
+    "investment": 344,
+    "other": 25,
+    "political_violence_targeting_civilians": 38,
+    "protest_civil_unrest": 1,
+    "strategic_development": 7
+  },
+  "analysis": {
+    "trend_summary": "The Sudan data window shows a country in acute crisis: conflict (160 events), political violence targeting civilians (38), and explosion/remote violence (26) events cluster heavily around a single reporting date (2026-07-01) tied to Amnesty International's report on RSF atrocities and alleged ethnic cleansing in El Fasher/Darfur. Economic indicators corroborate severe macro stress -- triple-digit inflation, a collapsing currency environment, unemployment above 60%, and government debt exceeding 165-185% of GDP. Investment activity is dominated numerically (344 events) by Chinese state financiers and grants to the Government of Sudan, but the detailed investment records available are almost entirely dated 2019-2021, predating the current conflict intensity, leaving a gap in understanding how (or whether) that financing relationship has continued. Humanitarian signals reinforce a picture of civilian-targeted violence, displacement, and regional spillover (Chad, South Sudan refugee camps).",
+    "key_relationships": [
+      "Government of Sudan (n=183) is the dominant investment recipient, financed overwhelmingly by Chinese state actors -- Unspecified Chinese Government Institution (n=152), China Eximbank (n=45), China Ministry of Commerce (n=36), CNPC (n=33), Chinese Embassy (n=31) -- per AidData records spanning 2019-2021 (e.g. $14M water supply grant, 2019-03-24; $2M cash grant, 2020-02-24; COVID vaccine donations, 2021-01-01).",
+      "Military actors 'Sudanese MIL' (n=31) and 'Sudan MIL' (n=25) are concentrated in conflict, political violence targeting civilians, and explosion/remote violence categories, consistent with the RSF-attributed atrocities in El Fasher reported across multiple GDELT-sourced outlets on 2026-07-01 (amnesty.org.au, arabnews.com, standardmedia.co.ke, justiceinfo.net, aawsat.com, scmp.com).",
+      "Explosion/remote violence events on 2026-07-01 specifically reference Darfur, the Zaghawa population, and 'ethnic cleansing' language (Amnesty via standardmedia.co.ke and justiceinfo.net, 2026-07-01), indicating geographically and ethnically targeted violence rather than diffuse conflict.",
+      "Chad appears as a distinct conflict-category actor (n=20, no date breakdown given), suggesting cross-border conflict dynamics not otherwise detailed in the event narratives.",
+      "Humanitarian signals extend beyond Sudan's borders, including an assault on a Sudanese Christian convert in a South Sudan refugee camp (christiandaily.com, 2026-07-01) and UN Security Council monthly forecast coverage (securitycouncilreport.org, 2026-07-01), indicating active international attention and regional displacement effects."
+    ],
+    "risk_flags": [
+      "Allegations of ethnic cleansing/atrocities by RSF in El Fasher, Darfur, targeting the Zaghawa population, reported via Amnesty International across at least six independent outlets on the same date (2026-07-01) -- a concentrated but high-severity (severity_score 10.0) signal.",
+      "Macroeconomic collapse indicators: GDP growth of -14.0% in 2024 (WorldBank), inflation of 100.2% (2025, IMF) moderating only to 75.1% (2026, IMF), unemployment above 60% for three consecutive years (2024-2026, IMF), and government debt near 170-188% of GDP (IMF) point to severe fiscal and currency stress.",
+      "Investment financing is heavily concentrated in a single external creditor bloc (Chinese state institutions) directed almost entirely to the central government, with the most detailed transaction records dated 2019-2021 -- well before the current conflict escalation reflected in 2026 conflict data -- creating uncertainty about counterparty exposure and continuity of financing under war conditions.",
+      "Civilian-targeted violence is a substantial share of recorded activity (political_violence_targeting_civilians: 38 events; explosion_remote_violence: 26 events), with 2026-07-01 reporting explicitly framing violence as ethnically directed (Amnesty/GDELT, 2026-07-01).",
+      "Near-total absence of recorded protest/civil unrest (1 event) alongside high conflict counts (160) suggests either state suppression of civil expression or a data collection gap, either of which is itself a risk signal for on-the-ground visibility."
+    ],
+    "data_caveats": "Nearly all conflict, explosion/remote-violence, and humanitarian events in this excerpt share a single date (2026-07-01), indicating a narrow snapshot tied to one news cycle (the Amnesty El Fasher report) rather than a time-distributed trend line; this limits confidence in assessing trajectory or frequency over the full window. The investment dataset's itemized examples are almost entirely from 2019-2021 despite a much larger total count (344) for the category, so recent (2022-2026) investment activity is not directly evidenced here. Economic indicators are country-level aggregates from IMF/WorldBank rather than granular event data, and the protest_civil_unrest category (n=1) appears substantially underrepresented relative to conflict volume, suggesting a possible data collection gap in that category."
+  }
+}

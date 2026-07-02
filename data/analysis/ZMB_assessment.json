@@ -1,0 +1,31 @@
+{
+  "iso3": "ZMB",
+  "country": "Zambia",
+  "generated_at": "2026-07-02T11:40:38.588401+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 344,
+  "category_counts": {
+    "conflict": 5,
+    "economic_indicator": 60,
+    "humanitarian": 7,
+    "investment": 269,
+    "other": 2,
+    "political_violence_targeting_civilians": 1
+  },
+  "analysis": {
+    "trend_summary": "The data for Zambia is overwhelmingly weighted toward investment/development-finance activity (269 events) relative to conflict (5), humanitarian (7), and political violence (1) signals, with economic indicators showing moderate real GDP growth (3.8% in 2025, projected 4.3% in 2026) alongside declining but still elevated inflation (15.0% in 2024 down to a projected 9.0% in 2026) and high government debt (86.0% of GDP, IMF 2025-12-31). Investment activity is dominated by Chinese state-linked financiers (Eximbank, MOFCOM, ICBC, CDB, Bank of China, PLA, AVIC) transacting with the Government of Zambia and ZESCO, alongside a smaller but active US DFC and World Bank PPI presence in energy and agribusiness. The five conflict entries and one political-violence entry dated 2026-07-01 appear to originate from a single mismatched GDELT source (a Sri Lankan air force news article), raising serious concerns about their reliability as indicators of actual unrest in Zambia. Humanitarian signals are almost entirely historical flood-monitoring data (UNOSAT, 2020 and 2023) rather than current crisis indicators. Overall, the pattern suggests a country with active, China-concentrated development financing and a mixed but improving macroeconomic picture, with the unrest/conflict data too thin and internally inconsistent to support firm conclusions.",
+    "key_relationships": [
+      "Government of Zambia is the top recipient actor (n=166, investment category) and is linked overwhelmingly to Chinese state financiers -- Unspecified Chinese Government Institution (n=75), China Eximbank (n=44), China Ministry of Commerce (n=39), ICBC (n=19), CDB (n=10) -- versus far smaller US (DFC, n=8) and private-sector (n=15) participation, per the actor list.",
+      "China Eximbank suspended Zambia's debt service payments in 2021 (AidData, 2021-01-01) and the Chinese Government cancelled RMB 170M (~$26.4M) of Zambian debt the same year (AidData, 2021-01-01), directly relevant to Zambia's high government debt load of 86.0% of GDP reported for 2025 (IMF, 2025-12-31).",
+      "ZESCO and the broader energy sector show sustained infrastructure investment -- Serenje solar plant, $336.0M (WorldBankPPI, 2021-01-01) and Itimpi Solar PV Plant Phase II, $96.7M (WorldBankPPI, 2024-01-01) -- consistent with ZESCO's standing as a top recipient actor (n=16, investment).",
+      "A mining-sector conflict event referencing Vedanta (GDELT/mining.com, 2026-07-01, 'Vedanta's Coppertech Metals delays US IPO') coincides with separate DFC technical assistance to a mining/extraction entity (DFC, 2024-01-01, Chillerton TA, $3.2M), pointing to ongoing friction and capital-market activity in Zambia's mining sector, though the conflict entry itself is low-detail."
+    ],
+    "risk_flags": [
+      "The five conflict events and the single political-violence-targeting-civilians event, all dated 2026-07-01, trace to the same GDELT source URL that is actually a Sri Lankan Air Force news story (dailymirror.lk), indicating likely data mismatch/noise rather than a genuine Zambia unrest signal -- this should not be treated as evidence of escalating conflict.",
+      "General government gross debt stood at 86.0% of GDP in 2025 (IMF, 2025-12-31), following a 2021 Chinese debt service suspension and partial cancellation (AidData, 2021-01-01), suggesting continued debt sustainability concerns despite improving growth and inflation trends.",
+      "Investment financing is heavily concentrated among Chinese state-linked institutions (collectively far outnumbering all other financier types combined per the actor list), which represents a concentration/counterparty-diversity risk rather than a diversified financing base.",
+      "Humanitarian/OSINT data is dominated by recurrent flood detection (UNOSAT, 2020-03-06 to 2023-02-16) across Luapula, Northern, Central, Southern and Lusaka provinces, indicating recurring flood exposure, though no post-2023 flood monitoring is present in this window."
+    ],
+    "data_caveats": "The conflict and political-violence categories are extremely thin (5 and 1 events respectively) and the most recent entries appear to be a GDELT sourcing/matching error tied to an unrelated article, so no reliable inference about current unrest levels in Zambia can be drawn from this window. Humanitarian data is stale (2020-2023) aside from two dubious 2026 GDELT entries sharing the same suspect source, and investment data, while voluminous, is weighted toward 2021-2024 with limited 2025-2026 coverage, so recent shifts in financing patterns may not be fully captured."
+  }
+}

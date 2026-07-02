@@ -1,0 +1,34 @@
+{
+  "iso3": "CAF",
+  "country": "Central African Republic",
+  "generated_at": "2026-07-02T11:47:10.361710+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 270,
+  "category_counts": {
+    "conflict": 17,
+    "economic_indicator": 56,
+    "explosion_remote_violence": 1,
+    "humanitarian": 18,
+    "investment": 163,
+    "other": 7,
+    "political_violence_targeting_civilians": 7,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The data shows a sharp late-June/early-July 2026 spike in GDELT-flagged conflict and political-violence-targeting-civilians events (severity scores 9.0-9.3), including a reported armed attack with casualties, alongside otherwise stable macroeconomic indicators (modest GDP growth, low inflation, rising but moderate public debt). Investment/development-finance activity in the dataset is overwhelmingly historical (2020-2021) and dominated by Chinese state actors providing grants, health/security materials, and one large mining-sector loan, with no investment records covering 2022-2026. Humanitarian/OSINT signals are thin and largely consist of the same noisy GDELT event stream plus a stale 2019 UNOSAT flood-mapping entry. Overall the window juxtaposes a live security shock against a financing picture that is both old and heavily China-concentrated, making it hard to assess whether current investment flows have responded to the violence.",
+    "key_relationships": [
+      "Chinese state entities (Unspecified Chinese Government Institution, China Ministry of Commerce, Chinese Embassy, Bank of China) account for the large majority of investment events, including a $200M mining-sector bonded loan (AidData, 2021-01-01) and repeated grants of security/police equipment to the CAR Ministry of Internal Affairs and Public Security (AidData, 2021-12-21; 2020-05-20)",
+      "China also acted as CAR's creditor of record, cancelling $13M in debt (AidData, 2021-01-22) and suspending debt-service payments in 2020 (AidData, 2020-05-01), reinforcing its position as CAR's dominant external financier in this dataset",
+      "Government of the Central African Republic (and its constituent ministries - Mines and Geology, Economic Planning and Cooperation, Public Health) is the near-exclusive recipient node across the investment dataset (AidData, 2020-2021)",
+      "'Armed Group' and 'Gunmen' actors are tied to both conflict and political_violence_targeting_civilians categories concentrated in the 2026-06-30/07-01 window, including a bignewsnetwork-sourced report of an armed attack leaving 3 dead and 18 injured (GDELT, 2026-06-30)",
+      "France/French-tagged actors appear repeatedly in the same 2026-06-30 political-violence cluster (GDELT, via getsurrey.co.uk source), though the narrative content for these entries is ambiguous and does not clarify France's actual role"
+    ],
+    "risk_flags": [
+      "A concentrated burst of high-severity (9.0-9.3) political violence and conflict events on 2026-06-30/07-01, including a reported multi-fatality armed attack (GDELT/bignewsnetwork, 2026-06-30), signals an acute and recent security deterioration not reflected in the (older) investment data",
+      "Investment financing in the dataset is almost entirely Chinese-state-sourced (over 139 of 163 investment events tied to Chinese government institutions/embassy/Ministry of Commerce), indicating limited financier diversification as captured here",
+      "Government gross debt is trending upward (61.8% of GDP in 2025 to 64.0% in 2026, IMF) while FDI inflows remain low (1.5% of GDP, WorldBank 2024), suggesting constrained external capital access outside the concentrated Chinese financing already noted",
+      "Multiple GDELT conflict/humanitarian entries from 2026-06-30/07-01 contain incoherent actor pairings (e.g., 'Priest <-> Diocese', 'Zambian <-> Zambia', 'Saint <-> Diocese'), suggesting possible source noise or miscoding that undermines confidence in the precise nature/attribution of the reported violence spike"
+    ],
+    "data_caveats": "All investment/development-finance records in this dataset are dated 2020-2021 (AidData), leaving a multi-year gap with no visibility into investment activity during or immediately preceding the 2026 conflict spike. Fatalities are recorded as null across every conflict and political-violence event despite high severity scores, and several GDELT-sourced entries show nonsensical or garbled actor names, indicating notable data-quality limitations for the most recent (2026) events; the single humanitarian OSINT item with real substantive content (UNOSAT flood mapping) is from 2019 and unrelated to the current violence window."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "iso3": "RWA",
+  "country": "Rwanda",
+  "generated_at": "2026-07-02T11:45:38.762884+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 293,
+  "category_counts": {
+    "conflict": 13,
+    "economic_indicator": 61,
+    "explosion_remote_violence": 2,
+    "humanitarian": 6,
+    "investment": 182,
+    "other": 21,
+    "political_violence_targeting_civilians": 1,
+    "strategic_development": 7
+  },
+  "analysis": {
+    "trend_summary": "The dataset for Rwanda is dominated by investment/development-finance activity (182 of 293 events), with heavy concentration in Chinese state financiers (Unspecified Chinese Government Institution, MOFCOM, Chinese Embassy, China Eximbank) alongside a smaller but recurring US DFC and World Bank PPI presence in energy, ICT, and finance sectors. Economic indicators show strong headline GDP growth (7.0-9.4% across 2025-2026, IMF/WorldBank) but a persistently large current account deficit (-12.0% to -13.4% of GDP, 2024-2026) and rising government debt (64.6% to 66.8% of GDP, IMF 2025-2026), alongside inflation moderating from ~7.0% to 5.6-5.9%. The conflict/humanitarian data cluster almost entirely around a single news cycle on 2026-06-30/07-01 tied to DRC-Rwanda diplomatic friction and a German prosecution of a Rwandan genocide suspect, rather than dispersed ground violence, and all listed conflict/explosion events carry null fatality counts. Overall the picture is one of a fast-growing, investment-attractive economy with notable macro-fiscal imbalances (external deficit, debt trajectory) and a geopolitical/legal-diplomatic risk thread (DRC relations, historical genocide legal proceedings) rather than active domestic unrest.",
+    "key_relationships": [
+      "Chinese state financiers (Unspecified Chinese Government Institution n=79, China Ministry of Commerce n=35, Chinese Embassy n=17, China Eximbank n=6) collectively represent the largest single bloc of investment-linked actor activity, spanning health, education, and debt-relief grants (AidData, 2021-02-19; 2021-11-07; 2021-12-07).",
+      "US-linked development finance (DFC, n=11) is concentrated in finance/insurance and political risk insurance instruments -- e.g. Bank of Kigali Plc unfunded guaranty ($20.0M, DFC FY2024) and Goodlife Rwanda political risk insurance ($15.0M, DFC FY2023) -- indicating a parallel but smaller Western financing channel alongside Chinese activity.",
+      "The 2026-06-30/07-01 news cluster ties Rwanda-DRC (Kinshasa) diplomatic exchanges (allafrica.com, 2026-06-30; riotimesonline.com, 2026-06-30, 'Congo-Rwanda peace deal one year') to simultaneous coverage of a German prosecution of a Rwandan genocide suspect (DW/NBC News, 2026-07-01) and US/Rwanda/Congo military-mission commentary (antiwar.com, 2026-07-01), suggesting these are correlated but distinct diplomatic/legal storylines rather than a single unified conflict event.",
+      "Government of Rwanda appears as the top recipient_agency (n=80) across investment records, indicating the state itself is the primary conduit/counterparty for both Chinese and Western development finance flows in this dataset."
+    ],
+    "risk_flags": [
+      "Persistent and widening current account deficit (-12.0% WorldBank 2024, -13.0% IMF 2025, -13.4% IMF 2026) combined with rising government gross debt (64.6% to 66.8% of GDP, IMF 2025-2026) signals building external and fiscal imbalance risk despite high headline growth.",
+      "Multiple GDELT-sourced conflict-coded events on 2026-06-30 reference unresolved Rwanda-DRC (Kinshasa) tension framed around a 'peace deal one year' anniversary (riotimesonline.com, 2026-06-30), indicating the bilateral relationship remains an active diplomatic flashpoint rather than fully settled.",
+      "A cluster of high-severity-scored conflict/explosion_remote_violence events on 2026-07-01 (severity 9.0-10.0) references Hutu/Tutsi/Rwandan CAMEO-coded interactions tied to a German genocide-suspect arrest (DW, NBC News, 2026-07-01) -- these carry no fatality data and appear to be legal/historical reporting rather than confirmed new violence, but the severity scoring is notably high given the lack of corroborating fatality or on-ground detail.",
+      "Investment financing is heavily concentrated among Chinese state-linked actors (Unspecified Chinese Government Institution, MOFCOM, Chinese Embassy, Eximbank collectively ~137 of 182 investment records), representing a concentration/dependency pattern relative to other financiers (DFC n=11, World Bank PPI private sector n=19)."
+    ],
+    "data_caveats": "Most 'conflict' and 'humanitarian' entries derive from GDELT CAMEO-coded news event extraction, which captures diplomatic statements, legal proceedings, and rhetorical exchanges as well as physical violence; none of the listed conflict/explosion events include fatality figures, so severity scores cannot be corroborated against ground-truth casualty data. The investment dataset is skewed toward older AidData/DFC records (2021-2024) with a gap before the 2026 conflict/humanitarian window, limiting the ability to assess whether recent diplomatic tensions have affected investment flows in real time. One political_violence_targeting_civilians record (Rabat/Africa, 2026-06-30) appears only loosely or indirectly connected to Rwanda specifically and should be treated with caution."
+  }
+}

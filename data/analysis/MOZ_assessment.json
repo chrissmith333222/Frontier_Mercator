@@ -1,0 +1,31 @@
+{
+  "iso3": "MOZ",
+  "country": "Mozambique",
+  "generated_at": "2026-07-02T11:41:47.974756+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 333,
+  "category_counts": {
+    "conflict": 21,
+    "economic_indicator": 61,
+    "humanitarian": 45,
+    "investment": 204,
+    "political_violence_targeting_civilians": 2
+  },
+  "analysis": {
+    "trend_summary": "The data shows a bifurcated picture for Mozambique: a large, ongoing investment pipeline (204 events) dominated by Chinese state financiers and government counterparts, set against sharply deteriorating macro-fiscal indicators and recurrent climate-disaster humanitarian signals. Conflict-category events in this window are almost entirely about anti-migrant unrest in South Africa affecting Mozambican (and Malawian/Ethiopian) nationals rather than domestic Mozambican conflict, and political-violence-targeting-civilians data is extremely thin (n=2). Humanitarian/OSINT signals are dominated by UNOSAT satellite damage/flood assessments tied to cyclones and flooding in Cabo Delgado, Sofala, Nampula, and Maputo provinces -- the same coastal/gas-corridor regions where major energy investments are concentrated. Economic indicators point to widening external imbalances and rising public debt alongside near-stagnant growth.",
+    "key_relationships": [
+      "Government of Mozambique (recipient_agency, n=124) is the dominant counterpart across the investment dataset, financed overwhelmingly by Chinese institutions -- Unspecified Chinese Government Institution (n=75), China Eximbank (n=30), China Ministry of Commerce (n=24), CDB (n=6), CIDCA (n=4), CNPC (n=4) -- versus US DFC (n=14), indicating heavy concentration of external financing relationships with Chinese state actors.",
+      "DFC's Mozambique exposure is anchored by two large extractive-sector transactions: Rovuma LNG Phase I political risk insurance, $1.50B (DFC, 2022-01-01) and Twigg Exploration and Mining direct lending, $150.0M (DFC, 2023-01-01), alongside smaller technical-assistance grants for Globeleq Temane and Gridworks Chimuara-Nacala transmission (DFC, 2024-01-01).",
+      "UNOSAT humanitarian signals repeatedly document damage/flooding in the same coastal provinces (Cabo Delgado -- Cyclone Chido building damage, UNOSAT 2024-12-17/18; Sofala/Maputo/Nampula flooding, UNOSAT 2026-01-02 to 2026-01-26; Ile de Mozambique cyclone damage, UNOSAT 2025-03-21) where energy infrastructure projects such as the Chimuara-Nacala transmission line and Temane expansion are sited (WorldBankPPI/DFC, 2024-01-01).",
+      "Conflict-category events labeled 'Mozambican' and 'Malawian' as actors (n=7 and n=5 respectively) are almost entirely sourced from GDELT reporting on South Africa anti-migrant protests (e.g. DW, 2026-06-30; Al Jazeera, 2026-06-30; nationalaccordnewspaper.com, 2026-07-01), meaning this conflict signal reflects cross-border migrant tension rather than unrest inside Mozambique itself."
+    ],
+    "risk_flags": [
+      "Current account balance deteriorated sharply from -11.0% of GDP (WorldBank, 2024-12-31) to -14.2% (IMF, 2025-12-31) to a projected -43.0% (IMF, 2026-12-31), a trend suggesting rapidly widening external imbalance.",
+      "General government gross debt rose from 102.5% of GDP (IMF, 2025-12-31) to 106.1% (IMF, 2026-12-31) while real GDP growth was negative in 2025 (-0.5%, IMF/WorldBank, 2025-12-31) and only marginally positive in 2026 (0.5%, IMF, 2026-12-31), indicating weak growth against a rising debt burden.",
+      "Recurrent satellite-documented cyclone and flood damage in Cabo Delgado, Sofala, Nampula, and Maputo provinces (UNOSAT, 2024-12-13 through 2026-01-26) coincides geographically with major energy/gas infrastructure investments (WorldBankPPI/DFC, 2022-2024), pointing to physical climate-hazard exposure for that investment cluster.",
+      "Investment financing is concentrated among a small number of Chinese state institutions (n=75+30+24+6+4+4=143 of 204 investment events), which combined with a single very large US-insured LNG exposure ($1.5B, DFC, 2022-01-01) suggests limited diversification of external financing sources and counterparties.",
+      "Anti-migrant protest activity in South Africa explicitly targeting Mozambican nationals (GDELT, 2026-06-30 and 2026-07-01) signals potential labor-migration and remittance-channel disruption risk, though the data does not indicate any parallel unrest occurring within Mozambique."
+    ],
+    "data_caveats": "This window contains no domestic Mozambique conflict events despite known regional risk narratives (e.g. Cabo Delgado); all 'conflict' entries pertain to South Africa-based anti-migrant unrest involving Mozambican nationals as subjects, and political_violence_targeting_civilians data is limited to 2 events, too sparse for pattern analysis. Economic indicators mix IMF projections (2026 figures) with historical WorldBank actuals using different methodologies for current account balance, so year-over-year comparisons across sources should be treated cautiously rather than as a single consistent series."
+  }
+}

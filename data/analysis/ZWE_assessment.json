@@ -1,0 +1,35 @@
+{
+  "iso3": "ZWE",
+  "country": "Zimbabwe",
+  "generated_at": "2026-07-02T04:13:52.955839+00:00",
+  "model": "claude-sonnet-5",
+  "total_events_analyzed": 438,
+  "category_counts": {
+    "conflict": 46,
+    "economic_indicator": 58,
+    "humanitarian": 6,
+    "investment": 292,
+    "other": 23,
+    "political_violence_targeting_civilians": 5,
+    "protest_civil_unrest": 7,
+    "strategic_development": 1
+  },
+  "analysis": {
+    "trend_summary": "The dataset is dominated by investment/development-finance activity (292 events), overwhelmingly tied to Chinese state financiers and grant/loan flows to the Government of Zimbabwe, alongside a large but noisy GDELT-derived conflict feed (46 events) concentrated on a single date (2026-07-01) around political succession tensions. Economic indicators show a sharp reported disinflation (IMF: 81.4% average CPI in 2025 to 8.0% in 2026) alongside modest real GDP growth (5.0-7.5% IMF vs. divergent WorldBank figures) and a slowly declining public debt ratio (43.8% to 42.3% of GDP). Humanitarian/OSINT signals in this window are thin and largely regional (migration-related GDELT hits involving Zambia/Malawi) rather than Zimbabwe-specific. Political violence/civil unrest categories are small in count but include high-severity-score entries clustered around a reported ZANU-PF push to extend President Mnangagwa's term, occurring the same day as resource-sector friction reporting on Chinese control of lithium assets.",
+    "key_relationships": [
+      "Government of Zimbabwe (157 investment-linked events) is paired almost entirely with Chinese state financiers -- Unspecified Chinese Government Institution (122), China Ministry of Commerce (41), China Eximbank (32), Chinese Embassy (14), China Development Bank (13) -- indicating a heavily China-centric development-finance relationship (actor list, investment category).",
+      "Chinese financing spans both soft-power grants (COVID vaccine donations worth $18.0M, $9.0M, $3.6M, $1.8M in 2021, AidData) and larger infrastructure loans (Kunzvi Dam Project, $92.8M loan, AidData, 2021-08-01), showing a dual-track aid-plus-lending pattern.",
+      "Political conflict signals cluster on 2026-07-01 around a reported ZANU-PF effort to extend Mnangagwa's term (newsday.co.zw, CAMEO 192 'POLITICIAN <-> PARLIAMENT' and CAMEO 140 'SENATOR <-> POLITICIAN' under protest_civil_unrest), suggesting political succession is the proximate driver of the unrest events recorded in this window.",
+      "The same date (2026-07-01) also carries a conflict-tagged article on 'China tightens grip on Zim lithium' (newsday.co.zw), indicating resource-sector friction in critical minerals is being logged as a conflict signal concurrent with deepening Chinese investment ties elsewhere in the data.",
+      "Several high-severity conflict entries (severity 9.0-9.3) reference ambiguous or apparently mismatched actors (e.g., 'unspecified actor <-> SALISBURY' linked to a Newburyport, MA local news story; 'AMERICAN <-> ZIMBABWE' linked to a Connecticut historical-marker story), suggesting GDELT entity-matching noise rather than substantive Zimbabwe-specific events."
+    ],
+    "risk_flags": [
+      "Political succession tension: high-severity political_violence_targeting_civilians entries (severity 9.3, 2026-07-01, GDELT/newsday.co.zw) coincide with reporting on a ZANU-PF push to extend Mnangagwa's term, a pattern worth monitoring for governance/succession risk.",
+      "Investment-source concentration: the overwhelming majority of investment actor-activity (227+ of 292 events) traces to Chinese state-linked financiers versus limited Western/multilateral presence (e.g., U.S. DFC at 9 events, Legacy USAID at 6), indicating low diversification in tracked financing sources.",
+      "Resource-sector friction: 'China tightens grip on Zim lithium' (newsday.co.zw, 2026-07-01) appears in the conflict feed, flagging possible tension over foreign control of a strategic mineral sector.",
+      "Inflation volatility/data inconsistency: IMF figures show average CPI inflation falling from 81.4% (2025) to a projected 8.0% (2026), an unusually steep swing that should be treated cautiously pending confirmation, as it may reflect either genuine stabilization or reporting/estimation discontinuity.",
+      "Data noise in conflict feed: multiple duplicate and geographically mismatched entries (e.g., 'Salisbury' resolving to a Massachusetts and UK news item, not Harare's colonial-era name) reduce confidence in the raw conflict severity counts for Zimbabwe specifically."
+    ],
+    "data_caveats": "The conflict and humanitarian feeds are GDELT-derived, contain duplicate entries, and include multiple apparent entity-matching errors (e.g., 'Salisbury', 'Africa', 'Malawi' as actors) that are not clearly Zimbabwe-specific, so severity scores and counts in those categories should be treated with low confidence. Economic indicators come from two differently-vintaged sources (IMF vs. WorldBank) with materially different GDP growth figures for overlapping years, and the investment dataset is weighted toward older (2021-2024) Chinese aid/loan records with limited recent-year coverage, meaning current-year investment and humanitarian conditions are not well represented."
+  }
+}
