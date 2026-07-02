@@ -24,7 +24,7 @@ INDICATOR_LABELS = {code: label for code, (label, _cat) in {
 
 DATA_DIR = Path(__file__).parent / "data" / "normalized"
 CONFLICT_CATEGORIES = b.CONFLICT_CATEGORIES
-ECON_CATEGORY = b.ECON_CATEGORY
+ECON_CATEGORIES = b.ECON_CATEGORIES
 NEWS_CATEGORIES = b.NEWS_CATEGORIES
 
 # Page config
@@ -381,66 +381,119 @@ def render_conflict_dashboard(df_filtered):
 
 def render_markets_dashboard(econ_df):
     st.markdown(
-        "Macroeconomic indicators — GDP growth, inflation, external debt, current account, "
-        "unemployment — from World Bank and IMF."
+        "Macroeconomic indicators (World Bank/IMF) and investment project tracking — "
+        "who's actually putting capital into these markets, not just how the macro numbers look."
     )
     if len(econ_df) == 0:
-        st.info("No economic indicator data loaded yet.")
+        st.info("No economic/investment data loaded yet.")
         return
 
-    col1, col2 = st.columns(2)
-    with col1:
-        country_choice = st.selectbox(
-            "Country", options=sorted(econ_df['country'].dropna().unique()), key="econ_country"
-        )
-    with col2:
-        indicators = sorted(econ_df['event_subtype'].dropna().unique())
-        indicator_choice = st.selectbox(
-            "Indicator", options=indicators, key="econ_indicator",
-            format_func=lambda code: INDICATOR_LABELS.get(code, code),
-        )
+    indicators_tab, investment_tab = st.tabs(["Macro Indicators", "Investment Projects"])
 
-    subset = econ_df[
-        (econ_df['country'] == country_choice) & (econ_df['event_subtype'] == indicator_choice)
-    ].sort_values('event_date')
+    with indicators_tab:
+        indicator_df = econ_df[econ_df['event_category'] == b.ECON_CATEGORY]
+        if len(indicator_df) == 0:
+            st.info("No macro indicator data loaded yet.")
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                country_choice = st.selectbox(
+                    "Country", options=sorted(indicator_df['country'].dropna().unique()), key="econ_country"
+                )
+            with col2:
+                indicators = sorted(indicator_df['event_subtype'].dropna().unique())
+                indicator_choice = st.selectbox(
+                    "Indicator", options=indicators, key="econ_indicator",
+                    format_func=lambda code: INDICATOR_LABELS.get(code, code),
+                )
 
-    if len(subset) > 0:
-        st.markdown(f"#### {INDICATOR_LABELS.get(indicator_choice, indicator_choice)} — {country_choice}")
-        # narrative_summary carries the formatted value (e.g. "GDP growth
-        # (annual %): 3.2% (2025)") since severity_score is null for economic_
-        # indicator events -- parse the number back out for charting.
-        parsed = subset['narrative_summary'].str.extract(r':\s*(-?[\d.]+)').astype(float)[0]
-        fig = go.Figure(data=[go.Scatter(
-            x=subset['event_date'], y=parsed, mode='lines+markers',
-            line=dict(color=b.SLATE, width=2), marker=dict(size=8),
-            hovertemplate='<b>%{x|%Y}</b><br>%{y}<extra></extra>',
-        )])
-        fig.update_layout(
-            template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
-            height=350, margin=dict(l=40, r=40, t=20, b=40),
+            subset = indicator_df[
+                (indicator_df['country'] == country_choice) & (indicator_df['event_subtype'] == indicator_choice)
+            ].sort_values('event_date')
+
+            if len(subset) > 0:
+                st.markdown(f"#### {INDICATOR_LABELS.get(indicator_choice, indicator_choice)} — {country_choice}")
+                # narrative_summary carries the formatted value (e.g. "GDP
+                # growth (annual %): 3.2% (2025)") since severity_score is
+                # null for economic_indicator events -- parse the number
+                # back out for charting.
+                parsed = subset['narrative_summary'].str.extract(r':\s*(-?[\d.]+)').astype(float)[0]
+                fig = go.Figure(data=[go.Scatter(
+                    x=subset['event_date'], y=parsed, mode='lines+markers',
+                    line=dict(color=b.SLATE, width=2), marker=dict(size=8),
+                    hovertemplate='<b>%{x|%Y}</b><br>%{y}<extra></extra>',
+                )])
+                fig.update_layout(
+                    template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+                    height=350, margin=dict(l=40, r=40, t=20, b=40),
+                )
+                st.plotly_chart(fig, width="stretch")
+
+                table = subset[['event_date', 'source', 'narrative_summary']].rename(
+                    columns={'event_date': 'Date', 'source': 'Source', 'narrative_summary': 'Value'}
+                )
+                st.dataframe(table, width="stretch", hide_index=True)
+            else:
+                st.info("No data for this country/indicator combination.")
+
+            st.markdown("#### Latest Snapshot Across Tracked Countries")
+            latest = (
+                indicator_df[indicator_df['event_subtype'] == indicator_choice]
+                .sort_values('event_date')
+                .drop_duplicates('country', keep='last')
+                [['country', 'region', 'event_date', 'narrative_summary']]
+                .rename(columns={
+                    'country': 'Country', 'region': 'Region',
+                    'event_date': 'Latest Data', 'narrative_summary': 'Value',
+                })
+                .sort_values('Country')
+            )
+            st.dataframe(latest, width="stretch", hide_index=True)
+
+    with investment_tab:
+        investment_df = econ_df[econ_df['event_category'] == 'investment']
+        st.markdown(
+            "Chinese government-financed development projects (loans + grants) — "
+            "[AidData Global Chinese Development Finance Dataset](https://www.aiddata.org/data/aiddatas-global-chinese-development-finance-dataset-version-3-0), "
+            "20,985 projects worldwide, 2000-2021 commitments. Directly answers \"who's investing here.\""
         )
-        st.plotly_chart(fig, width="stretch")
+        if len(investment_df) == 0:
+            st.info("No investment project data loaded yet.")
+        else:
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Projects", f"{len(investment_df):,}")
+            with col2:
+                st.metric("Countries", investment_df['country'].nunique())
+            with col3:
+                st.metric("Sectors", investment_df['event_subtype'].nunique())
 
-        table = subset[['event_date', 'source', 'narrative_summary']].rename(
-            columns={'event_date': 'Date', 'source': 'Source', 'narrative_summary': 'Value'}
-        )
-        st.dataframe(table, width="stretch", hide_index=True)
-    else:
-        st.info("No data for this country/indicator combination.")
+            country_options = sorted(investment_df['country'].dropna().unique())
+            country_choice = st.selectbox("Country", options=country_options, key="investment_country")
 
-    st.markdown("#### Latest Snapshot Across Tracked Countries")
-    latest = (
-        econ_df[econ_df['event_subtype'] == indicator_choice]
-        .sort_values('event_date')
-        .drop_duplicates('country', keep='last')
-        [['country', 'region', 'event_date', 'narrative_summary']]
-        .rename(columns={
-            'country': 'Country', 'region': 'Region',
-            'event_date': 'Latest Data', 'narrative_summary': 'Value',
-        })
-        .sort_values('Country')
-    )
-    st.dataframe(latest, width="stretch", hide_index=True)
+            country_projects = investment_df[investment_df['country'] == country_choice].sort_values(
+                'event_date', ascending=False
+            )
+            st.markdown(f"#### {len(country_projects):,} Chinese-Financed Projects — {country_choice}")
+
+            sector_counts = country_projects['event_subtype'].value_counts().head(10)
+            if len(sector_counts) > 0:
+                fig = go.Figure(data=[go.Bar(
+                    y=sector_counts.index, x=sector_counts.values, orientation='h',
+                    marker=dict(color=b.TYPE_COLOR_ECON),
+                    text=sector_counts.values, textposition='auto',
+                )])
+                fig.update_layout(
+                    title="Projects by Sector", template="plotly_dark",
+                    paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+                    height=350, margin=dict(l=200, r=40, t=40, b=40),
+                )
+                st.plotly_chart(fig, width="stretch")
+
+            table = country_projects[['event_date', 'narrative_summary']].head(50).rename(
+                columns={'event_date': 'Commitment Date', 'narrative_summary': 'Project'}
+            )
+            st.dataframe(table, width="stretch", hide_index=True)
 
 
 def render_news_dashboard(news_df):
@@ -673,7 +726,7 @@ conflict_filtered = conflict_df_all[
     (conflict_df_all['severity_score'] >= min_severity) & (conflict_df_all['region'].isin(selected_regions))
 ].copy()
 
-econ_df = df[df['event_category'] == ECON_CATEGORY].copy()
+econ_df = df[df['event_category'].isin(ECON_CATEGORIES)].copy()
 news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")

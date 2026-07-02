@@ -20,7 +20,7 @@
     },
     "source": {
       "type": "string",
-      "enum": ["ACLED", "ReliefWeb", "GDELT", "WorldBank", "VDem", "AllAfrica", "IMF"],
+      "enum": ["ACLED", "ReliefWeb", "GDELT", "WorldBank", "VDem", "AllAfrica", "IMF", "AidData"],
       "description": "Which data source this event originated from."
     },
     "source_event_id": {
@@ -64,6 +64,7 @@
         "explosion_remote_violence",
         "strategic_development",
         "economic_indicator",
+        "investment",
         "governance_change",
         "humanitarian",
         "other"

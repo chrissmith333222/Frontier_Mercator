@@ -45,7 +45,12 @@ CONFLICT_CATEGORIES = [
     "conflict", "protest_civil_unrest", "political_violence_targeting_civilians",
     "explosion_remote_violence",
 ]
+# "investment" (AidData Chinese development finance, future DFC/PPI) groups
+# with economic_indicator under "Markets & Economy" -- both are finance/
+# economy signal, just one is indicator time series and the other discrete
+# investment/project events.
 ECON_CATEGORY = "economic_indicator"
+ECON_CATEGORIES = ["economic_indicator", "investment"]
 NEWS_CATEGORIES = ["strategic_development", "other", "humanitarian"]
 
 # Type colors for the unified multi-category map -- distinct saturated hues
@@ -60,7 +65,7 @@ TYPE_COLOR_NEWS = "#3DD6F5"
 def type_color(category: str) -> str:
     if category in CONFLICT_CATEGORIES:
         return TYPE_COLOR_CONFLICT
-    if category == ECON_CATEGORY:
+    if category in ECON_CATEGORIES:
         return TYPE_COLOR_ECON
     return TYPE_COLOR_NEWS
 
@@ -68,7 +73,7 @@ def type_color(category: str) -> str:
 def type_label(category: str) -> str:
     if category in CONFLICT_CATEGORIES:
         return "Conflict & Security"
-    if category == ECON_CATEGORY:
+    if category in ECON_CATEGORIES:
         return "Markets & Economy"
     return "News & Social Signal"
 

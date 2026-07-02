@@ -234,6 +234,38 @@ def _macro_snapshot_table(econ_scope: pd.DataFrame) -> Table | None:
     return table
 
 
+def _investment_table(investment_scope: pd.DataFrame, limit: int = 10) -> Table | None:
+    """Largest Chinese-financed development projects (AidData) for the
+    report's country/region scope, sorted by narrative text since amount
+    isn't broken out as its own column in the schema (it's baked into
+    narrative_summary) -- sorted by date instead, most recent first, which
+    is a reasonable proxy for relevance in a snapshot report."""
+    if len(investment_scope) == 0:
+        return None
+    top = investment_scope.sort_values("event_date", ascending=False).head(limit)
+    header = [Paragraph(h, CELL_HEADER_STYLE) for h in ["Date", "Country", "Sector", "Project"]]
+    rows = [header]
+    for _, ev in top.iterrows():
+        rows.append([
+            Paragraph(str(ev.get("event_date", ""))[:10], CELL_STYLE),
+            Paragraph(str(ev.get("country", "")), CELL_STYLE),
+            Paragraph(str(ev.get("event_subtype", "")).title(), CELL_STYLE),
+            Paragraph(str(ev.get("narrative_summary", ""))[:160], CELL_STYLE),
+        ])
+    table = Table(rows, colWidths=[0.8 * inch, 1.0 * inch, 1.3 * inch, 3.0 * inch], repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+        ("GRID", (0, 0), (-1, -1), 0.4, BORDER),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [PAGE_BG, PANEL]),
+    ]))
+    return table
+
+
 def _footer_flowables() -> list:
     generated = datetime.now(timezone.utc).strftime("%d %B %Y, %H:%M UTC")
     return [
@@ -257,6 +289,7 @@ def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame) -> bytes:
     summary/table) and economic indicators (for the macro snapshot)."""
     conflict_scope = scope[scope["event_category"].isin(b.CONFLICT_CATEGORIES)]
     econ_scope = scope[scope["event_category"] == b.ECON_CATEGORY]
+    investment_scope = scope[scope["event_category"] == "investment"]
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -277,6 +310,11 @@ def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame) -> bytes:
     if macro_table is not None:
         story.append(Paragraph("Macroeconomic Snapshot", SECTION_STYLE))
         story.append(macro_table)
+
+    investment_table = _investment_table(investment_scope)
+    if investment_table is not None:
+        story.append(Paragraph("Notable Chinese-Financed Investment", SECTION_STYLE))
+        story.append(investment_table)
 
     story.append(Paragraph("Highest-Severity Events", SECTION_STYLE))
     if len(conflict_scope) > 0:

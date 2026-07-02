@@ -10,3 +10,4 @@ curl_cffi==0.15.0
 svglib==2.0.2
 pycountry==26.2.16
 pycountry-convert==0.7.2
+openpyxl==3.1.5
