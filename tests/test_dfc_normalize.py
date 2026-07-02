@@ -78,6 +78,28 @@ NO_COUNTRY_RECORD = {
     "Committed": 1000,
 }
 
+REDACTED_RECORD_1 = {
+    "Fiscal Year": 2022,
+    "Project Number": "Redacted",
+    "Country": "Ukraine",
+    "Committed": 1_000_000,
+    "Currency": "USD",
+    "NAICS Sector": "Finance and Insurance",
+    "Support Type": "Guarantee",
+    "_row_index": 501,
+}
+
+REDACTED_RECORD_2 = {
+    "Fiscal Year": 2022,
+    "Project Number": "Redacted",
+    "Country": "Ukraine",
+    "Committed": 2_000_000,
+    "Currency": "USD",
+    "NAICS Sector": "Finance and Insurance",
+    "Support Type": "Guarantee",
+    "_row_index": 512,
+}
+
 BAD_YEAR_RECORD = {
     "Fiscal Year": "TBD",
     "Project Number": 9000777888,
@@ -131,6 +153,15 @@ def test_bad_fiscal_year_returns_none():
     result = normalize_dfc_record(BAD_YEAR_RECORD)
     assert result is None
     print("✓ test_bad_fiscal_year_returns_none passed")
+
+
+def test_redacted_project_numbers_get_distinct_ids():
+    result1 = normalize_dfc_record(REDACTED_RECORD_1)
+    result2 = normalize_dfc_record(REDACTED_RECORD_2)
+    assert result1 is not None and result2 is not None
+    assert result1["meridian_event_id"] != result2["meridian_event_id"]
+    assert result1["source_event_id"] != result2["source_event_id"]
+    print("✓ test_redacted_project_numbers_get_distinct_ids passed")
 
 
 def test_deterministic_id_generation():

@@ -56,11 +56,16 @@ def fetch_all_records() -> list[dict]:
     header = [str(h) if h is not None else f"col_{i}" for i, h in enumerate(next(rows))]
 
     records = []
-    for row in rows:
+    for row_index, row in enumerate(rows):
         record = dict(zip(header, row))
         # Skip fully blank trailing rows
         if record.get("Project Number") is None:
             continue
+        # A meaningful number of rows have "Redacted" as the literal
+        # Project Number (classified/sensitive deals) -- that string alone
+        # isn't a unique key, so every redacted row needs a distinguishing
+        # position marker for downstream ID generation.
+        record["_row_index"] = row_index
         records.append(record)
 
     return records

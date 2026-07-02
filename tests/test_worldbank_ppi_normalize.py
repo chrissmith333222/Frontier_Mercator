@@ -96,6 +96,32 @@ NO_INVESTMENT_AMOUNT_RECORD = {
     "name": "Example Legacy Divestiture",
 }
 
+SAME_ID_YEAR_TRANCHE_1 = {
+    "ID": 200,
+    "IY": 1994,
+    "country": "Ivory Coast",
+    "FCY": 1994,
+    "type": "Greenfield project",
+    "status_n": "Active",
+    "sector": "Energy",
+    "investment": 70.0,
+    "name": "CIPREL",
+    "_row_index": 300,
+}
+
+SAME_ID_YEAR_TRANCHE_2 = {
+    "ID": 200,
+    "IY": 1994,
+    "country": "Ivory Coast",
+    "FCY": 1994,
+    "type": "Greenfield project",
+    "status_n": "Active",
+    "sector": "Energy",
+    "investment": 105.6,
+    "name": "CIPREL",
+    "_row_index": 301,
+}
+
 NO_COUNTRY_RECORD = {
     "ID": 128,
     "IY": 2015,
@@ -156,6 +182,15 @@ def test_missing_investment_amount_handled_gracefully():
     assert result is not None
     assert "amount undisclosed" in result["narrative_summary"]
     print("✓ test_missing_investment_amount_handled_gracefully passed")
+
+
+def test_same_project_and_year_tranches_get_distinct_ids():
+    result1 = normalize_ppi_record(SAME_ID_YEAR_TRANCHE_1)
+    result2 = normalize_ppi_record(SAME_ID_YEAR_TRANCHE_2)
+    assert result1 is not None and result2 is not None
+    assert result1["meridian_event_id"] != result2["meridian_event_id"]
+    assert result1["source_event_id"] != result2["source_event_id"]
+    print("✓ test_same_project_and_year_tranches_get_distinct_ids passed")
 
 
 def test_no_country_returns_none():

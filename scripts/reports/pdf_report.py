@@ -11,12 +11,13 @@ Dark theme, matching the dashboard (see scripts/branding.py for the shared
 palette) — Chris wants the dark, Bloomberg-terminal-adjacent identity to
 carry through to the printed/downloaded reports, not just the site.
 
-Current version is data-driven (quantified event/severity statistics from
-ACLED/GDELT, plus a macroeconomic snapshot from World Bank/IMF). It does NOT
-yet include Claude-generated narrative analysis (investment recommendations,
-political-risk assessment, forecasts) — that lands once the Parallax
-reasoning agent (Phase 5 of the roadmap) is built. Until then, treat these as
-a statistical snapshot brief, not a full analytical product.
+Data-driven (quantified event/severity statistics from ACLED/GDELT, plus a
+macroeconomic snapshot from World Bank/IMF). Country briefs also include a
+Claude-generated pattern-analysis section when a cached assessment exists
+(see scripts/analysis/reasoning_agent.py) -- a preliminary statistical
+synthesis grounded strictly in the ingested event data, not an investment
+recommendation or forecast. Regions/countries without a cached assessment
+yet just get the statistical snapshot, same as before.
 
 Usage (as a module, called from dashboard.py):
     from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief
@@ -37,7 +38,29 @@ from reportlab.platypus import (
 )
 from svglib.svglib import svg2rlg
 
+import json
+
 from scripts import branding as b
+from scripts.lib.world_countries import ALL_COUNTRIES
+
+_NAME_TO_ISO3 = {name: iso3 for iso3, (name, _region, _mandate) in ALL_COUNTRIES.items()}
+_ANALYSIS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "analysis"
+
+
+def _load_cached_assessment(country: str) -> dict | None:
+    """Reads a pre-generated AI assessment for `country`, if one exists.
+    Same cache the dashboard's Reports tab reads from -- see
+    scripts/analysis/reasoning_agent.py for how these get generated."""
+    iso3 = _NAME_TO_ISO3.get(country)
+    if not iso3:
+        return None
+    path = _ANALYSIS_DIR / f"{iso3}_assessment.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
 
 # The emblem (not the old photographic logo -- retired everywhere per
 # Chris's 2026-07-02 direction) is the one brand mark used across the site
@@ -268,27 +291,70 @@ def _investment_table(investment_scope: pd.DataFrame, limit: int = 10) -> Table 
     return table
 
 
-def _footer_flowables() -> list:
+def _analysis_flowables(assessment: dict | None) -> list:
+    """Renders the cached AI pattern-analysis section (see
+    scripts/analysis/reasoning_agent.py) if one exists for this country.
+    Returns an empty list when no assessment is cached -- country briefs
+    without one just fall back to the statistical snapshot, same as
+    before this section existed."""
+    if not assessment:
+        return []
+    analysis = assessment["analysis"]
+    flowables = [
+        Paragraph("AI-Synthesized Pattern Analysis", SECTION_STYLE),
+        Paragraph(
+            f"Generated {assessment['generated_at'][:10]} from {assessment['total_events_analyzed']:,} "
+            f"ingested events. Preliminary statistical synthesis grounded in the data below -- "
+            f"not an investment recommendation or forecast.",
+            DISCLAIMER_STYLE,
+        ),
+        Spacer(1, 4),
+        Paragraph(analysis.get("trend_summary", ""), BODY_STYLE),
+    ]
+    if analysis.get("key_relationships"):
+        flowables.append(Spacer(1, 4))
+        flowables.append(Paragraph("<b>Notable relationships:</b>", BODY_STYLE))
+        for item in analysis["key_relationships"]:
+            flowables.append(Paragraph(f"&bull; {item}", BODY_STYLE))
+    if analysis.get("risk_flags"):
+        flowables.append(Spacer(1, 4))
+        flowables.append(Paragraph("<b>Risk flags:</b>", BODY_STYLE))
+        for item in analysis["risk_flags"]:
+            flowables.append(Paragraph(f"&bull; {item}", BODY_STYLE))
+    if analysis.get("data_caveats"):
+        flowables.append(Spacer(1, 4))
+        flowables.append(Paragraph(f"Data caveats: {analysis['data_caveats']}", DISCLAIMER_STYLE))
+    return flowables
+
+
+def _footer_flowables(has_ai_analysis: bool = False) -> list:
     generated = datetime.now(timezone.utc).strftime("%d %B %Y, %H:%M UTC")
+    narrative_note = (
+        "Includes a Claude-generated pattern-analysis section, grounded strictly in the ingested "
+        "event data (see the AI-Synthesized Pattern Analysis section above for scope and caveats)."
+        if has_ai_analysis else
+        "Analytical narrative and investment recommendations are added once upstream source "
+        "coverage and analytical review are complete for this scope."
+    )
     return [
         Spacer(1, 16),
         HRFlowable(width="100%", thickness=1, color=BORDER, spaceAfter=6),
         Paragraph(
             f"Frontier Mercator Group — Intelligence for the Frontier. "
             f"Generated {generated}. Statistical snapshot derived from open-source event data "
-            f"(ACLED, GDELT, World Bank, IMF). Analytical narrative and investment recommendations "
-            f"are added once "
-            f"upstream source coverage and analytical review are complete. Distribution restricted "
-            f"to authorized recipients.",
+            f"(ACLED, GDELT, World Bank, IMF, AidData, DFC, World Bank PPI, UNOSAT, Bellingcat). "
+            f"{narrative_note} Distribution restricted to authorized recipients.",
             DISCLAIMER_STYLE,
         ),
     ]
 
 
-def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame) -> bytes:
+def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame, assessment: dict | None = None) -> bytes:
     """`scope` is the full merged multi-source dataset already filtered to a
     country or region -- split here into conflict events (for the severity
-    summary/table) and economic indicators (for the macro snapshot)."""
+    summary/table) and economic indicators (for the macro snapshot).
+    `assessment` is an optional cached AI pattern-analysis dict (country
+    briefs only -- see scripts/analysis/reasoning_agent.py)."""
     conflict_scope = scope[scope["event_category"].isin(b.CONFLICT_CATEGORIES)]
     econ_scope = scope[scope["event_category"] == b.ECON_CATEGORY]
     investment_scope = scope[scope["event_category"] == "investment"]
@@ -324,7 +390,8 @@ def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame) -> bytes:
     else:
         story.append(Paragraph("No conflict/security events recorded for this scope in the current dataset.", BODY_STYLE))
 
-    story.extend(_footer_flowables())
+    story.extend(_analysis_flowables(assessment))
+    story.extend(_footer_flowables(has_ai_analysis=assessment is not None))
 
     doc.build(story, onFirstPage=_paint_dark_background, onLaterPages=_paint_dark_background)
     return buffer.getvalue()
@@ -335,7 +402,8 @@ def generate_country_brief(df: pd.DataFrame, country: str) -> bytes:
     scope = df[df["country"] == country]
     title = f"{country} — Country Intelligence Brief"
     subtitle = "Frontier Mercator Group | Emerging Market Intelligence"
-    return _build_pdf(title, subtitle, scope)
+    assessment = _load_cached_assessment(country)
+    return _build_pdf(title, subtitle, scope, assessment=assessment)
 
 
 def generate_regional_brief(df: pd.DataFrame, region: str) -> bytes:

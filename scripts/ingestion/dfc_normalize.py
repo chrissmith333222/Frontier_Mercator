@@ -113,6 +113,17 @@ def normalize_dfc_record(raw_record: dict) -> dict | None:
     except (TypeError, ValueError):
         return None
 
+    # A meaningful number of DFC rows have the literal string "Redacted"
+    # as their Project Number (classified/sensitive deals) -- that alone
+    # isn't unique, so those rows are disambiguated with their source
+    # sheet row position instead, to avoid silently collapsing hundreds
+    # of distinct redacted projects into one deduplicated record.
+    if str(project_number).strip().lower() == "redacted":
+        row_index = raw_record.get("_row_index")
+        source_event_id = f"Redacted-row{row_index}" if row_index is not None else "Redacted"
+    else:
+        source_event_id = str(project_number)
+
     iso3, country, region, in_core_mandate = _lookup_country(str(country_raw))
 
     currency = raw_record.get("Currency")
@@ -130,9 +141,9 @@ def normalize_dfc_record(raw_record: dict) -> dict | None:
         actors.append({"name": str(originating_agency), "type": "originating_agency"})
 
     return {
-        "meridian_event_id": make_meridian_event_id("DFC", str(project_number)),
+        "meridian_event_id": make_meridian_event_id("DFC", source_event_id),
         "source": "DFC",
-        "source_event_id": str(project_number),
+        "source_event_id": source_event_id,
         "event_date": f"{fiscal_year}-01-01",
         "country": country,
         "iso3": iso3,

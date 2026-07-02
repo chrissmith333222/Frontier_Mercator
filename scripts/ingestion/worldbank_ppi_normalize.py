@@ -125,6 +125,12 @@ def normalize_ppi_record(raw_record: dict) -> dict | None:
     except (TypeError, ValueError):
         return None
 
+    # (project_id, record_year) alone isn't unique -- a project can have
+    # multiple distinct funding-tranche rows in the same year -- so the
+    # row's stable position in the source file disambiguates them.
+    row_index = raw_record.get("_row_index")
+    source_event_id = f"{project_id}:{record_year}:{row_index}" if row_index is not None else f"{project_id}:{record_year}"
+
     iso3, country, region, in_core_mandate = _lookup_country(str(country_raw))
 
     amount_str = _format_amount_millions(raw_record.get("investment"))
@@ -140,9 +146,9 @@ def normalize_ppi_record(raw_record: dict) -> dict | None:
     )
 
     return {
-        "meridian_event_id": make_meridian_event_id("WorldBankPPI", f"{project_id}:{record_year}"),
+        "meridian_event_id": make_meridian_event_id("WorldBankPPI", source_event_id),
         "source": "WorldBankPPI",
-        "source_event_id": f"{project_id}:{record_year}",
+        "source_event_id": source_event_id,
         "event_date": f"{record_year}-01-01",
         "country": country,
         "iso3": iso3,

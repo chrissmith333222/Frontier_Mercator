@@ -23,9 +23,29 @@ INDICATOR_LABELS = {code: label for code, (label, _cat) in {
 }.items()}
 
 DATA_DIR = Path(__file__).parent / "data" / "normalized"
+ANALYSIS_DIR = Path(__file__).parent / "data" / "analysis"
 CONFLICT_CATEGORIES = b.CONFLICT_CATEGORIES
 ECON_CATEGORIES = b.ECON_CATEGORIES
 NEWS_CATEGORIES = b.NEWS_CATEGORIES
+
+NAME_TO_ISO3 = {name: iso3 for iso3, (name, _region, _mandate) in ALL_COUNTRIES.items()}
+
+
+def load_cached_assessment(country_name: str) -> dict | None:
+    """Reads a pre-generated AI assessment (scripts/analysis/reasoning_agent.py,
+    run as a local/backend batch job -- never called live from this deployed
+    app) for the given country name, if one exists. Returns None if no
+    assessment has been generated for this country yet."""
+    iso3 = NAME_TO_ISO3.get(country_name)
+    if not iso3:
+        return None
+    path = ANALYSIS_DIR / f"{iso3}_assessment.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
 
 # Page config
 st.set_page_config(
@@ -794,6 +814,26 @@ with dash5:
                 file_name=f"Frontier_Mercator_{country_choice.replace(' ', '_')}_Brief.pdf",
                 mime="application/pdf", key="dl_country_brief",
             )
+
+        assessment = load_cached_assessment(country_choice)
+        if assessment:
+            analysis = assessment["analysis"]
+            st.markdown("##### AI-Synthesized Pattern Analysis")
+            st.caption(
+                f"Generated {assessment['generated_at'][:10]} from {assessment['total_events_analyzed']:,} "
+                f"events — preliminary statistical synthesis, not an investment recommendation."
+            )
+            st.markdown(analysis["trend_summary"])
+            if analysis.get("key_relationships"):
+                st.markdown("**Notable relationships**")
+                for item in analysis["key_relationships"]:
+                    st.markdown(f"- {item}")
+            if analysis.get("risk_flags"):
+                st.markdown("**Risk flags**")
+                for item in analysis["risk_flags"]:
+                    st.markdown(f"- {item}")
+            if analysis.get("data_caveats"):
+                st.caption(f"Data caveats: {analysis['data_caveats']}")
     with report_col2:
         st.markdown("#### Regional Executive Summary")
         region_choice = st.selectbox("Region", options=region_options, key="region_brief_select")

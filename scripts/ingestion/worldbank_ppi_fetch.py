@@ -49,7 +49,14 @@ def fetch_all_records() -> list[dict]:
         raise RuntimeError(f"World Bank PPI download failed: status {response.status_code}")
 
     df = pd.read_stata(io.BytesIO(response.content))
-    return df.to_dict(orient="records")
+    records = df.to_dict(orient="records")
+    # A single project ID can have multiple distinct rows in the same
+    # record year (separate funding tranches/segments) -- (ID, year) alone
+    # isn't a unique key, so each row gets a stable position marker for
+    # downstream ID generation.
+    for row_index, record in enumerate(records):
+        record["_row_index"] = row_index
+    return records
 
 
 def main():
