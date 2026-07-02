@@ -1,9 +1,9 @@
 {
   "iso3": "MLI",
   "country": "Mali",
-  "generated_at": "2026-07-02T20:46:02.714095+00:00",
+  "generated_at": "2026-07-02T21:08:41.864423+00:00",
   "scores": {
-    "security_risk": 4.6,
+    "security_risk": 4.7,
     "political_stability_risk": 0.0,
     "economic_risk": 3.8
   },
@@ -13,10 +13,11 @@
     "trailing_window_days": 365,
     "security": {
       "event_count": 3,
+      "distinct_active_days": 2,
       "avg_severity": 7.33
     },
     "political_stability": {
-      "event_count": 0
+      "distinct_active_days": 0
     },
     "economic": {
       "raw_values": {

@@ -1,22 +1,23 @@
 {
   "iso3": "TZA",
   "country": "Tanzania",
-  "generated_at": "2026-07-02T20:46:02.653240+00:00",
+  "generated_at": "2026-07-02T21:08:41.813212+00:00",
   "scores": {
-    "security_risk": 5.0,
-    "political_stability_risk": 1.0,
+    "security_risk": 4.9,
+    "political_stability_risk": 0.5,
     "economic_risk": 3.8
   },
-  "overall_risk": 3.3,
+  "overall_risk": 3.1,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 4,
+      "distinct_active_days": 2,
       "avg_severity": 7.72
     },
     "political_stability": {
-      "event_count": 4
+      "distinct_active_days": 2
     },
     "economic": {
       "raw_values": {

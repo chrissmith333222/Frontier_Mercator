@@ -50,6 +50,28 @@ def load_cached_assessment(country_name: str) -> dict | None:
         return None
 
 
+def _risk_badge_html(label: str, value: float | None) -> str:
+    """Renders one risk-scorecard sub-score as a color-coded badge (using
+    the same severity palette as conflict-event severity elsewhere in the
+    dashboard, since both are 0-10-higher-is-worse scales) rather than a
+    plain st.metric -- a quick visual "is this red or green" read matters
+    more here than for most metrics, given these feed risk assessments."""
+    if value is None:
+        return (
+            f'<div class="fm-risk-badge" style="border-color:{b.BORDER};">'
+            f'<div class="fm-risk-badge-label">{label}</div>'
+            f'<div class="fm-risk-badge-value" style="color:{b.TEXT_MUTED};">N/A</div>'
+            f"</div>"
+        )
+    color = b.severity_color(value)
+    return (
+        f'<div class="fm-risk-badge" style="border-color:{color};">'
+        f'<div class="fm-risk-badge-label">{label}</div>'
+        f'<div class="fm-risk-badge-value" style="color:{color};">{value:.1f}</div>'
+        f"</div>"
+    )
+
+
 def load_scorecard(country_name: str) -> dict | None:
     """Reads a pre-generated risk scorecard (scripts/analytics/risk_scorecard.py,
     run as a local/backend batch job -- the underlying computation needs
@@ -307,6 +329,36 @@ st.markdown(f"""
         letter-spacing: 2px;
         color: {b.ACCENT};
         animation-delay: 3.8s;
+    }}
+
+    /* Risk scorecard badges -- color-coded (same severity palette as
+       conflict events) so a "how bad is this, at a glance" read doesn't
+       require reading the number. */
+    .fm-risk-badges {{
+        display: flex;
+        gap: 0.75rem;
+        margin: 0.75rem 0 1.25rem 0;
+        flex-wrap: wrap;
+    }}
+    .fm-risk-badge {{
+        background-color: {b.PANEL};
+        border: 1px solid;
+        border-radius: 4px;
+        padding: 0.6rem 1rem;
+        min-width: 90px;
+        text-align: center;
+    }}
+    .fm-risk-badge-label {{
+        font-size: 0.75rem;
+        color: {b.TEXT_MUTED};
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.2rem;
+    }}
+    .fm-risk-badge-value {{
+        font-family: {b.DISPLAY_FONT_STACK};
+        font-weight: 700;
+        font-size: 1.6rem;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -1013,11 +1065,14 @@ with dash5:
                 "against simple published-threshold heuristics."
             )
             scores = scorecard["scores"]
-            sc1, sc2, sc3, sc4 = st.columns(4)
-            sc1.metric("Overall", scorecard["overall_risk"] if scorecard["overall_risk"] is not None else "N/A")
-            sc2.metric("Security", scores["security_risk"] if scores["security_risk"] is not None else "N/A")
-            sc3.metric("Stability", scores["political_stability_risk"])
-            sc4.metric("Economic", scores["economic_risk"] if scores["economic_risk"] is not None else "N/A")
+            badges = [
+                ("Overall", scorecard["overall_risk"]),
+                ("Security", scores["security_risk"]),
+                ("Stability", scores["political_stability_risk"]),
+                ("Economic", scores["economic_risk"]),
+            ]
+            badge_html = "".join(_risk_badge_html(label, value) for label, value in badges)
+            st.markdown(f'<div class="fm-risk-badges">{badge_html}</div>', unsafe_allow_html=True)
 
         country_graph = build_country_graph(events, country_choice)
         if country_graph["nodes"]:

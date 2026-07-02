@@ -1,22 +1,23 @@
 {
   "iso3": "PAN",
   "country": "Panama",
-  "generated_at": "2026-07-02T20:46:02.780255+00:00",
+  "generated_at": "2026-07-02T21:08:41.916527+00:00",
   "scores": {
-    "security_risk": 5.8,
-    "political_stability_risk": 0.8,
+    "security_risk": 4.8,
+    "political_stability_risk": 0.5,
     "economic_risk": 2.2
   },
-  "overall_risk": 2.9,
+  "overall_risk": 2.5,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 18,
+      "distinct_active_days": 3,
       "avg_severity": 7.29
     },
     "political_stability": {
-      "event_count": 3
+      "distinct_active_days": 2
     },
     "economic": {
       "raw_values": {

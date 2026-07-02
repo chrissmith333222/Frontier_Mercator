@@ -1,22 +1,23 @@
 {
   "iso3": "CIV",
   "country": "Ivory Coast",
-  "generated_at": "2026-07-02T20:46:02.683468+00:00",
+  "generated_at": "2026-07-02T21:08:41.841399+00:00",
   "scores": {
-    "security_risk": 5.5,
+    "security_risk": 4.8,
     "political_stability_risk": 0.0,
     "economic_risk": 3.0
   },
-  "overall_risk": 2.8,
+  "overall_risk": 2.6,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 11,
+      "distinct_active_days": 2,
       "avg_severity": 7.64
     },
     "political_stability": {
-      "event_count": 0
+      "distinct_active_days": 0
     },
     "economic": {
       "raw_values": {

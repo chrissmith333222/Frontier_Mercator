@@ -1,22 +1,23 @@
 {
   "iso3": "CUB",
   "country": "Cuba",
-  "generated_at": "2026-07-02T20:46:02.693743+00:00",
+  "generated_at": "2026-07-02T21:08:41.848906+00:00",
   "scores": {
-    "security_risk": 7.7,
-    "political_stability_risk": 3.2,
+    "security_risk": 4.6,
+    "political_stability_risk": 0.8,
     "economic_risk": 9.0
   },
-  "overall_risk": 6.6,
+  "overall_risk": 4.8,
   "methodology_inputs": {
     "as_of": "2026-07-01",
     "trailing_window_days": 365,
     "security": {
       "event_count": 44,
+      "distinct_active_days": 3,
       "avg_severity": 7.04
     },
     "political_stability": {
-      "event_count": 13
+      "distinct_active_days": 3
     },
     "economic": {
       "raw_values": {

@@ -1,22 +1,23 @@
 {
   "iso3": "SLV",
   "country": "El Salvador",
-  "generated_at": "2026-07-02T20:46:02.749992+00:00",
+  "generated_at": "2026-07-02T21:08:41.892367+00:00",
   "scores": {
-    "security_risk": 7.0,
+    "security_risk": 5.2,
     "political_stability_risk": 0.2,
     "economic_risk": 4.2
   },
-  "overall_risk": 3.8,
+  "overall_risk": 3.2,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 27,
+      "distinct_active_days": 3,
       "avg_severity": 8.03
     },
     "political_stability": {
-      "event_count": 1
+      "distinct_active_days": 1
     },
     "economic": {
       "raw_values": {

@@ -1,9 +1,9 @@
 {
   "iso3": "ZMB",
   "country": "Zambia",
-  "generated_at": "2026-07-02T20:46:02.672968+00:00",
+  "generated_at": "2026-07-02T21:08:41.832883+00:00",
   "scores": {
-    "security_risk": 5.2,
+    "security_risk": 5.1,
     "political_stability_risk": 0.2,
     "economic_risk": 5.8
   },
@@ -13,10 +13,11 @@
     "trailing_window_days": 365,
     "security": {
       "event_count": 5,
+      "distinct_active_days": 2,
       "avg_severity": 8.0
     },
     "political_stability": {
-      "event_count": 1
+      "distinct_active_days": 1
     },
     "economic": {
       "raw_values": {

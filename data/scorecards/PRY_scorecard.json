@@ -1,7 +1,7 @@
 {
   "iso3": "PRY",
   "country": "Paraguay",
-  "generated_at": "2026-07-02T20:46:02.806513+00:00",
+  "generated_at": "2026-07-02T21:08:41.933573+00:00",
   "scores": {
     "security_risk": null,
     "political_stability_risk": 0.0,
@@ -12,10 +12,11 @@
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
-      "event_count": 0
+      "event_count": 0,
+      "distinct_active_days": 0
     },
     "political_stability": {
-      "event_count": 0
+      "distinct_active_days": 0
     },
     "economic": {
       "raw_values": {

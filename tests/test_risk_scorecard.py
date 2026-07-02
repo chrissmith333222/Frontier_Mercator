@@ -110,6 +110,27 @@ def test_build_scorecard_computes_all_dimensions_with_full_data():
     print("✓ test_build_scorecard_computes_all_dimensions_with_full_data passed")
 
 
+def test_build_scorecard_frequency_uses_distinct_days_not_raw_count():
+    """Reproduces the real Kenya bug: GDELT floods a single day with many
+    near-duplicate conflict events, which previously inflated the
+    frequency sub-score to the maximum via raw event count. Scoring on
+    distinct active days instead means one noisy day of duplicates should
+    score the same as one real event on that day, not saturate the score."""
+    # 20 GDELT events, all on the SAME single day -- one "distinct active day".
+    flooded_day_events = [
+        _conflict_event(f"e{i}", "SOM", "Somalia", "2026-03-01", 5.0) for i in range(20)
+    ]
+    db_path = _make_temp_kb(flooded_day_events)
+    scorecard = build_country_scorecard("SOM", "Somalia", db_path=db_path)
+
+    assert scorecard["methodology_inputs"]["security"]["event_count"] == 20
+    assert scorecard["methodology_inputs"]["security"]["distinct_active_days"] == 1
+    # frequency sub-score for 1 distinct day should be small (1/3 capped at
+    # 10), not maxed out the way 20 raw events would have driven it before.
+    assert scorecard["scores"]["security_risk"] < 6.0
+    print("✓ test_build_scorecard_frequency_uses_distinct_days_not_raw_count passed")
+
+
 def test_build_scorecard_handles_missing_dimensions_gracefully():
     """A country with only conflict data (no economic indicators ingested
     yet) should still produce a scorecard -- missing dimensions are None,

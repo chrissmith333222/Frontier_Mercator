@@ -1,7 +1,7 @@
 {
   "iso3": "BDI",
   "country": "Burundi",
-  "generated_at": "2026-07-02T20:46:02.735215+00:00",
+  "generated_at": "2026-07-02T21:08:41.883087+00:00",
   "scores": {
     "security_risk": 4.0,
     "political_stability_risk": 0.0,
@@ -13,10 +13,11 @@
     "trailing_window_days": 365,
     "security": {
       "event_count": 1,
+      "distinct_active_days": 1,
       "avg_severity": 6.5
     },
     "political_stability": {
-      "event_count": 0
+      "distinct_active_days": 0
     },
     "economic": {
       "raw_values": {

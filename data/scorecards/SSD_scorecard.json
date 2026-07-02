@@ -1,22 +1,23 @@
 {
   "iso3": "SSD",
   "country": "South Sudan",
-  "generated_at": "2026-07-02T20:46:02.669951+00:00",
+  "generated_at": "2026-07-02T21:08:41.830883+00:00",
   "scores": {
-    "security_risk": 5.5,
-    "political_stability_risk": 1.8,
+    "security_risk": 5.1,
+    "political_stability_risk": 0.8,
     "economic_risk": 4.0
   },
-  "overall_risk": 3.8,
+  "overall_risk": 3.3,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 10,
+      "distinct_active_days": 3,
       "avg_severity": 7.87
     },
     "political_stability": {
-      "event_count": 7
+      "distinct_active_days": 3
     },
     "economic": {
       "raw_values": {

@@ -1,22 +1,23 @@
 {
   "iso3": "CRI",
   "country": "Costa Rica",
-  "generated_at": "2026-07-02T20:46:02.755484+00:00",
+  "generated_at": "2026-07-02T21:08:41.896364+00:00",
   "scores": {
-    "security_risk": 4.7,
+    "security_risk": 4.4,
     "political_stability_risk": 0.2,
     "economic_risk": 3.0
   },
-  "overall_risk": 2.6,
+  "overall_risk": 2.5,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 7,
+      "distinct_active_days": 2,
       "avg_severity": 6.86
     },
     "political_stability": {
-      "event_count": 1
+      "distinct_active_days": 1
     },
     "economic": {
       "raw_values": {

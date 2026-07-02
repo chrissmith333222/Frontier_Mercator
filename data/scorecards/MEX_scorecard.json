@@ -1,22 +1,23 @@
 {
   "iso3": "MEX",
   "country": "Mexico",
-  "generated_at": "2026-07-02T20:46:02.617973+00:00",
+  "generated_at": "2026-07-02T21:08:41.775838+00:00",
   "scores": {
-    "security_risk": 8.6,
-    "political_stability_risk": 4.8,
+    "security_risk": 5.1,
+    "political_stability_risk": 0.8,
     "economic_risk": 4.8
   },
-  "overall_risk": 6.1,
+  "overall_risk": 3.6,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 159,
+      "distinct_active_days": 4,
       "avg_severity": 7.6
     },
     "political_stability": {
-      "event_count": 19
+      "distinct_active_days": 3
     },
     "economic": {
       "raw_values": {

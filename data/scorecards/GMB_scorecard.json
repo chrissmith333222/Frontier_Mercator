@@ -1,22 +1,23 @@
 {
   "iso3": "GMB",
   "country": "Gambia",
-  "generated_at": "2026-07-02T20:46:02.786461+00:00",
+  "generated_at": "2026-07-02T21:08:41.920048+00:00",
   "scores": {
-    "security_risk": 5.6,
-    "political_stability_risk": 0.8,
+    "security_risk": 4.4,
+    "political_stability_risk": 0.2,
     "economic_risk": 5.2
   },
-  "overall_risk": 3.9,
+  "overall_risk": 3.3,
   "methodology_inputs": {
     "as_of": "2026-12-31",
     "trailing_window_days": 365,
     "security": {
       "event_count": 18,
+      "distinct_active_days": 2,
       "avg_severity": 6.92
     },
     "political_stability": {
-      "event_count": 3
+      "distinct_active_days": 1
     },
     "economic": {
       "raw_values": {

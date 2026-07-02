@@ -139,12 +139,12 @@ def build_country_scorecard(iso3: str, country_name: str, db_path: Path = DB_PAT
         window_start = (datetime.fromisoformat(as_of[:10]) - timedelta(days=365)).date().isoformat()
 
         security_events = conn.execute(
-            f"SELECT severity_score FROM events WHERE iso3 = ? AND event_date >= ? "
+            f"SELECT event_date, severity_score FROM events WHERE iso3 = ? AND event_date >= ? "
             f"AND event_category IN ({','.join('?' * len(SECURITY_CATEGORIES))}) AND severity_score IS NOT NULL",
             (iso3, window_start, *SECURITY_CATEGORIES),
         ).fetchall()
-        stability_count = conn.execute(
-            f"SELECT COUNT(*) FROM events WHERE iso3 = ? AND event_date >= ? "
+        stability_days = conn.execute(
+            f"SELECT COUNT(DISTINCT event_date) FROM events WHERE iso3 = ? AND event_date >= ? "
             f"AND event_category IN ({','.join('?' * len(STABILITY_CATEGORIES))})",
             (iso3, window_start, *STABILITY_CATEGORIES),
         ).fetchone()[0]
@@ -157,17 +157,29 @@ def build_country_scorecard(iso3: str, country_name: str, db_path: Path = DB_PAT
     inputs = {"as_of": as_of, "trailing_window_days": 365}
 
     if security_events:
-        severities = [row[0] for row in security_events]
+        # Frequency is scored on distinct active days, not raw event count.
+        # GDELT (the dominant source for "conflict" -- ~95% of events in
+        # this category) frequently re-reports the same real-world incident
+        # many times in a single day; scoring by raw count let one noisy
+        # day of duplicate GDELT hits push a country's frequency sub-score
+        # straight to the maximum, which is what happened to Kenya's
+        # political-stability score before this fix (same underlying
+        # GDELT behavior, same fix applies to both dimensions).
+        severities = [row[1] for row in security_events]
+        distinct_days = len({row[0] for row in security_events})
         avg_severity = sum(severities) / len(severities)
-        frequency_score = min(10, len(severities) / 5)
+        frequency_score = min(10, distinct_days / 3)
         scores["security_risk"] = round(0.6 * avg_severity + 0.4 * frequency_score, 1)
-        inputs["security"] = {"event_count": len(severities), "avg_severity": round(avg_severity, 2)}
+        inputs["security"] = {
+            "event_count": len(severities), "distinct_active_days": distinct_days,
+            "avg_severity": round(avg_severity, 2),
+        }
     else:
         scores["security_risk"] = None
-        inputs["security"] = {"event_count": 0}
+        inputs["security"] = {"event_count": 0, "distinct_active_days": 0}
 
-    scores["political_stability_risk"] = round(min(10, stability_count / 4), 1) if stability_count else 0.0
-    inputs["political_stability"] = {"event_count": stability_count}
+    scores["political_stability_risk"] = round(min(10, stability_days / 4), 1) if stability_days else 0.0
+    inputs["political_stability"] = {"distinct_active_days": stability_days}
 
     econ_sub_scores = {}
     for concept, value in indicator_values.items():
