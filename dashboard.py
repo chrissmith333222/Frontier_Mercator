@@ -172,6 +172,86 @@ st.markdown(f"""
         visibility: hidden !important;
         display: none !important;
     }}
+
+    /* Persistent top navigation bar -- stays fixed while scrolling, with a
+       Home link that jumps back to the #fm-top anchor at the very start of
+       the page (plain browser anchor scroll, no JS -- st.markdown strips
+       <script> tags, see render_video_hero for why that approach uses
+       components.html instead when JS is actually needed). Push the main
+       content down by the bar's height so it doesn't sit underneath it. */
+    .fm-topbar {{
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 999999;
+        height: 46px;
+        background: rgba(6, 11, 20, 0.94);
+        backdrop-filter: blur(6px);
+        border-bottom: 1px solid {b.BORDER};
+        display: flex;
+        align-items: center;
+        gap: 1.75rem;
+        padding: 0 1.75rem;
+    }}
+    .fm-topbar-brand {{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: auto;
+    }}
+    .fm-topbar-emblem {{ width: 20px; height: 20px; }}
+    .fm-topbar-brand-text {{
+        font-family: {b.DISPLAY_FONT_STACK};
+        font-weight: 700;
+        font-size: 0.8rem;
+        letter-spacing: 1.5px;
+        color: {b.TEXT_PRIMARY};
+    }}
+    .fm-topbar a {{
+        color: {b.TEXT_MUTED};
+        text-decoration: none;
+        font-family: {b.FONT_STACK};
+        font-weight: 500;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        transition: color 0.15s ease;
+    }}
+    .fm-topbar a:hover {{ color: {b.ACCENT}; }}
+    [data-testid="stAppViewContainer"] > .main {{
+        padding-top: 46px;
+    }}
+
+    /* About page: epic/mysterious narrative hero, cascading fade-in on
+       load -- each line waits its turn rather than the whole block
+       appearing at once. */
+    @keyframes fmFadeIn {{
+        from {{ opacity: 0; transform: translateY(8px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+    }}
+    .fm-about-hero {{
+        max-width: 680px;
+        margin: 1.5rem auto 2.5rem auto;
+        text-align: center;
+    }}
+    .fm-about-hero p {{
+        opacity: 0;
+        animation: fmFadeIn 1.6s ease-out forwards;
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: {b.TEXT_PRIMARY};
+        margin-bottom: 1.1rem;
+    }}
+    .fm-about-hero p:nth-of-type(1) {{ animation-delay: 0.2s; }}
+    .fm-about-hero p:nth-of-type(2) {{ animation-delay: 1.1s; }}
+    .fm-about-hero p:nth-of-type(3) {{ animation-delay: 2.0s; }}
+    .fm-about-hero p:nth-of-type(4) {{ animation-delay: 2.9s; }}
+    .fm-about-hero .fm-about-signoff {{
+        font-family: {b.DISPLAY_FONT_STACK};
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: {b.ACCENT};
+        animation-delay: 3.8s;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -741,6 +821,20 @@ def render_unified_map(df):
     st_folium(m, width=1200, height=650, key="unified_map")
 
 
+st.markdown('<div id="fm-top"></div>', unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="fm-topbar">
+        <a href="#fm-top" class="fm-topbar-brand">
+            <span class="fm-topbar-emblem">{_load_text(str(Path(__file__).parent / "static" / "fm_emblem.svg"))}</span>
+            <span class="fm-topbar-brand-text">FRONTIER MERCATOR</span>
+        </a>
+        <a href="#fm-top">Home</a>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 render_header()
 render_video_hero()
 
@@ -778,9 +872,9 @@ news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")
 
-dash1, dash2, dash3, dash4, dash5, dash6 = st.tabs(
+dash1, dash2, dash3, dash4, dash5, dash6, dash7 = st.tabs(
     ["Conflict & Security", "Markets & Economy", "News & Social Signal",
-     "Great Power Competition", "Reports", "About"]
+     "Great Power Competition", "Reports", "About", "Contact Us"]
 )
 
 with dash1:
@@ -898,6 +992,33 @@ with dash5:
             )
 
 with dash6:
+    st.markdown('<div id="fm-about"></div>', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="fm-about-hero">
+        <p>In the sixteenth century, a cartographer named Gerardus Mercator reimagined how the
+        world could be seen — flattening a sphere onto a plane so that distant shores, unfamiliar
+        coastlines, and the paths between them could finally be read at a glance. His projection
+        did not simplify the world. It made it navigable.</p>
+        <p>Frontier Mercator Group carries that same premise into an age where the map is no
+        longer paper, and the terrain is no longer only geography. The Latin root of our name —
+        <em>mercator</em> — is merchant: one who moves between borders, reads the currents of
+        distant markets, and returns having converted uncertainty into understanding. It is an
+        old profession, and an older instinct.</p>
+        <p>We believe that instinct has never mattered more than it does now, at the frontier
+        markets of Africa and Latin America — where the world's next chapters of growth, risk, and
+        opportunity are already being written, often long before they reach wider attention. We
+        built this firm to stand at that frontier: synthesizing conflict, capital, and the quiet
+        movements of power into a single strategic vantage point.</p>
+        <p>Not to predict the future. To see the present clearly enough that the future stops
+        being a surprise.</p>
+        <p class="fm-about-signoff">FRONTIER MERCATOR — INTELLIGENCE FOR THE FRONTIER</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("---")
+
     st.markdown("### About This Platform")
     st.markdown("""
     Frontier Mercator Group's intelligence platform provides structured, real-time analysis of
@@ -938,6 +1059,22 @@ with dash6:
       satellite imagery (Sentinel-1 radar sees through cloud cover, useful for persistently
       overcast conflict zones); planned as a proper ingested data source, not just a link
     - **[Bellingcat](https://www.bellingcat.com)** — open-source investigation methodology and findings
+    """)
+
+with dash7:
+    st.markdown('<div id="fm-contact"></div>', unsafe_allow_html=True)
+    st.markdown("### Contact Us")
+    st.markdown("""
+    Frontier Mercator Group works directly with investors, analysts, and institutions operating
+    in Africa, Latin America, and the broader frontier-market landscape. For inquiries about
+    custom research, platform access, or partnership opportunities, reach out below.
+
+    **General inquiries:** [inquiries@frontiermercator.com](mailto:inquiries@frontiermercator.com)
+
+    **Research & custom analysis:** [research@frontiermercator.com](mailto:research@frontiermercator.com)
+
+    Distribution of Frontier Mercator Group intelligence products is restricted to authorized
+    recipients. Reach out to discuss access.
     """)
 
 st.markdown("---")
