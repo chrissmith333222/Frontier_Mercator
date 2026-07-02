@@ -122,11 +122,24 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
         client = _get_client()
     response = client.messages.create(
         model=model,
-        max_tokens=1500,
+        max_tokens=4000,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": _build_user_message(snapshot, country_name)}],
     )
-    raw_text = response.content[0].text.strip()
+    if response.stop_reason == "max_tokens":
+        raise RuntimeError(
+            f"Claude response for {country_name} ({iso3}) was truncated (hit max_tokens) -- "
+            f"raise max_tokens in reasoning_agent.py rather than trying to parse a cut-off response."
+        )
+    # response.content can include non-text blocks (e.g. ThinkingBlock, if
+    # extended thinking is enabled on the account/model) ahead of the
+    # actual text response -- find the text block explicitly rather than
+    # assuming content[0] is it.
+    text_blocks = [block.text for block in response.content if getattr(block, "type", None) == "text"]
+    if not text_blocks:
+        raise RuntimeError(f"No text block in Claude response for {country_name} ({iso3}); "
+                            f"got block types: {[getattr(b, 'type', type(b).__name__) for b in response.content]}")
+    raw_text = text_blocks[0].strip()
     # Claude occasionally wraps JSON in markdown fences despite instructions not to -- strip if present.
     if raw_text.startswith("```"):
         raw_text = raw_text.strip("`")

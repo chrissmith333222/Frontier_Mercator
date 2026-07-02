@@ -55,8 +55,17 @@ FIXTURE_EVENTS = [
 
 
 class _FakeResponse:
-    def __init__(self, text):
-        self.content = [type("Block", (), {"text": text})()]
+    def __init__(self, text, include_thinking_block=True, stop_reason="end_turn"):
+        blocks = []
+        if include_thinking_block:
+            # Real Claude responses can include a ThinkingBlock (type=
+            # "thinking", no .text attribute usable the same way) ahead of
+            # the text block when extended thinking is enabled -- mirror
+            # that here so the "find the text block" logic is exercised.
+            blocks.append(type("ThinkingBlock", (), {"type": "thinking", "thinking": "..."})())
+        blocks.append(type("TextBlock", (), {"type": "text", "text": text})())
+        self.content = blocks
+        self.stop_reason = stop_reason
 
 
 class _FakeMessages:
@@ -131,6 +140,31 @@ def test_generate_assessment_parses_fenced_json_response():
     assert "trend_summary" in result["analysis"]
     assert "China Eximbank" in result["analysis"]["key_relationships"][0]
     print("✓ test_generate_assessment_parses_fenced_json_response passed")
+
+
+def test_generate_assessment_raises_on_truncated_response():
+    db_path = _make_temp_kb()
+    import scripts.knowledge.queries as queries_module
+    import scripts.analysis.reasoning_agent as agent_module
+
+    fake_client = _FakeClient(VALID_ANALYSIS_JSON)
+    fake_client.messages._response_text = None  # unused; override create() directly below
+    fake_client.messages.create = lambda **kwargs: _FakeResponse(
+        '{"trend_summary": "cut off mid', stop_reason="max_tokens"
+    )
+
+    original_snapshot_fn = agent_module.country_snapshot
+    agent_module.country_snapshot = lambda iso3: queries_module.country_snapshot(iso3, db_path=db_path)
+    try:
+        raised = False
+        try:
+            generate_country_assessment("KEN", "Kenya", client=fake_client)
+        except RuntimeError as e:
+            raised = "truncated" in str(e).lower()
+        assert raised
+    finally:
+        agent_module.country_snapshot = original_snapshot_fn
+    print("✓ test_generate_assessment_raises_on_truncated_response passed")
 
 
 def test_generate_assessment_raises_on_thin_data():
