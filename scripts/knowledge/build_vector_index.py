@@ -74,10 +74,14 @@ def _embedding_text(event: dict) -> str:
     return f"{event['country']} | {event['event_category']}: {event.get('narrative_summary') or ''}"
 
 
-def _embed_with_retry(client, texts: list[str], max_attempts: int = 5):
-    """Retries rate-limit errors with growing backoff -- Voyage's
+def _embed_with_retry(client, texts: list[str], max_attempts: int = 20):
+    """Retries rate-limit errors with growing (capped) backoff -- Voyage's
     RateLimitError on unpaid accounts is expected/routine here, not
-    exceptional, since we deliberately run under the free-tier cap."""
+    exceptional, since we deliberately run under the free-tier cap. Voyage's
+    own SDK already retries internally before raising, so by the time this
+    sees the error the account is genuinely still throttled -- a high
+    attempt count with a capped wait is what actually gets an unpaid
+    account through the full dataset rather than dying partway."""
     for attempt in range(1, max_attempts + 1):
         try:
             return client.embed(texts, model=EMBEDDING_MODEL, input_type="document")
@@ -86,7 +90,7 @@ def _embed_with_retry(client, texts: list[str], max_attempts: int = 5):
             is_rate_limit = "ratelimit" in error_text
             if not is_rate_limit or attempt == max_attempts:
                 raise
-            wait_seconds = 30 * attempt
+            wait_seconds = min(30 * attempt, 180)
             print(f"    rate limited, waiting {wait_seconds}s (attempt {attempt}/{max_attempts})...",
                   file=sys.stderr)
             time.sleep(wait_seconds)
