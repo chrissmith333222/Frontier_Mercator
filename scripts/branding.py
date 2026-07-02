@@ -27,6 +27,9 @@ BORDER = "#243252"        # hairline borders/dividers on dark surfaces
 NAVY = "#091E42"          # deep brand navy — used as a strong accent/header band
 SLATE = "#505F79"         # brand secondary (gray)
 ACCENT = "#9AA5B4"        # light gray — interactive/active states, no blue tint
+GOLD = "#D4AA04"          # brand accent (2026-07-02) — used sparingly on lines/edges/hover
+                          # states, not as a primary UI color; ties to the "merchant" half
+                          # of the Mercator name without going full gold-foil/gaudy.
 
 # Text
 TEXT_PRIMARY = "#FFFFFF"

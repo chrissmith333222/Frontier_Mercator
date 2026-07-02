@@ -119,7 +119,7 @@ _EMBLEM_B64 = _emblem_base64()
 # Page config
 st.set_page_config(
     page_title="Frontier Mercator — Intelligence for the Frontier",
-    page_icon=str(Path(__file__).parent / "Frontier_Mercator_Logo.jpg"),
+    page_icon=str(Path(__file__).parent / "static" / "fm_emblem.svg"),
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -136,38 +136,45 @@ st.markdown(f"""
         font-family: {b.FONT_STACK};
     }}
 
+    /* Horizontal layout (emblem beside the wordmark, not stacked above it)
+       -- keeps total header height small so the header + full rotating
+       video are both visible on load without scrolling, even with a
+       larger wordmark. */
     .fm-header-block {{
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         justify-content: center;
+        gap: 1rem;
         width: 100%;
-        margin: 1rem 0 0 0;
+        margin: 0.5rem 0 0 0;
     }}
 
     .fm-emblem-large {{
-        width: 112px;
-        height: 112px;
+        width: 76px;
+        height: 76px;
+        flex-shrink: 0;
     }}
 
     .fm-wordmark {{
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 700;
-        font-size: 3.0rem;
+        font-size: 3.6rem;
         letter-spacing: 4px;
-        text-align: center;
+        text-align: left;
         color: {b.TEXT_PRIMARY};
         white-space: nowrap;
-        margin: 0.75rem 0 0 0;
+        margin: 0;
     }}
     @media (max-width: 600px) {{
-        .fm-wordmark {{ font-size: 1.9rem; letter-spacing: 2px; }}
+        .fm-wordmark {{ font-size: 2.1rem; letter-spacing: 2px; }}
+        .fm-emblem-large {{ width: 52px; height: 52px; }}
     }}
 
     .stMetric {{
         background-color: {b.PANEL};
         border: 1px solid {b.BORDER};
-        border-left: 4px solid {b.ACCENT};
+        border-left: 4px solid {b.GOLD};
         padding: 1.5rem;
         border-radius: 4px;
     }}
@@ -179,7 +186,7 @@ st.markdown(f"""
 
     .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {{
         color: {b.TEXT_PRIMARY};
-        border-bottom: 3px solid {b.ACCENT};
+        border-bottom: 3px solid {b.GOLD};
     }}
 
     h1, h2, h3 {{
@@ -190,8 +197,8 @@ st.markdown(f"""
 
     .header-line {{
         height: 3px;
-        background: linear-gradient(90deg, {b.ACCENT} 0%, {b.NAVY} 100%);
-        margin-bottom: 2rem;
+        background: linear-gradient(90deg, {b.GOLD} 0%, {b.NAVY} 100%);
+        margin-bottom: 1rem;
     }}
 
     .fm-panel {{
@@ -272,9 +279,16 @@ st.markdown(f"""
         text-transform: uppercase;
         transition: color 0.15s ease;
     }}
-    .fm-topbar a:hover {{ color: {b.ACCENT}; }}
+    .fm-topbar a:hover {{ color: {b.GOLD}; }}
     [data-testid="stAppViewContainer"] > .main {{
         padding-top: 46px;
+    }}
+    /* Streamlit's block-container reserves generous top padding by default
+       (space for its own hidden toolbar) -- since that toolbar is already
+       hidden, shrink it so the header + full rotating video are visible on
+       load without scrolling. */
+    .block-container {{
+        padding-top: 1.5rem !important;
     }}
 
     /* About page: epic/mysterious narrative hero, cascading fade-in on
@@ -328,7 +342,7 @@ st.markdown(f"""
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 700;
         letter-spacing: 2px;
-        color: {b.ACCENT};
+        color: {b.GOLD};
         animation-delay: 3.8s;
     }}
 
@@ -1379,9 +1393,7 @@ with dash7:
         <p>Frontier Mercator Group works directly with investors, analysts, and institutions
         operating across the world's frontier markets. For inquiries about custom research,
         platform access, or partnership opportunities, reach out below.</p>
-        <p><b>General inquiries:</b>
-        <a href="mailto:inquiries@frontiermercator.com">inquiries@frontiermercator.com</a></p>
-        <p><b>Research &amp; custom analysis:</b>
+        <p><b>Contact:</b>
         <a href="mailto:research@frontiermercator.com">research@frontiermercator.com</a></p>
         <p>Distribution of Frontier Mercator Group intelligence products is restricted to
         authorized recipients. Reach out to discuss access.</p>
