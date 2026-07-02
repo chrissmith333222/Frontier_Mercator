@@ -32,6 +32,14 @@ ALIAS_MAP = {
     "SAUDI ARABIA": "Saudi Arabia",
     "GOVERNMENT": "Government", "MILITARY": "Military", "POLICE": "Police",
     "REBEL GROUP": "Rebel Group", "PROTESTERS": "Protesters", "CIVILIANS": "Civilians",
+    # DFC's legacy originating-agency provenance tags -- these are real
+    # historical acronyms (the naive title-casing fallback below would
+    # otherwise turn "OPIC" into the unreadable "Opic"), not aliases to be
+    # collapsed into DFC itself: they intentionally stay distinct from
+    # "U.S. International Development Finance Corporation" because they
+    # record which legacy program originated a given deal pre-2019 merger.
+    "OPIC": "OPIC (Overseas Private Investment Corporation, DFC predecessor)",
+    "DCA": "DCA (Development Credit Authority, DFC predecessor)",
 }
 
 
