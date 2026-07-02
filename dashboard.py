@@ -130,12 +130,15 @@ st.markdown(f"""
     .fm-wordmark {{
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 700;
-        font-size: 3.4rem;
-        letter-spacing: 3px;
+        font-size: 2.6rem;
+        letter-spacing: 4px;
         text-align: center;
         color: {b.TEXT_PRIMARY};
-        transform: skew(-6deg);
+        white-space: nowrap;
         margin: 0.75rem 0 0 0;
+    }}
+    @media (max-width: 600px) {{
+        .fm-wordmark {{ font-size: 1.7rem; letter-spacing: 2px; }}
     }}
 
     .stMetric {{
@@ -296,9 +299,8 @@ st.markdown(f"""
         margin-bottom: 1.1rem;
     }}
     .fm-about-hero p:nth-of-type(1) {{ animation-delay: 0.2s; }}
-    .fm-about-hero p:nth-of-type(2) {{ animation-delay: 1.1s; }}
-    .fm-about-hero p:nth-of-type(3) {{ animation-delay: 2.0s; }}
-    .fm-about-hero p:nth-of-type(4) {{ animation-delay: 2.9s; }}
+    .fm-about-hero p:nth-of-type(2) {{ animation-delay: 1.4s; }}
+    .fm-about-hero p:nth-of-type(3) {{ animation-delay: 2.6s; }}
     .fm-about-hero .fm-about-signoff {{
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 700;
@@ -1119,19 +1121,18 @@ with dash6:
         """
         <div class="fm-about-hero">
         <p>In the sixteenth century, a cartographer named Gerardus Mercator reimagined how the
-        world could be seen — flattening a sphere onto a plane so that distant shores, unfamiliar
+        world could be viewed — flattening a sphere onto a plane so that distant shores, unfamiliar
         coastlines, and the paths between them could finally be read at a glance. His projection
-        did not simplify the world. It made it navigable.</p>
-        <p>Frontier Mercator Group carries that same premise into an age where the map is no
-        longer paper, and the terrain is no longer only geography. The Latin root of our name —
-        <em>mercator</em> — is merchant: one who moves between borders, reads the currents of
-        distant markets, and returns having converted uncertainty into understanding. It is an
-        old profession, and an older instinct.</p>
-        <p>We believe that instinct has never mattered more than it does now, at the frontier
-        markets of Africa and Latin America — where the world's next chapters of growth, risk, and
-        opportunity are already being written, often long before they reach wider attention. We
-        built this firm to stand at that frontier: synthesizing conflict, capital, and the quiet
-        movements of power into a single strategic vantage point.</p>
+        did not simplify the world, but it made visible what before was unseen. The name carries a
+        second meaning too, one just as old: <em>mercator</em>, in Latin, is merchant — one who
+        reads distant markets and returns with understanding. Frontier Mercator was named for both.</p>
+        <p>Frontier Mercator Group carries that legacy into an age where the map is no longer
+        paper, and the terrain is no longer only geography. We believe that instinct and vision
+        have never mattered more than they do now, in the frontier markets of the globe — where
+        the world's next chapters of growth, risk, and opportunity are already being written, often
+        long before they reach wider attention. Frontier Mercator stands at that frontier:
+        synthesizing conflict, capital, and the quiet movements of power into a single strategic
+        vantage point.</p>
         <p>Not to predict the future. To see the present clearly enough that the future stops
         being a surprise.</p>
         <p class="fm-about-signoff">FRONTIER MERCATOR — INTELLIGENCE FOR THE FRONTIER</p>
@@ -1144,9 +1145,8 @@ with dash6:
     st.markdown("### About This Platform")
     st.markdown("""
     Frontier Mercator Group's intelligence platform provides structured, real-time analysis of
-    conflict, political risk, macroeconomic conditions, and emerging market trends across Africa
-    and Latin America, with episodic monitoring of global developments (Europe, Middle East, and
-    beyond) where they bear on the core mandate.
+    conflict, political risk, macroeconomic conditions, and emerging market trends across the
+    world's frontier markets, with particular depth in Africa and Latin America.
 
     #### Data Sources
     - **ACLED:** Armed Conflict Location & Event Data — geo-coded conflict and protest events
