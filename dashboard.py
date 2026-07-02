@@ -13,6 +13,7 @@ import streamlit.components.v1 as components
 from pathlib import Path
 
 from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief, generate_custom_report
+from scripts.reports.report_archive import archive_report, list_archived_reports
 from scripts import branding as b
 from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_LABELS
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
@@ -919,6 +920,7 @@ with dash5:
         country_choice = st.selectbox("Country", options=country_name_options, key="country_brief_select")
         if st.button("Generate Country Brief", key="gen_country_brief"):
             pdf_bytes = generate_country_brief(df, country_choice)
+            archive_report(pdf_bytes, report_type="country", label=country_choice)
             st.download_button(
                 "Download PDF", data=pdf_bytes,
                 file_name=f"Frontier_Mercator_{country_choice.replace(' ', '_')}_Brief.pdf",
@@ -949,6 +951,7 @@ with dash5:
         region_choice = st.selectbox("Region", options=region_options, key="region_brief_select")
         if st.button("Generate Regional Brief", key="gen_regional_brief"):
             pdf_bytes = generate_regional_brief(df, region_choice)
+            archive_report(pdf_bytes, report_type="regional", label=region_choice)
             st.download_button(
                 "Download PDF", data=pdf_bytes,
                 file_name=f"Frontier_Mercator_{region_choice.replace(' ', '_').replace('/', '-')}_Brief.pdf",
@@ -985,11 +988,50 @@ with dash5:
             st.caption(f"Data caveats: {analysis['data_caveats']}")
         if st.button("Generate PDF", key="gen_custom_report"):
             pdf_bytes = generate_custom_report(selected)
+            archive_report(pdf_bytes, report_type="custom", label=selected["query"])
             st.download_button(
                 "Download PDF", data=pdf_bytes,
                 file_name=f"Frontier_Mercator_Custom_Analysis_{selected['query'][:40].replace(' ', '_')}.pdf",
                 mime="application/pdf", key="dl_custom_report",
             )
+
+    archived_reports = list_archived_reports()
+    if archived_reports:
+        st.markdown("---")
+        st.markdown("#### Report Archive")
+        st.markdown(
+            "Every brief generated from this dashboard is saved here for later reference -- "
+            "filter by type or search by name, then re-download without regenerating."
+        )
+        archive_col1, archive_col2 = st.columns(2)
+        with archive_col1:
+            type_filter = st.multiselect(
+                "Report type", options=["country", "regional", "custom"],
+                default=["country", "regional", "custom"], key="archive_type_filter",
+            )
+        with archive_col2:
+            search_text = st.text_input("Search by name/query", key="archive_search")
+
+        filtered = [
+            r for r in archived_reports
+            if r["report_type"] in type_filter
+            and (not search_text or search_text.lower() in r["label"].lower())
+        ]
+        st.caption(f"{len(filtered)} of {len(archived_reports)} archived reports")
+        for report in filtered[:50]:
+            col_a, col_b, col_c = st.columns([3, 1, 1])
+            with col_a:
+                st.markdown(f"**{report['label']}** — {report['report_type']}")
+            with col_b:
+                st.caption(report["generated_at"][:10])
+            with col_c:
+                pdf_path = Path(report["pdf_path"])
+                if pdf_path.exists():
+                    st.download_button(
+                        "Download", data=pdf_path.read_bytes(),
+                        file_name=f"Frontier_Mercator_{report['label'][:40].replace(' ', '_')}.pdf",
+                        mime="application/pdf", key=f"dl_archive_{report['id']}",
+                    )
 
 with dash6:
     st.markdown('<div id="fm-about"></div>', unsafe_allow_html=True)
