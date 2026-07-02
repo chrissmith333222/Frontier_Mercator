@@ -64,6 +64,17 @@ def load_custom_analyses() -> list[dict]:
             continue
     return sorted(analyses, key=lambda a: a.get("generated_at", ""), reverse=True)
 
+
+def _emblem_base64() -> str:
+    import base64
+    return base64.b64encode((Path(__file__).parent / "static" / "fm_emblem.svg").read_bytes()).decode("ascii")
+
+
+# Computed before the CSS block below (which needs it) rather than via the
+# @st.cache_data-decorated _load_base64 defined further down -- this runs
+# at module top-to-bottom execution time, before that function exists.
+_EMBLEM_B64 = _emblem_base64()
+
 # Page config
 st.set_page_config(
     page_title="Frontier Mercator — Intelligence for the Frontier",
@@ -229,10 +240,34 @@ st.markdown(f"""
         from {{ opacity: 0; transform: translateY(8px); }}
         to {{ opacity: 1; transform: translateY(0); }}
     }}
-    .fm-about-hero {{
+    .fm-about-hero, .fm-watermark-bg {{
+        position: relative;
         max-width: 680px;
         margin: 1.5rem auto 2.5rem auto;
         text-align: center;
+    }}
+    /* Large, near-invisible emblem watermark behind the narrative text --
+       Chris wanted more imagery presence on the site but explicitly "not
+       distracting," so this stays background-only and barely-there rather
+       than a photo/video (no ffmpeg available locally to extract a clean
+       still frame from the hero videos without visible compression
+       artifacts at this size, so the emblem -- already a vector, scales
+       perfectly at any size -- was the safer choice here). Reused on the
+       Contact tab too (.fm-watermark-bg) for visual consistency between
+       the two lowest-traffic, most "editorial" pages on the site. */
+    .fm-about-hero::before, .fm-watermark-bg::before {{
+        content: "";
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 900px; height: 900px;
+        transform: translate(-50%, -50%);
+        background-image: url("data:image/svg+xml;base64,{_EMBLEM_B64}");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.04;
+        z-index: -1;
+        pointer-events: none;
     }}
     .fm-about-hero p {{
         opacity: 0;
@@ -1105,19 +1140,28 @@ with dash6:
 
 with dash7:
     st.markdown('<div id="fm-contact"></div>', unsafe_allow_html=True)
-    st.markdown("### Contact Us")
-    st.markdown("""
-    Frontier Mercator Group works directly with investors, analysts, and institutions operating
-    in Africa, Latin America, and the broader frontier-market landscape. For inquiries about
-    custom research, platform access, or partnership opportunities, reach out below.
-
-    **General inquiries:** [inquiries@frontiermercator.com](mailto:inquiries@frontiermercator.com)
-
-    **Research & custom analysis:** [research@frontiermercator.com](mailto:research@frontiermercator.com)
-
-    Distribution of Frontier Mercator Group intelligence products is restricted to authorized
-    recipients. Reach out to discuss access.
-    """)
+    # Everything inside ONE st.markdown call so the wrapping <div> actually
+    # contains the content in the DOM -- Streamlit renders each st.markdown
+    # call as its own isolated container, so a <div> opened in one call
+    # can't wrap content from a separate later call.
+    st.markdown(
+        """
+        <div class="fm-watermark-bg">
+        <h3>Contact Us</h3>
+        <p>Frontier Mercator Group works directly with investors, analysts, and institutions
+        operating in Africa, Latin America, and the broader frontier-market landscape. For
+        inquiries about custom research, platform access, or partnership opportunities, reach
+        out below.</p>
+        <p><b>General inquiries:</b>
+        <a href="mailto:inquiries@frontiermercator.com">inquiries@frontiermercator.com</a></p>
+        <p><b>Research &amp; custom analysis:</b>
+        <a href="mailto:research@frontiermercator.com">research@frontiermercator.com</a></p>
+        <p>Distribution of Frontier Mercator Group intelligence products is restricted to
+        authorized recipients. Reach out to discuss access.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 st.markdown("---")
 render_unified_map(df)
