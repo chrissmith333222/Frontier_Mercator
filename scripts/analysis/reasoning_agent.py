@@ -122,7 +122,7 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
         client = _get_client()
     response = client.messages.create(
         model=model,
-        max_tokens=4000,
+        max_tokens=6000,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": _build_user_message(snapshot, country_name)}],
     )
@@ -166,6 +166,28 @@ def save_assessment(assessment: dict, output_dir: Path = ANALYSIS_DIR) -> Path:
     return path
 
 
+def _generate_with_retries(iso3: str, country_name: str, max_attempts: int = 3) -> dict:
+    """Retries transient failures (network/connection errors) with a short
+    backoff. Does NOT retry thin-data or truncated-response errors --
+    those are deterministic and retrying wastes an API call for the same
+    failure."""
+    import time
+    last_error = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return generate_country_assessment(iso3, country_name)
+        except Exception as e:
+            last_error = e
+            transient = "connection" in str(e).lower() or "timeout" in str(e).lower()
+            if not transient or attempt == max_attempts:
+                raise
+            wait_seconds = 2 * attempt
+            print(f"    retrying {country_name} ({iso3}) after transient error "
+                  f"(attempt {attempt}/{max_attempts}): {e}", file=sys.stderr)
+            time.sleep(wait_seconds)
+    raise last_error
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate a Claude-synthesized country assessment")
     parser.add_argument("--iso3", type=str, help="Single country ISO3 code to assess, e.g. KEN")
@@ -173,6 +195,10 @@ def main():
                          help="Generate assessments for every core-mandate country with data")
     parser.add_argument("--min-events", type=int, default=10,
                          help="Skip countries with fewer than this many events (default 10)")
+    parser.add_argument("--skip-existing", action="store_true",
+                         help="Skip countries that already have a cached assessment file -- "
+                              "use this to resume/retry-failed after a partial run without "
+                              "re-spending API calls on countries that already succeeded.")
     args = parser.parse_args()
 
     if not args.iso3 and not args.all_core_mandate:
@@ -186,11 +212,16 @@ def main():
     else:
         countries = [c for c in countries_with_data() if c["in_core_mandate"] and c["n"] >= args.min_events]
 
+    if args.skip_existing:
+        before = len(countries)
+        countries = [c for c in countries if not (ANALYSIS_DIR / f"{c['iso3']}_assessment.json").exists()]
+        print(f"Skipping {before - len(countries)} countries with an existing cached assessment.", file=sys.stderr)
+
     print(f"Generating assessments for {len(countries)} countries...", file=sys.stderr)
     succeeded, failed = 0, 0
     for c in countries:
         try:
-            assessment = generate_country_assessment(c["iso3"], c["country"])
+            assessment = _generate_with_retries(c["iso3"], c["country"])
             path = save_assessment(assessment)
             print(f"  OK  {c['country']} ({c['iso3']}) -> {path}", file=sys.stderr)
             succeeded += 1
