@@ -24,6 +24,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from scripts.lib.gdelt_geo import lookup_any_country
 
+# CAMEO EventRootCode -> a human-readable label for narrative_summary.
+# GDELT's raw Events table (unlike its GKG/mentions tables) has no
+# headline/summary field at all -- just actor codes, a numeric CAMEO
+# event code, and a source URL -- so a bare "(CAMEO 190)" was genuinely
+# meaningless to a reader. All 20 CAMEO root categories are covered here
+# (not just the 7 that map to a MERIDIAN event_category below), since
+# even "other"-bucketed events deserve a readable label.
+CAMEO_ROOT_LABELS = {
+    "01": "made a public statement", "02": "made an appeal",
+    "03": "expressed intent to cooperate", "04": "held consultations",
+    "05": "engaged in diplomatic cooperation", "06": "engaged in material cooperation",
+    "07": "provided aid", "08": "yielded/de-escalated", "09": "was investigated",
+    "10": "issued a demand", "11": "expressed disapproval", "12": "issued a rejection",
+    "13": "issued a threat", "14": "was the site of a protest",
+    "15": "exhibited a military posture", "16": "reduced relations",
+    "17": "was coerced", "18": "was the site of an assault",
+    "19": "was the site of fighting", "20": "was the site of unconventional mass violence",
+}
+
 # CAMEO EventRootCode -> MERIDIAN's coarse event_category.
 # GDELT's own taxonomy (CAMEO 1.1b3) is far more granular (20 root codes,
 # hundreds of sub-codes) — this collapses it to the same categories ACLED
@@ -113,7 +132,8 @@ def normalize_gdelt_event(record: dict) -> dict | None:
 
     actor1 = record.get("Actor1Name") or "unspecified actor"
     actor2 = record.get("Actor2Name") or "unspecified actor"
-    narrative_summary = f"{actor1} <-> {actor2} (CAMEO {record.get('EventCode', '?')})"
+    action_label = CAMEO_ROOT_LABELS.get(root_code, f"was involved in a CAMEO {record.get('EventCode', '?')} event")
+    narrative_summary = f"{actor1} <-> {actor2}: {action_label}"
 
     return {
         "meridian_event_id": make_meridian_event_id("GDELT", source_event_id),

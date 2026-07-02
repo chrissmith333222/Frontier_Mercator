@@ -863,9 +863,9 @@ def render_news_dashboard(news_df):
 
     top = news_df.sort_values('event_date', ascending=False).head(30)
     for _, event in top.iterrows():
-        st.markdown(f"**{event['country']}** — {event['event_date']}  \n"
+        st.markdown(f"**{event['country']}** — {event['event_date']} &nbsp;·&nbsp; *{event['source']}*  \n"
                     f"{event['narrative_summary']}"
-                    + (f"  \n[Source]({event['source_url']})" if pd.notna(event.get('source_url')) else ""))
+                    + (f"  \n[Read full source →]({event['source_url']})" if pd.notna(event.get('source_url')) else ""))
         st.markdown("---")
 
 
@@ -1027,15 +1027,31 @@ def render_unified_map(df):
             lat, lon = centroid
         significance = event['severity_score'] if pd.notna(event['severity_score']) else 3.0
         color = b.type_color(event['event_category'])
-        popup_text = (
-            f"<b>{event['country']}</b> — {event['event_date']}<br>"
+        # Escape user/source-controlled text before embedding in raw popup
+        # HTML (folium.Popup renders it unescaped) -- narrative_summary and
+        # country names can in principle contain characters that would
+        # otherwise break the popup markup.
+        import html as _html
+        country_esc = _html.escape(str(event['country']))
+        summary_esc = _html.escape(str(event['narrative_summary'])[:220])
+        source_esc = _html.escape(str(event.get('source', 'Unknown')))
+        popup_lines = [
+            f"<b>{country_esc}</b> — {event['event_date']}<br>",
+            f"<b>Source:</b> {source_esc} &nbsp; "
             f"<b>Category:</b> {b.type_label(event['event_category'])} "
-            f"({str(event['event_category']).replace('_', ' ')})<br>"
-            f"<b>Summary:</b> {str(event['narrative_summary'])[:150]}<br>"
-        )
+            f"({str(event['event_category']).replace('_', ' ')})<br>",
+            f"<b>Summary:</b> {summary_esc}<br>",
+        ]
+        if pd.notna(event.get('fatalities')):
+            popup_lines.append(f"<b>Fatalities:</b> {int(event['fatalities'])}<br>")
+        source_url = event.get('source_url')
+        if pd.notna(source_url) and source_url:
+            url_esc = _html.escape(str(source_url), quote=True)
+            popup_lines.append(f'<a href="{url_esc}" target="_blank" rel="noopener">Read full source →</a>')
+        popup_text = "".join(popup_lines)
         folium.CircleMarker(
             location=[lat, lon], radius=4 + (significance / 1.5),
-            popup=folium.Popup(popup_text, max_width=300),
+            popup=folium.Popup(popup_text, max_width=340),
             color=color, fill=True, fillColor=color,
             fillOpacity=0.8, weight=1, opacity=0.9,
         ).add_to(m)

@@ -105,6 +105,26 @@ def test_basic_field_mapping():
     print("✓ test_basic_field_mapping passed")
 
 
+def test_narrative_summary_uses_readable_cameo_label_not_raw_code():
+    """GDELT's raw Events table has no headline field -- the narrative
+    text used to be a bare "(CAMEO 193)" number, which is meaningless to
+    a reader. Should now read as a plain-English action description."""
+    result = normalize_gdelt_event(SAMPLE_FIGHT_EVENT)
+    assert "CAMEO" not in result["narrative_summary"]
+    assert "fighting" in result["narrative_summary"]
+    assert "JNIM" in result["narrative_summary"] and "MALI" in result["narrative_summary"]
+    print("✓ test_narrative_summary_uses_readable_cameo_label_not_raw_code passed")
+
+
+def test_narrative_summary_falls_back_for_unknown_root_code():
+    unknown_root_event = dict(SAMPLE_FIGHT_EVENT)
+    unknown_root_event["EventRootCode"] = "99"
+    unknown_root_event["EventCode"] = "99"
+    result = normalize_gdelt_event(unknown_root_event)
+    assert "99" in result["narrative_summary"]
+    print("✓ test_narrative_summary_falls_back_for_unknown_root_code passed")
+
+
 def test_extended_monitoring_country():
     result = normalize_gdelt_event(EXTENDED_EVENT)
     assert result is not None
