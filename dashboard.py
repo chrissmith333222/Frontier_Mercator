@@ -19,6 +19,7 @@ from scripts import branding as b
 from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_LABELS
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
+from scripts.lib.market_data import fetch_market_snapshot
 
 INDICATOR_LABELS = {code: label for code, (label, _cat) in {
     **WORLDBANK_INDICATOR_LABELS, **IMF_INDICATOR_LABELS,
@@ -360,6 +361,41 @@ st.markdown(f"""
         font-weight: 700;
         font-size: 1.6rem;
     }}
+
+    /* Live stock ticker banner -- a continuously scrolling marquee strip,
+       trading-floor style. The track is duplicated once in the markup so
+       the scroll loop is seamless (animating exactly one strip-width). */
+    .fm-ticker-banner {{
+        background-color: {b.PANEL};
+        border-top: 1px solid {b.BORDER};
+        border-bottom: 1px solid {b.BORDER};
+        overflow: hidden;
+        white-space: nowrap;
+        padding: 0.6rem 0;
+        margin-bottom: 0.75rem;
+    }}
+    .fm-ticker-track {{
+        display: inline-block;
+        animation: fmTickerScroll 60s linear infinite;
+    }}
+    .fm-ticker-item {{
+        display: inline-block;
+        font-family: {b.FONT_STACK};
+        font-size: 0.9rem;
+        color: {b.TEXT_PRIMARY};
+        margin-right: 2.5rem;
+    }}
+    @keyframes fmTickerScroll {{
+        from {{ transform: translateX(0); }}
+        to {{ transform: translateX(-50%); }}
+    }}
+    .fm-quote-row {{
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        padding: 0.3rem 0;
+        border-bottom: 1px solid {b.BORDER};
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -407,6 +443,83 @@ def _load_base64(path: str) -> str:
 @st.cache_data
 def _load_text(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
+
+
+@st.cache_data(ttl=300)
+def _load_market_snapshot() -> dict:
+    """Live Yahoo Finance quotes, cached for 5 minutes -- Streamlit reruns
+    this whole script on any widget interaction anywhere on the page, so
+    without a TTL cache this would refetch on every click, not just every
+    page load. 5 minutes balances "reasonably fresh" against not hammering
+    Yahoo Finance's free endpoint on a busy session."""
+    return fetch_market_snapshot()
+
+
+def _quote_color(change: float) -> str:
+    if change > 0:
+        return b.LOW  # green
+    if change < 0:
+        return b.CRITICAL  # red
+    return b.TEXT_MUTED
+
+
+def _quote_arrow(change: float) -> str:
+    if change > 0:
+        return "▲"
+    if change < 0:
+        return "▼"
+    return "—"
+
+
+def render_market_ticker():
+    """Live-updating stock market tracker -- major US indices, foreign
+    markets, and market movers, color-coded green/red by daily change.
+    See scripts/lib/market_data.py for why this calls a live API directly
+    from the deployed app (a deliberate exception to this project's usual
+    "keep API calls off the deployed site" pattern)."""
+    snapshot = _load_market_snapshot()
+    all_quotes = snapshot["us_indices"] + snapshot["foreign_indices"] + snapshot["movers"]
+    if not all_quotes:
+        st.info("Market data temporarily unavailable.")
+        return
+
+    ticker_items = "".join(
+        f'<span class="fm-ticker-item">{q["label"]} '
+        f'<b>{q["price"]:,.2f}</b> '
+        f'<span style="color:{_quote_color(q["change"])};">{_quote_arrow(q["change"])} '
+        f'{q["change"]:+,.2f} ({q["change_pct"]:+.2f}%)</span></span>'
+        for q in all_quotes
+    )
+    # Duplicate the strip once so the marquee loops seamlessly (the CSS
+    # animation scrolls exactly one strip-width, so the second copy is
+    # already in position to continue the illusion of an endless scroll).
+    st.markdown(
+        f'<div class="fm-ticker-banner"><div class="fm-ticker-track">'
+        f'{ticker_items}{ticker_items}'
+        f'</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    st.caption(f"Live market data (Yahoo Finance, ~15-min delayed), refreshed every 5 minutes.")
+
+    col1, col2, col3 = st.columns(3)
+    for col, title, quotes in (
+        (col1, "US Indices", snapshot["us_indices"]),
+        (col2, "Foreign Markets", snapshot["foreign_indices"]),
+        (col3, "Market Movers", snapshot["movers"]),
+    ):
+        with col:
+            st.markdown(f"**{title}**")
+            for q in quotes:
+                color = _quote_color(q["change"])
+                st.markdown(
+                    f'<div class="fm-quote-row">'
+                    f'<span>{q["label"]}</span>'
+                    f'<span><b>{q["price"]:,.2f}</b> '
+                    f'<span style="color:{color};">{_quote_arrow(q["change"])} {q["change_pct"]:+.2f}%</span></span>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
 
 
 def render_header():
@@ -604,6 +717,7 @@ def render_conflict_dashboard(df_filtered):
 
 
 def render_markets_dashboard(econ_df):
+    render_market_ticker()
     st.markdown(
         "Macroeconomic indicators (World Bank/IMF) and investment project tracking — "
         "who's actually putting capital into these markets, not just how the macro numbers look."
