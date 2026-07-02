@@ -354,7 +354,7 @@ def render_conflict_dashboard(df_filtered):
                 template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
                 height=400, margin=dict(l=40, r=40, t=60, b=40),
             )
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
 
         with col2:
             region_counts = df_filtered['region'].value_counts().head(10)
@@ -369,7 +369,7 @@ def render_conflict_dashboard(df_filtered):
                 template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
                 height=400, margin=dict(l=150, r=40, t=60, b=40),
             )
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
 
         events_by_date = df_filtered.groupby(df_filtered['event_date'].dt.to_period('M')).size()
         events_by_date.index = events_by_date.index.to_timestamp()
@@ -384,7 +384,7 @@ def render_conflict_dashboard(df_filtered):
             template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
             height=400, margin=dict(l=40, r=40, t=60, b=40),
         )
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
     with critical_tab:
         st.markdown("#### Critical Events (Severity ≥ 7)")
@@ -463,12 +463,12 @@ def render_markets_dashboard(econ_df):
                     template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
                     height=350, margin=dict(l=40, r=40, t=20, b=40),
                 )
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, use_container_width=True)
 
                 table = subset[['event_date', 'source', 'narrative_summary']].rename(
                     columns={'event_date': 'Date', 'source': 'Source', 'narrative_summary': 'Value'}
                 )
-                st.dataframe(table, width="stretch", hide_index=True)
+                st.dataframe(table, use_container_width=True, hide_index=True)
             else:
                 st.info("No data for this country/indicator combination.")
 
@@ -484,7 +484,7 @@ def render_markets_dashboard(econ_df):
                 })
                 .sort_values('Country')
             )
-            st.dataframe(latest, width="stretch", hide_index=True)
+            st.dataframe(latest, use_container_width=True, hide_index=True)
 
     with investment_tab:
         investment_df = econ_df[econ_df['event_category'] == 'investment']
@@ -535,12 +535,12 @@ def render_markets_dashboard(econ_df):
                     paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
                     height=350, margin=dict(l=200, r=40, t=40, b=40),
                 )
-                st.plotly_chart(fig, width="stretch")
+                st.plotly_chart(fig, use_container_width=True)
 
             table = country_projects[['event_date', 'source', 'narrative_summary']].head(50).rename(
                 columns={'event_date': 'Commitment Date', 'source': 'Financier', 'narrative_summary': 'Project'}
             )
-            st.dataframe(table, width="stretch", hide_index=True)
+            st.dataframe(table, use_container_width=True, hide_index=True)
 
 
 def render_news_dashboard(news_df):
