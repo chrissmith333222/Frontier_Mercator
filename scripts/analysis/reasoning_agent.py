@@ -56,6 +56,7 @@ from scripts.knowledge.semantic_search import semantic_search
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ANALYSIS_DIR = REPO_ROOT / "data" / "analysis"
+CUSTOM_ANALYSIS_DIR = ANALYSIS_DIR / "custom"
 DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
 
 SYSTEM_PROMPT = """You are an intelligence analyst for Frontier Mercator Group, producing internal \
@@ -301,6 +302,28 @@ def save_assessment(assessment: dict, output_dir: Path = ANALYSIS_DIR) -> Path:
     return path
 
 
+def _slugify_query(query: str, max_length: int = 60) -> str:
+    """Turns a free-text query into a filesystem-safe filename stem, e.g.
+    'Chinese port financing near conflict zones?' -> 'chinese-port-financing-near-conflict-zones'."""
+    import re
+    slug = re.sub(r"[^a-z0-9]+", "-", query.lower()).strip("-")
+    return slug[:max_length].rstrip("-") or "query"
+
+
+def save_cross_cutting_assessment(assessment: dict, output_dir: Path = CUSTOM_ANALYSIS_DIR) -> Path:
+    """Saves a cross-cutting assessment under a slug derived from its
+    query text plus a short hash suffix (so two different queries that
+    happen to slugify the same, or the same query re-run later, don't
+    silently overwrite each other)."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    import hashlib
+    query_hash = hashlib.sha256(assessment["query"].encode("utf-8")).hexdigest()[:8]
+    slug = _slugify_query(assessment["query"])
+    path = output_dir / f"{slug}-{query_hash}.json"
+    path.write_text(json.dumps(assessment, indent=2), encoding="utf-8")
+    return path
+
+
 def _generate_with_retries(iso3: str, country_name: str, max_attempts: int = 3) -> dict:
     """Retries transient failures (network/connection errors) with a short
     backoff. Does NOT retry thin-data or truncated-response errors --
@@ -334,6 +357,10 @@ def main():
                               "vector index (scripts/knowledge/build_vector_index.py) to be built.")
     parser.add_argument("--top-k", type=int, default=20,
                          help="Number of events to retrieve for --query mode (default 20)")
+    parser.add_argument("--save", action="store_true",
+                         help="With --query, save the result to data/analysis/custom/ so it's "
+                              "picked up by the dashboard's Custom Analysis section and PDF export "
+                              "-- omit for a one-off ad-hoc answer that isn't published anywhere.")
     parser.add_argument("--min-events", type=int, default=10,
                          help="Skip countries with fewer than this many events (default 10)")
     parser.add_argument("--skip-existing", action="store_true",
@@ -345,6 +372,9 @@ def main():
     if args.query:
         result = generate_cross_cutting_assessment(args.query, k=args.top_k)
         print(json.dumps(result, indent=2))
+        if args.save:
+            path = save_cross_cutting_assessment(result)
+            print(f"Saved to {path}", file=sys.stderr)
         return
 
     if not args.iso3 and not args.all_core_mandate:

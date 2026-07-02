@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 import streamlit.components.v1 as components
 from pathlib import Path
 
-from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief
+from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief, generate_custom_report
 from scripts import branding as b
 from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_LABELS
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
@@ -46,6 +46,22 @@ def load_cached_assessment(country_name: str) -> dict | None:
         return json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
+
+
+def load_custom_analyses() -> list[dict]:
+    """Reads every cached cross-cutting assessment (data/analysis/custom/,
+    generated offline via reasoning_agent.py --query ... --save), newest
+    first. Returns an empty list if none have been generated yet."""
+    custom_dir = ANALYSIS_DIR / "custom"
+    if not custom_dir.exists():
+        return []
+    analyses = []
+    for path in custom_dir.glob("*.json"):
+        try:
+            analyses.append(json.loads(path.read_text(encoding="utf-8")))
+        except (json.JSONDecodeError, OSError):
+            continue
+    return sorted(analyses, key=lambda a: a.get("generated_at", ""), reverse=True)
 
 # Page config
 st.set_page_config(
@@ -843,6 +859,42 @@ with dash5:
                 "Download PDF", data=pdf_bytes,
                 file_name=f"Frontier_Mercator_{region_choice.replace(' ', '_').replace('/', '-')}_Brief.pdf",
                 mime="application/pdf", key="dl_regional_brief",
+            )
+
+    custom_analyses = load_custom_analyses()
+    if custom_analyses:
+        st.markdown("---")
+        st.markdown("#### Custom Analysis")
+        st.markdown(
+            "Ad-hoc, cross-cutting questions that don't map to a single country or region -- "
+            "answered by semantic search across the full dataset rather than a fixed filter "
+            "(e.g. \"critical minerals VC investment opportunities in West Africa resulting from "
+            "a recent coup or resource discovery\"). Generated offline via "
+            "`scripts/analysis/reasoning_agent.py --query \"...\" --save`."
+        )
+        query_labels = {a["query"]: a for a in custom_analyses}
+        query_choice = st.selectbox("Question", options=list(query_labels.keys()), key="custom_analysis_select")
+        selected = query_labels[query_choice]
+        analysis = selected["analysis"]
+        st.caption(
+            f"Generated {selected['generated_at'][:10]} from {selected['events_retrieved']:,} "
+            f"retrieved events — preliminary statistical synthesis, not an investment recommendation."
+        )
+        st.markdown(analysis["answer"])
+        if analysis.get("countries_involved"):
+            st.markdown(f"**Countries involved:** {', '.join(analysis['countries_involved'])}")
+        if analysis.get("supporting_evidence"):
+            st.markdown("**Supporting evidence**")
+            for item in analysis["supporting_evidence"]:
+                st.markdown(f"- {item}")
+        if analysis.get("data_caveats"):
+            st.caption(f"Data caveats: {analysis['data_caveats']}")
+        if st.button("Generate PDF", key="gen_custom_report"):
+            pdf_bytes = generate_custom_report(selected)
+            st.download_button(
+                "Download PDF", data=pdf_bytes,
+                file_name=f"Frontier_Mercator_Custom_Analysis_{selected['query'][:40].replace(' ', '_')}.pdf",
+                mime="application/pdf", key="dl_custom_report",
             )
 
 with dash6:

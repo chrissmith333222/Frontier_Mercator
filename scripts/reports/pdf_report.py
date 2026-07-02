@@ -412,3 +412,62 @@ def generate_regional_brief(df: pd.DataFrame, region: str) -> bytes:
     title = f"{region} — Regional Executive Summary"
     subtitle = "Frontier Mercator Group | Emerging Market Intelligence"
     return _build_pdf(title, subtitle, scope)
+
+
+def generate_custom_report(assessment: dict) -> bytes:
+    """Renders a Custom Analysis PDF from a cached cross-cutting assessment
+    (see scripts/analysis/reasoning_agent.py's generate_cross_cutting_assessment
+    + save_cross_cutting_assessment) -- an ad-hoc, non-country/region-scoped
+    question like "critical minerals VC investment opportunities in West
+    Africa resulting from a recent coup or resource discovery", answered by
+    semantic retrieval across the full dataset rather than a fixed filter.
+
+    Unlike generate_country_brief/generate_regional_brief, this doesn't take
+    a live DataFrame scope -- everything it renders comes from the already-
+    generated cached assessment, so no AI API call happens at PDF-render
+    time (same reasoning as _load_cached_assessment: keep API keys and live
+    calls out of the deployed Streamlit process entirely)."""
+    analysis = assessment["analysis"]
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=LETTER,
+        topMargin=0.6 * inch, bottomMargin=0.6 * inch,
+        leftMargin=0.7 * inch, rightMargin=0.7 * inch,
+    )
+
+    story = _header_flowables(
+        "Custom Analysis", "Frontier Mercator Group | Emerging Market Intelligence"
+    )
+    story.append(Paragraph(f"<b>Question:</b> {assessment['query']}", BODY_STYLE))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(
+        f"Generated {assessment['generated_at'][:10]} from {assessment['events_retrieved']:,} "
+        f"semantically retrieved events. Preliminary statistical synthesis, not an investment "
+        f"recommendation.", DISCLAIMER_STYLE,
+    ))
+    story.append(Spacer(1, 10))
+
+    story.append(Paragraph("Answer", SECTION_STYLE))
+    story.append(Paragraph(analysis.get("answer", ""), BODY_STYLE))
+
+    if analysis.get("countries_involved"):
+        story.append(Spacer(1, 8))
+        story.append(Paragraph(
+            f"<b>Countries involved:</b> {', '.join(analysis['countries_involved'])}", BODY_STYLE
+        ))
+
+    if analysis.get("supporting_evidence"):
+        story.append(Spacer(1, 8))
+        story.append(Paragraph("Supporting Evidence", SECTION_STYLE))
+        for item in analysis["supporting_evidence"]:
+            story.append(Paragraph(f"&bull; {item}", BODY_STYLE))
+
+    if analysis.get("data_caveats"):
+        story.append(Spacer(1, 8))
+        story.append(Paragraph(f"Data caveats: {analysis['data_caveats']}", DISCLAIMER_STYLE))
+
+    story.extend(_footer_flowables(has_ai_analysis=True))
+
+    doc.build(story, onFirstPage=_paint_dark_background, onLaterPages=_paint_dark_background)
+    return buffer.getvalue()

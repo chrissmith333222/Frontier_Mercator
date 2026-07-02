@@ -23,7 +23,9 @@ from scripts.knowledge.build_knowledge_base import build_knowledge_base
 from scripts.analysis.reasoning_agent import (
     generate_country_assessment,
     generate_cross_cutting_assessment,
+    save_cross_cutting_assessment,
     _build_user_message,
+    _slugify_query,
 )
 
 FIXTURE_EVENTS = [
@@ -197,6 +199,29 @@ def test_generate_cross_cutting_assessment_raises_on_thin_retrieval():
     finally:
         agent_module.semantic_search = original_semantic_search
     print("✓ test_generate_cross_cutting_assessment_raises_on_thin_retrieval passed")
+
+
+def test_slugify_query_produces_filesystem_safe_stem():
+    assert _slugify_query("Chinese port financing near conflict zones?") == "chinese-port-financing-near-conflict-zones"
+    assert _slugify_query("  Multiple   spaces & punctuation!!!  ") == "multiple-spaces-punctuation"
+    print("✓ test_slugify_query_produces_filesystem_safe_stem passed")
+
+
+def test_save_cross_cutting_assessment_writes_expected_file():
+    tmp_dir = Path(tempfile.mkdtemp())
+    assessment = {
+        "query": "Critical minerals VC investment in West Africa post-coup",
+        "generated_at": "2026-07-02T00:00:00Z",
+        "model": "claude-sonnet-5",
+        "events_retrieved": 5,
+        "analysis": VALID_CROSS_CUTTING_ANALYSIS,
+    }
+    path = save_cross_cutting_assessment(assessment, output_dir=tmp_dir)
+    assert path.exists()
+    assert path.name.startswith("critical-minerals-vc-investment-in-west-africa")
+    reloaded = json.loads(path.read_text(encoding="utf-8"))
+    assert reloaded["query"] == assessment["query"]
+    print("✓ test_save_cross_cutting_assessment_writes_expected_file passed")
 
 
 def test_generate_assessment_raises_on_truncated_response():
