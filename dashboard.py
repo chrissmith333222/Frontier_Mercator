@@ -20,6 +20,7 @@ from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_L
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
+from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 
 INDICATOR_LABELS = {code: label for code, (label, _cat) in {
     **WORLDBANK_INDICATOR_LABELS, **IMF_INDICATOR_LABELS,
@@ -936,6 +937,77 @@ def render_greatpower_dashboard(df):
                 st.markdown("---")
 
 
+def render_research_assistant(df):
+    """The embedded chat assistant (Phase 1) -- a conversational research
+    aid grounded on this platform's own curated dataset, with live web
+    search and Excel/PDF export, no image generation. Unlike every other
+    tab on this dashboard, this one calls the Anthropic API live from the
+    deployed app (see scripts/analysis/chat_agent.py docstring for why
+    that's a deliberate, one-time exception here). Enforces a simple
+    per-browser-session message cap as a stopgap against runaway cost
+    from one open tab -- real per-user quota enforcement needs the auth
+    layer, not yet built."""
+    st.markdown(
+        "Ask questions grounded in Frontier Mercator's own curated data, or anything else -- "
+        "the assistant can search this platform's dataset, search the live web, and generate "
+        "Excel or PDF files on request. Preliminary research aid, not investment advice."
+    )
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    if "chat_turns_used" not in st.session_state:
+        st.session_state.chat_turns_used = 0
+    if "chat_files" not in st.session_state:
+        st.session_state.chat_files = []
+
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user" and isinstance(msg["content"], str):
+            with st.chat_message("user"):
+                st.markdown(msg["content"])
+        elif msg["role"] == "assistant":
+            texts = [b.get("text", "") for b in msg["content"] if isinstance(b, dict) and b.get("type") == "text"]
+            reply = "\n".join(t for t in texts if t).strip()
+            if reply:
+                with st.chat_message("assistant"):
+                    st.markdown(reply)
+
+    for f in st.session_state.chat_files:
+        st.download_button(
+            f"Download {f['filename']}", data=f["bytes"], file_name=f["filename"],
+            mime=f["mime"], key=f"chat_dl_{f['filename']}_{f['bytes'].__hash__()}",
+        )
+
+    remaining = MAX_TURNS_PER_SESSION - st.session_state.chat_turns_used
+    if remaining <= 0:
+        st.warning(
+            f"You've reached the {MAX_TURNS_PER_SESSION}-message limit for this session. "
+            f"Refresh the page to start a new session."
+        )
+        return
+
+    user_input = st.chat_input("Ask about a country, event, or request a file...")
+    if user_input:
+        with st.chat_message("user"):
+            st.markdown(user_input)
+        with st.chat_message("assistant"):
+            with st.spinner("Researching..."):
+                try:
+                    result = run_chat_turn(df, st.session_state.chat_history, user_input)
+                except Exception as e:
+                    st.error(f"Something went wrong: {e}")
+                    return
+            st.markdown(result["reply"])
+        st.session_state.chat_history = result["history"]
+        st.session_state.chat_turns_used += 1
+        st.session_state.chat_files.extend(result["generated_files"])
+        for f in result["generated_files"]:
+            st.download_button(
+                f"Download {f['filename']}", data=f["bytes"], file_name=f["filename"],
+                mime=f["mime"], key=f"chat_dl_new_{f['filename']}_{f['bytes'].__hash__()}",
+            )
+        st.caption(f"{remaining - 1} message(s) left this session.")
+
+
 def render_unified_map(df):
     """Standalone aggregator map at the bottom of the page, combining
     conflict, economic, and news/social events in one filterable view --
@@ -1176,9 +1248,9 @@ news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")
 
-dash1, dash2, dash3, dash4, dash5, dash6, dash7 = st.tabs(
+dash1, dash2, dash3, dash4, dash_chat, dash5, dash6, dash7 = st.tabs(
     ["Conflict & Security", "Markets & Economy", "News & Social Signal",
-     "Great Power Competition", "Reports", "About", "Contact Us"]
+     "Great Power Competition", "Research Assistant", "Reports", "About", "Contact Us"]
 )
 
 with dash1:
@@ -1192,6 +1264,9 @@ with dash3:
 
 with dash4:
     render_greatpower_dashboard(df)
+
+with dash_chat:
+    render_research_assistant(df)
 
 with dash5:
     st.markdown("### Intelligence Briefs")
