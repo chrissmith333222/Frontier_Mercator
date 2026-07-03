@@ -24,6 +24,7 @@ from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
     compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier,
 )
+from scripts.analytics.conflict_signal_promotion import detect_corroborated_conflict_signals
 
 INDICATOR_LABELS = {code: label for code, (label, _cat) in {
     **WORLDBANK_INDICATOR_LABELS, **IMF_INDICATOR_LABELS,
@@ -712,9 +713,12 @@ def render_footer(df):
     )
 
 
-def render_conflict_dashboard(df_filtered):
+def render_conflict_dashboard(df_filtered, news_df=None):
     st.markdown(
-        "Security-relevant events — conflict, protest, political violence — from ACLED and GDELT."
+        "Security-relevant events — conflict, protest, political violence — from ACLED and GDELT. "
+        "ACLED and GDELT are refreshed manually (not on a schedule) whenever the ingestion scripts are "
+        "re-run -- see the Corroborated Signal tab for conflict-shaped news/social activity that may "
+        "be more current between refreshes."
     )
 
     col1, col2, col3, col4, col5 = st.columns(5)
@@ -734,7 +738,9 @@ def render_conflict_dashboard(df_filtered):
     with col5:
         st.metric("Total Fatalities", f"{int(df_filtered['fatalities'].fillna(0).sum()):,}")
 
-    analytics_tab, critical_tab = st.tabs(["Analytics", "Critical Events"])
+    analytics_tab, critical_tab, corroborated_tab = st.tabs(
+        ["Analytics", "Critical Events", "Corroborated Signal"]
+    )
     # No separate map here by design -- the map lives once, at the bottom of
     # the page (Unified Intelligence Map), covering conflict/economic/news
     # together with a type toggle. Keeping a second map in this tab would
@@ -816,6 +822,36 @@ def render_conflict_dashboard(df_filtered):
                         st.markdown("---")
         else:
             st.info("No critical events with severity ≥ 7 in the current filter.")
+
+    with corroborated_tab:
+        st.markdown(
+            "Conflict-shaped news/social activity (attacks, clashes, militant activity, etc.) "
+            "reported by **at least 2 distinct sources** within a 1-day window -- one outlet's "
+            "language alone isn't corroboration, but independent agreement across sources is a real "
+            "signal worth surfacing between ACLED's manual refreshes. **Preliminary and unverified** -- "
+            "not ACLED-vetted, structured conflict data; treat as a lead to investigate, not a "
+            "confirmed event."
+        )
+        if news_df is None or len(news_df) == 0:
+            st.info("No news/social signal data loaded to check for corroborated activity.")
+        else:
+            corroborated = detect_corroborated_conflict_signals(news_df, min_sources=2, date_window_days=1)
+            if len(corroborated) == 0:
+                st.info("No corroborated (2+ source) conflict-shaped signal in the currently loaded news data.")
+            else:
+                st.caption(f"{len(corroborated)} corroborated signal event(s) across "
+                           f"{corroborated['country'].nunique()} countries.")
+                for _, event in corroborated.iterrows():
+                    display_text = event.get("narrative_summary_en")
+                    if pd.isna(display_text) or not display_text:
+                        display_text = event["narrative_summary"]
+                    st.markdown(
+                        f"**{event['country']}** — {event['event_date']} &nbsp;·&nbsp; *{event['source']}*  \n"
+                        f"{display_text}"
+                        + (f"  \n[Read full source →]({event['source_url']})"
+                           if pd.notna(event.get('source_url')) else "")
+                    )
+                    st.markdown("---")
 
 
 def render_markets_dashboard(econ_df):
@@ -1418,7 +1454,7 @@ dash1, dash2, dash3, dash4, dash_longform, dash_chat, dash5, dash6, dash7 = st.t
 )
 
 with dash1:
-    render_conflict_dashboard(conflict_filtered)
+    render_conflict_dashboard(conflict_filtered, news_df)
 
 with dash2:
     render_markets_dashboard(econ_df)
