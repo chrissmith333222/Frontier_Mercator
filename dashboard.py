@@ -939,16 +939,31 @@ def render_greatpower_dashboard(df):
 def render_unified_map(df):
     """Standalone aggregator map at the bottom of the page, combining
     conflict, economic, and news/social events in one filterable view --
-    Chris's "Palantir Gotham" reference. Circles are colored by category
-    type and sized by severity_score where available; economic/news events
-    without a severity score get a fixed mid-size placeholder until the
-    Phase 5 reasoning agent can assign real significance scores. Economic
-    events have no native lat/lon (they're country-level annual stats), so
-    they're plotted at the country's centroid instead."""
+    Chris's "Palantir Gotham" reference: the map should tell a story by
+    juxtaposing discrete, dated EVENTS (a loan, an attack, a notable news
+    story) so relationships between them jump out, not by overlaying
+    periodic country-level statistics that aren't tied to a specific
+    happening. Circles are colored by category type and sized by
+    severity_score where available; events without a severity score get a
+    recency-based size/opacity instead (see the recency_score block
+    below). Investment events (AidData/DFC/WorldBankPPI -- a specific
+    loan, grant, or backed project) have no native lat/lon since they're
+    country-level, so they're plotted at the country's centroid.
+
+    Deliberately excludes plain "economic_indicator" records (GDP growth
+    %, inflation %, current account balance, etc.) -- those are periodic
+    macro statistics, not discrete events, and don't belong on an
+    events-and-actions map (Chris: "it shouldn't be a place to just
+    overlay economic data that belongs to one country"). They're still
+    fully available in the Markets & Economy tab's Macro Indicators
+    charts, which is the right place for a time-series trend line."""
     st.markdown("## Unified Intelligence Map")
     st.markdown(
-        "Every category at once — conflict (red), markets/economy (amber), news/social signal "
-        "(cyan). Filter by type, region, severity, and date to narrow in on what matters to you."
+        "Every discrete event and action at once — conflict incidents (red), investment/financing "
+        "activity like a loan or backed project (amber), news and social signal (cyan) -- so you can "
+        "see, for example, a Chinese bank's loan, a DFC-backed mining investment, and a conflict "
+        "incident all in the same place and window, and decide for yourself whether they're "
+        "connected. Filter by type, region, severity, and date to narrow in on what matters to you."
     )
 
     filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
@@ -983,7 +998,10 @@ def render_unified_map(df):
             key="unified_map_dates",
         )
 
-    scope = df[df['event_category'].apply(lambda c: b.type_label(c) in type_options)]
+    scope = df[
+        (df['event_category'] != 'economic_indicator')
+        & df['event_category'].apply(lambda c: b.type_label(c) in type_options)
+    ]
     if map_regions:
         scope = scope[scope['region'].isin(map_regions)]
     if isinstance(date_range, tuple) and len(date_range) == 2 and date_range[0] is not None:
