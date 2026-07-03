@@ -119,7 +119,9 @@ def normalize_infobae_article(raw_article: dict) -> dict | None:
 
     pub_date = raw_article.get("pubDate", "")
     try:
-        event_date = parsedate_to_datetime(pub_date).date().isoformat()
+        parsed_pub_date = parsedate_to_datetime(pub_date)
+        event_date = parsed_pub_date.date().isoformat()
+        event_datetime = parsed_pub_date.isoformat()
     except (TypeError, ValueError):
         return None
 
@@ -130,6 +132,7 @@ def normalize_infobae_article(raw_article: dict) -> dict | None:
         "source": "Infobae",
         "source_event_id": guid,
         "event_date": event_date,
+        "event_datetime": event_datetime,
         "country": country,
         "iso3": iso3,
         "admin1": None,
@@ -143,6 +146,7 @@ def normalize_infobae_article(raw_article: dict) -> dict | None:
         "fatalities": None,
         "severity_score": None,
         "narrative_summary": title,
+        "narrative_summary_en": None,  # populated by translate_events() when --translate is used
         "source_url": raw_article.get("link"),
         "image_url": _extract_image_url(raw_article.get("content_encoded", "")),
         "ingested_at": datetime.now(timezone.utc).isoformat(),
@@ -171,14 +175,37 @@ def normalize_batch(raw_articles: list[dict]) -> list[dict]:
     return normalized
 
 
+def translate_events(events: list[dict]) -> int:
+    """Translates every event's narrative_summary (Spanish) into English
+    in ONE batched API call, populating narrative_summary_en in place.
+    Chris: "provide the news and social signals in English with the
+    ability to see the translation from the native language." Returns
+    the number of events translated."""
+    from scripts.lib.translation import translate_batch
+    if not events:
+        return 0
+    titles = [e["narrative_summary"] for e in events]
+    translations = translate_batch(titles, source_language="Spanish")
+    for event, translation in zip(events, translations):
+        event["narrative_summary_en"] = translation
+    return len(events)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Normalize raw Infobae articles into MERIDIAN schema")
     parser.add_argument("--input", type=str, required=True, help="Path to raw Infobae JSON (from infobae_fetch.py)")
     parser.add_argument("--output", type=str, default=None, help="Output path. Omit to print to stdout.")
+    parser.add_argument("--translate", action="store_true",
+                         help="Translate each headline to English (one batched Anthropic API call) "
+                              "and populate narrative_summary_en. Requires ANTHROPIC_API_KEY.")
     args = parser.parse_args()
 
     raw_articles = json.loads(Path(args.input).read_text(encoding="utf-8"))
     normalized = normalize_batch(raw_articles)
+
+    if args.translate:
+        count = translate_events(normalized)
+        print(f"Translated {count} headlines to English.", file=sys.stderr)
 
     output_json = json.dumps(normalized, indent=2, ensure_ascii=False)
     if args.output:

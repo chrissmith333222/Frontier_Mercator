@@ -21,7 +21,9 @@ from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
-from scripts.analytics.significance import compute_significance_score, diversify_top_n, SIGNIFICANCE_HOT_THRESHOLD
+from scripts.analytics.significance import (
+    compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier,
+)
 
 INDICATOR_LABELS = {code: label for code, (label, _cat) in {
     **WORLDBANK_INDICATOR_LABELS, **IMF_INDICATOR_LABELS,
@@ -435,17 +437,16 @@ st.markdown(f"""
         font-size: 1.6rem;
     }}
 
-    /* "Hot"/breaking signal badge -- News & Social Signal tab and the
+    /* Tiered significance badges -- News & Social Signal tab and the
        Unified Intelligence Map both flag high-significance events (see
-       scripts/analytics/significance.py) with this pill so they visually
-       stand out from routine/lower-priority items, per Chris's ask to
-       make important things "pop out of the white noise" rather than
-       reading as a flat list. */
-    .fm-hot-badge {{
+       scripts/analytics/significance.py) with one of three pills so they
+       visually stand out from routine/lower-priority items, per Chris's
+       ask to make important things "pop out of the white noise." Three
+       tiers (not just one binary "hot" flag) so a ranked top-N list
+       doesn't read as uniformly "everything is urgent" -- tiers are
+       computed relative to the current scope's own score distribution. */
+    .fm-badge {{
         display: inline-block;
-        background-color: {b.CRITICAL}22;
-        color: {b.CRITICAL};
-        border: 1px solid {b.CRITICAL};
         border-radius: 3px;
         font-size: 0.7rem;
         font-weight: 700;
@@ -455,14 +456,13 @@ st.markdown(f"""
         margin-left: 0.5rem;
         vertical-align: middle;
     }}
-    .fm-news-card-hot {{
-        border-left: 3px solid {b.CRITICAL};
-        padding-left: 0.75rem;
-    }}
-    .fm-news-card-normal {{
-        border-left: 3px solid {b.BORDER};
-        padding-left: 0.75rem;
-    }}
+    .fm-badge-urgent {{ background-color: {b.CRITICAL}22; color: {b.CRITICAL}; border: 1px solid {b.CRITICAL}; }}
+    .fm-badge-top {{ background-color: {b.HIGH}22; color: {b.HIGH}; border: 1px solid {b.HIGH}; }}
+    .fm-badge-medium {{ background-color: {b.MEDIUM}22; color: {b.MEDIUM}; border: 1px solid {b.MEDIUM}; }}
+    .fm-news-card-urgent {{ border-left: 3px solid {b.CRITICAL}; padding-left: 0.75rem; }}
+    .fm-news-card-top {{ border-left: 3px solid {b.HIGH}; padding-left: 0.75rem; }}
+    .fm-news-card-medium {{ border-left: 3px solid {b.MEDIUM}; padding-left: 0.75rem; }}
+    .fm-news-card-routine {{ border-left: 3px solid {b.BORDER}; padding-left: 0.75rem; }}
 
     /* Live stock ticker banner -- a continuously scrolling marquee strip,
        trading-floor style. The track is duplicated once in the markup so
@@ -958,9 +958,28 @@ def render_news_dashboard(news_df):
         st.info("No news/social signal data loaded yet.")
         return
 
+    # Defaults to the last 7 days -- Chris: "I want like within the last
+    # week on there... I saw one from Angola that was from 2023... too
+    # old." A significance-ranked top-30 list can still surface an old
+    # event if nothing recent scores as high, so this is a hard filter,
+    # not just a ranking nudge. Widening is available for sources that
+    # don't publish daily (UNOSAT, Bellingcat) where a strict 7-day
+    # window can come up thin.
+    FRESHNESS_OPTIONS = {"Last 7 days": 7, "Last 14 days": 14, "Last 30 days": 30, "Last 90 days": 90, "All time": None}
+    freshness_label = st.selectbox("Show events from", options=list(FRESHNESS_OPTIONS.keys()),
+                                    index=0, key="news_freshness")
+    freshness_days = FRESHNESS_OPTIONS[freshness_label]
+    if freshness_days is not None:
+        cutoff = pd.Timestamp.utcnow().tz_localize(None).normalize() - pd.Timedelta(days=freshness_days)
+        news_df = news_df[news_df['event_date'] >= cutoff]
+
+    if len(news_df) == 0:
+        st.info(f"No news/social signal events in the {freshness_label.lower()} window -- try widening it.")
+        return
+
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Signal Events (last window)", f"{len(news_df):,}")
+        st.metric("Signal Events (in window)", f"{len(news_df):,}")
     with col2:
         st.metric("Countries Covered", news_df['country'].nunique())
     with col3:
@@ -973,10 +992,16 @@ def render_news_dashboard(news_df):
     source_mix = ", ".join(f"{src} ({n})" for src, n in top['source'].value_counts().items())
     st.caption(f"Source mix in this list: {source_mix}")
 
+    # Tiers are relative to this scope's own score distribution (not a
+    # fixed number) -- otherwise a ranked top-30 list, being mostly high
+    # scorers by construction, badges nearly everything the same tier.
+    tier_thresholds = compute_tier_thresholds(scored["significance_score"])
+    TIER_LABELS = {"urgent": "Urgent", "top": "Top signal", "medium": "Notable"}
+
     for _, event in top.iterrows():
-        is_hot = event["significance_score"] >= SIGNIFICANCE_HOT_THRESHOLD
-        card_class = "fm-news-card-hot" if is_hot else "fm-news-card-normal"
-        hot_badge = '<span class="fm-hot-badge">Top signal</span>' if is_hot else ""
+        tier = significance_tier(event["significance_score"], tier_thresholds)
+        card_class = f"fm-news-card-{tier or 'routine'}"
+        tier_badge = f'<span class="fm-badge fm-badge-{tier}">{TIER_LABELS[tier]}</span>' if tier else ""
         image_url = event.get("image_url")
         image_html = (
             f'<img src="{image_url}" style="width:96px;height:96px;object-fit:cover;border-radius:4px;'
@@ -985,15 +1010,25 @@ def render_news_dashboard(news_df):
         source_link = (
             f"[Read full source →]({event['source_url']})" if pd.notna(event.get('source_url')) else ""
         )
+        # Non-English sources (Infobae/Spanish, Jeune Afrique/French) carry
+        # an English translation in narrative_summary_en when normalized
+        # with --translate -- show English by default, with the original
+        # available on demand, per Chris's ask.
+        translation = event.get("narrative_summary_en")
+        has_translation = pd.notna(translation) and translation and translation != event['narrative_summary']
+        display_text = translation if has_translation else event['narrative_summary']
         st.markdown(
             f'<div class="{card_class}" style="display:flex;align-items:flex-start;margin-bottom:1rem;">'
             f'{image_html}<div>'
             f"<div><strong>{event['country']}</strong> — {event['event_date']} &nbsp;·&nbsp; "
-            f"<em>{event['source']}</em>{hot_badge}</div>"
-            f"<div>{event['narrative_summary']}</div>"
+            f"<em>{event['source']}</em>{tier_badge}</div>"
+            f"<div>{display_text}</div>"
             f"</div></div>",
             unsafe_allow_html=True,
         )
+        if has_translation:
+            with st.expander(f"Show original ({event['source']})"):
+                st.markdown(event['narrative_summary'])
         if source_link:
             st.markdown(source_link)
         st.markdown("---")
@@ -1232,6 +1267,10 @@ def render_unified_map(df):
         # reflects what's actually being drawn.
         significance_score = compute_significance_score(scope)
 
+    # Tiers relative to this map scope's own score distribution -- same
+    # reasoning as the News & Social Signal tab (see significance.py).
+    map_tier_thresholds = compute_tier_thresholds(significance_score)
+
     m = folium.Map(location=[10, 10], zoom_start=2, tiles=None)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -1274,7 +1313,8 @@ def render_unified_map(df):
         # markers, per Chris's explicit ask, rather than every marker
         # reading as visually equivalent regardless of importance.
         significance = significance_score.get(idx, 4.0)
-        is_hot = significance >= SIGNIFICANCE_HOT_THRESHOLD
+        tier = significance_tier(significance, map_tier_thresholds)
+        is_hot = tier in ("urgent", "top")
         fill_opacity = max(0.35, min(0.85, significance / 10))
         color = b.type_color(event['event_category'])
         # Escape user/source-controlled text before embedding in raw popup
@@ -1285,8 +1325,9 @@ def render_unified_map(df):
         country_esc = _html.escape(str(event['country']))
         summary_esc = _html.escape(str(event['narrative_summary'])[:220])
         source_esc = _html.escape(str(event.get('source', 'Unknown')))
+        tier_label = {"urgent": "URGENT", "top": "TOP SIGNAL"}.get(tier)
         popup_lines = [
-            (f'<b style="color:{b.CRITICAL};">TOP SIGNAL</b><br>' if is_hot else ""),
+            (f'<b style="color:{b.CRITICAL};">{tier_label}</b><br>' if tier_label else ""),
             f"<b>{country_esc}</b> — {event['event_date']}<br>",
             f"<b>Source:</b> {source_esc} &nbsp; "
             f"<b>Category:</b> {b.type_label(event['event_category'])} "

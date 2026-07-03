@@ -54,7 +54,49 @@ BREAKING_KEYWORDS = [
 ]
 _BREAKING_PATTERN = re.compile("|".join(re.escape(term) for term in BREAKING_KEYWORDS), re.IGNORECASE)
 
-SIGNIFICANCE_HOT_THRESHOLD = 7.0   # >= this => "hot"/breaking badge in the UI
+# Deprecated fixed threshold, kept only for reference -- replaced by
+# compute_tier_thresholds()/significance_tier() below. A fixed absolute
+# cutoff badges almost everything or almost nothing depending on how the
+# score distribution happens to sit that day, and a ranked top-N list is,
+# by construction, mostly high scorers -- Chris: "every single event on
+# our news and social signal tab is a 'top signal'... you need to be
+# judicious." Percentile-relative tiers fix that.
+SIGNIFICANCE_HOT_THRESHOLD = 7.0
+
+# Absolute floors alongside the percentile cutoffs below -- on a
+# genuinely quiet day where every score is low, nothing should get
+# badged "urgent" purely for being the *relatively* highest of a
+# uniformly unremarkable batch.
+_ABSOLUTE_FLOORS = {"urgent": 6.5, "top": 4.5, "medium": 3.0}
+
+
+def compute_tier_thresholds(scores: pd.Series) -> dict:
+    """Derives Urgent/Top/Medium cutoffs from the distribution of scores
+    currently in view, rather than one fixed number for all contexts --
+    keeps the tiers meaningfully selective regardless of what's currently
+    filtered/displayed (a small, recent-heavy scope has a different score
+    spread than the full multi-year dataset)."""
+    if len(scores) == 0:
+        return {"urgent": 10.1, "top": 10.1, "medium": 10.1}
+    return {
+        "urgent": scores.quantile(0.95),
+        "top": scores.quantile(0.80),
+        "medium": scores.quantile(0.55),
+    }
+
+
+def significance_tier(score: float, thresholds: dict) -> str | None:
+    """Returns 'urgent', 'top', 'medium', or None (routine -- no badge).
+    Requires both the percentile cutoff AND the absolute floor, so a tier
+    reflects genuine significance, not just relative rank within whatever
+    happens to be on screen."""
+    if score >= thresholds["urgent"] and score >= _ABSOLUTE_FLOORS["urgent"]:
+        return "urgent"
+    if score >= thresholds["top"] and score >= _ABSOLUTE_FLOORS["top"]:
+        return "top"
+    if score >= thresholds["medium"] and score >= _ABSOLUTE_FLOORS["medium"]:
+        return "medium"
+    return None
 
 
 def _recency_component(event_date: pd.Series) -> pd.Series:

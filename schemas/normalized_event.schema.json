@@ -32,6 +32,11 @@
       "format": "date",
       "description": "ISO 8601 date the event occurred (not the date it was ingested)."
     },
+    "event_datetime": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Full ISO 8601 timestamp (with time-of-day) the event/article was reported, where the source actually provides that precision (RSS pubDate-based sources: Infobae, Jeune Afrique, Bellingcat, long-form articles). Null for date-only sources (ACLED, World Bank/IMF, GDELT's SQLDATE). Lets the chat assistant and any future sorting/dedup logic distinguish same-day events by actual time, not just date."
+    },
     "country": {
       "type": "string",
       "description": "Standardized country name."
@@ -101,7 +106,11 @@
 
     "narrative_summary": {
       "type": "string",
-      "description": "Short text description of the event, either source-provided or generated."
+      "description": "Short text description of the event, either source-provided or generated. For non-English sources this is the ORIGINAL native-language text -- see narrative_summary_en for the English translation."
+    },
+    "narrative_summary_en": {
+      "type": ["string", "null"],
+      "description": "English translation of narrative_summary, populated only for non-English sources (Infobae/Spanish, Jeune Afrique/French) when normalized with --translate. Null for English-language sources and for non-English sources normalized without translation."
     },
     "source_url": {
       "type": ["string", "null"]

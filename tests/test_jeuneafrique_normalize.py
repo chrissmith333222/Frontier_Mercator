@@ -15,11 +15,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from unittest.mock import patch
+
 from scripts.ingestion.jeuneafrique_normalize import (
     normalize_jeuneafrique_article,
     normalize_batch,
     make_meridian_event_id,
     _strip_accents,
+    translate_events,
 )
 
 ACCENTED_COUNTRY_ARTICLE = {
@@ -111,6 +114,12 @@ def test_event_date_parsed_from_rfc822():
     print("✓ test_event_date_parsed_from_rfc822 passed")
 
 
+def test_event_datetime_preserves_time_of_day():
+    result = normalize_jeuneafrique_article(ACCENTED_COUNTRY_ARTICLE)
+    assert result["event_datetime"].startswith("2026-07-02T02:15:00")
+    print("✓ test_event_datetime_preserves_time_of_day passed")
+
+
 def test_no_title_returns_none():
     result = normalize_jeuneafrique_article(NO_TITLE_ARTICLE)
     assert result is None
@@ -137,6 +146,22 @@ def test_batch_normalization_skips_malformed():
     results = normalize_batch(batch)
     assert len(results) == 2
     print(f"✓ test_batch_normalization_skips_malformed passed ({len(results)}/4 normalized)")
+
+
+def test_narrative_summary_en_defaults_to_none():
+    result = normalize_jeuneafrique_article(ACCENTED_COUNTRY_ARTICLE)
+    assert result["narrative_summary_en"] is None
+    print("✓ test_narrative_summary_en_defaults_to_none passed")
+
+
+def test_translate_events_populates_narrative_summary_en():
+    events = normalize_batch([ACCENTED_COUNTRY_ARTICLE, ALIAS_ABBREVIATION_ARTICLE])
+    with patch("scripts.lib.translation.translate_batch",
+               return_value=["Benin announces new economic measures", "DRC: how rebels are gaining ground"]):
+        count = translate_events(events)
+    assert count == 2
+    assert events[0]["narrative_summary_en"] == "Benin announces new economic measures"
+    print("✓ test_translate_events_populates_narrative_summary_en passed")
 
 
 if __name__ == "__main__":

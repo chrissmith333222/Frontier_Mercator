@@ -21,6 +21,8 @@ import pandas as pd
 from scripts.analytics.significance import (
     compute_significance_score,
     diversify_top_n,
+    compute_tier_thresholds,
+    significance_tier,
     SIGNIFICANCE_HOT_THRESHOLD,
 )
 
@@ -99,6 +101,39 @@ def test_diversify_returns_fewer_than_n_if_dataset_is_smaller():
     df = pd.DataFrame([{"source": "A", "score": 5.0}, {"source": "B", "score": 4.0}])
     result = diversify_top_n(df, "score", n=10, max_per_source=5)
     assert len(result) == 2
+
+
+def test_tiers_are_not_all_urgent_for_a_ranked_top_n_list():
+    # A "top 30 by score" list is, by construction, mostly high scorers --
+    # a fixed absolute threshold would badge nearly all of them "urgent".
+    # Percentile-relative tiers should still differentiate within the list.
+    scores = pd.Series([2.7, 3.68, 3.68, 3.68, 4.42, 6.15, 6.15, 6.15, 7.33, 7.34, 7.35, 7.7])
+    thresholds = compute_tier_thresholds(scores)
+    tiers = [significance_tier(s, thresholds) for s in scores]
+    assert tiers.count("urgent") < len(scores)
+    assert None in tiers or "medium" in tiers  # not literally everything badged
+
+
+def test_urgent_tier_requires_absolute_floor_even_if_relatively_highest():
+    # If every score in scope is low, the highest-of-a-low-batch item
+    # still shouldn't be labeled "urgent" -- that's a false alarm.
+    scores = pd.Series([1.0, 1.2, 1.5, 1.8, 2.0])
+    thresholds = compute_tier_thresholds(scores)
+    tiers = [significance_tier(s, thresholds) for s in scores]
+    assert "urgent" not in tiers
+    assert "top" not in tiers
+
+
+def test_high_absolute_score_gets_urgent_tier():
+    scores = pd.Series([1.0, 2.0, 3.0, 9.5])
+    thresholds = compute_tier_thresholds(scores)
+    assert significance_tier(9.5, thresholds) == "urgent"
+    assert significance_tier(1.0, thresholds) is None
+
+
+def test_empty_scores_thresholds_never_match_anything():
+    thresholds = compute_tier_thresholds(pd.Series([], dtype=float))
+    assert significance_tier(10.0, thresholds) is None
 
 
 if __name__ == "__main__":

@@ -92,19 +92,19 @@ def _detect_country(text: str) -> tuple[str | None, str, str, bool]:
     return None, "Global", GLOBAL_OTHER_REGION, False
 
 
-def _parse_pub_date(pub_date: str) -> str:
+def _parse_pub_date(pub_date: str) -> tuple[str, str]:
     """Jeune Afrique's feed emits pubDate as ISO 8601
     ("2026-07-02T19:39:58+00:00") rather than the RFC 822 format
     ("Thu, 02 Jul 2026 19:39:58 +0000") most RSS feeds (including
     Infobae's) use -- try RFC 822 first since that's the RSS spec's
     stated format, then fall back to ISO 8601 rather than assuming one
     or the other and silently dropping every article from a feed that
-    happens to use the other format."""
+    happens to use the other format. Returns (event_date, event_datetime)."""
     try:
-        return parsedate_to_datetime(pub_date).date().isoformat()
+        parsed = parsedate_to_datetime(pub_date)
     except (TypeError, ValueError):
-        pass
-    return datetime.fromisoformat(pub_date).date().isoformat()
+        parsed = datetime.fromisoformat(pub_date)
+    return parsed.date().isoformat(), parsed.isoformat()
 
 
 def make_meridian_event_id(source: str, source_event_id: str) -> str:
@@ -124,7 +124,7 @@ def normalize_jeuneafrique_article(raw_article: dict) -> dict | None:
 
     pub_date = raw_article.get("pubDate", "")
     try:
-        event_date = _parse_pub_date(pub_date)
+        event_date, event_datetime = _parse_pub_date(pub_date)
     except (TypeError, ValueError):
         return None
 
@@ -135,6 +135,7 @@ def normalize_jeuneafrique_article(raw_article: dict) -> dict | None:
         "source": "JeuneAfrique",
         "source_event_id": guid,
         "event_date": event_date,
+        "event_datetime": event_datetime,
         "country": country,
         "iso3": iso3,
         "admin1": None,
@@ -148,6 +149,7 @@ def normalize_jeuneafrique_article(raw_article: dict) -> dict | None:
         "fatalities": None,
         "severity_score": None,
         "narrative_summary": title,
+        "narrative_summary_en": None,  # populated by translate_events() when --translate is used
         "source_url": raw_article.get("link"),
         "image_url": None,  # Jeune Afrique's feed doesn't embed an article image, unlike Infobae's
         "ingested_at": datetime.now(timezone.utc).isoformat(),
@@ -176,14 +178,35 @@ def normalize_batch(raw_articles: list[dict]) -> list[dict]:
     return normalized
 
 
+def translate_events(events: list[dict]) -> int:
+    """Translates every event's narrative_summary (French) into English
+    in ONE batched API call, populating narrative_summary_en in place.
+    Returns the number of events translated."""
+    from scripts.lib.translation import translate_batch
+    if not events:
+        return 0
+    titles = [e["narrative_summary"] for e in events]
+    translations = translate_batch(titles, source_language="French")
+    for event, translation in zip(events, translations):
+        event["narrative_summary_en"] = translation
+    return len(events)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Normalize raw Jeune Afrique articles into MERIDIAN schema")
     parser.add_argument("--input", type=str, required=True, help="Path to raw Jeune Afrique JSON (from jeuneafrique_fetch.py)")
     parser.add_argument("--output", type=str, default=None, help="Output path. Omit to print to stdout.")
+    parser.add_argument("--translate", action="store_true",
+                         help="Translate each headline to English (one batched Anthropic API call) "
+                              "and populate narrative_summary_en. Requires ANTHROPIC_API_KEY.")
     args = parser.parse_args()
 
     raw_articles = json.loads(Path(args.input).read_text(encoding="utf-8"))
     normalized = normalize_batch(raw_articles)
+
+    if args.translate:
+        count = translate_events(normalized)
+        print(f"Translated {count} headlines to English.", file=sys.stderr)
 
     output_json = json.dumps(normalized, indent=2, ensure_ascii=False)
     if args.output:

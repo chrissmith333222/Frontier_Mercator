@@ -79,6 +79,12 @@ def test_event_date_parsed_from_rfc822():
     print("✓ test_event_date_parsed_from_rfc822 passed")
 
 
+def test_event_datetime_preserves_time_of_day():
+    result = normalize_bellingcat_article(MALI_ARTICLE)
+    assert result["event_datetime"].startswith("2026-06-15T10:00:00")
+    print("✓ test_event_datetime_preserves_time_of_day passed")
+
+
 def test_no_title_returns_none():
     result = normalize_bellingcat_article(NO_TITLE_ARTICLE)
     assert result is None

@@ -67,7 +67,9 @@ def normalize_bellingcat_article(raw_article: dict) -> dict | None:
 
     pub_date = raw_article.get("pubDate", "")
     try:
-        event_date = parsedate_to_datetime(pub_date).date().isoformat()
+        parsed_pub_date = parsedate_to_datetime(pub_date)
+        event_date = parsed_pub_date.date().isoformat()
+        event_datetime = parsed_pub_date.isoformat()
     except (TypeError, ValueError):
         return None
 
@@ -79,6 +81,7 @@ def normalize_bellingcat_article(raw_article: dict) -> dict | None:
         "source": "Bellingcat",
         "source_event_id": guid,
         "event_date": event_date,
+        "event_datetime": event_datetime,
         "country": country,
         "iso3": iso3,
         "admin1": None,
