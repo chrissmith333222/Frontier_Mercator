@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MERIDIAN Longform Article",
+  "description": "Schema for the Research & Analysis tab's reading material -- scholarly/policy/journalism pieces from outlets like The Economist, Foreign Affairs, Foreign Policy, NYT, WSJ. Deliberately separate from normalized_event.schema.json: these are commentary/analysis pieces meant to be read, not discrete dated events/actions, so they don't belong on the Unified Intelligence Map or in the event-scored News & Social Signal tab. Only ever populated from each outlet's own free, publicly-published RSS feed (headline + teaser + link) -- never from an authenticated scrape of paywalled full-text content.",
+  "type": "object",
+  "required": ["article_id", "source", "title", "link", "published_date", "ingested_at"],
+  "properties": {
+    "article_id": {
+      "type": "string",
+      "description": "Deterministic hash of source + link, used to dedupe across re-runs."
+    },
+    "source": {
+      "type": "string",
+      "description": "Publication name, e.g. 'The Economist', 'Foreign Affairs'."
+    },
+    "title": { "type": "string" },
+    "teaser": {
+      "type": ["string", "null"],
+      "description": "Short description/subhead/dek as published in the feed -- not the full article body."
+    },
+    "author": { "type": ["string", "null"] },
+    "link": {
+      "type": "string",
+      "description": "URL to the full article on the publisher's own site."
+    },
+    "image_url": {
+      "type": ["string", "null"],
+      "description": "Thumbnail image URL pulled from the feed's media:content/enclosure tag, if present."
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date the article was published."
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

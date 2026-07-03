@@ -108,6 +108,63 @@ def load_custom_analyses() -> list[dict]:
     return sorted(analyses, key=lambda a: a.get("generated_at", ""), reverse=True)
 
 
+def load_longform_articles() -> list[dict]:
+    """Reads the Research & Analysis tab's reading material (scripts/
+    ingestion/longform_fetch.py + longform_normalize.py -- The Economist,
+    NYT, Foreign Affairs, Foreign Policy, WSJ's own free public RSS
+    feeds), newest first. Returns an empty list if the ingestion script
+    hasn't been run yet."""
+    path = Path(__file__).parent / "data" / "longform" / "articles.json"
+    if not path.exists():
+        return []
+    try:
+        articles = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    return sorted(articles, key=lambda a: a.get("published_date", ""), reverse=True)
+
+
+def render_research_analysis_tab(articles: list[dict]):
+    """Card-grid reading list of scholarly/policy/long-form journalism --
+    Chris's ask for a WSJ/NYT-style "grabber" thumbnail per piece, kept
+    deliberately separate from the event-driven News & Social Signal tab
+    and the Unified Intelligence Map (these are commentary/analysis, not
+    discrete dated events)."""
+    st.markdown(
+        "Long-form journalism, policy analysis, and commentary from major outlets — reading "
+        "material to build context, not event data. Pulled from each outlet's own free, "
+        "publicly-published RSS feed (headline and teaser only); the full piece opens on the "
+        "publisher's own site, where your own subscription applies as normal."
+    )
+    if not articles:
+        st.info(
+            "No long-form articles ingested yet. Run "
+            "`python scripts/ingestion/longform_fetch.py` and `longform_normalize.py` to populate this tab."
+        )
+        return
+
+    sources = sorted({a["source"] for a in articles})
+    selected_sources = st.multiselect("Source", options=sources, default=sources, key="longform_sources")
+    scope = [a for a in articles if a["source"] in selected_sources]
+    st.caption(f"{len(scope)} articles")
+
+    cols = st.columns(3)
+    for i, article in enumerate(scope[:60]):
+        with cols[i % 3]:
+            if article.get("image_url"):
+                st.markdown(
+                    f'<img src="{article["image_url"]}" style="width:100%;aspect-ratio:16/9;'
+                    f'object-fit:cover;border-radius:4px;margin-bottom:0.4rem;">',
+                    unsafe_allow_html=True,
+                )
+            st.markdown(f"**{article['title']}**")
+            st.caption(f"{article['source']} · {article['published_date']}")
+            if article.get("teaser"):
+                st.markdown(article["teaser"])
+            st.markdown(f"[Read full article →]({article['link']})")
+            st.markdown("---")
+
+
 def _emblem_base64() -> str:
     import base64
     return base64.b64encode((Path(__file__).parent / "static" / "fm_emblem.svg").read_bytes()).decode("ascii")
@@ -1314,9 +1371,9 @@ news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")
 
-dash1, dash2, dash3, dash4, dash_chat, dash5, dash6, dash7 = st.tabs(
+dash1, dash2, dash3, dash4, dash_longform, dash_chat, dash5, dash6, dash7 = st.tabs(
     ["Conflict & Security", "Markets & Economy", "News & Social Signal",
-     "Great Power Competition", "Research Assistant", "Reports", "About", "Contact Us"]
+     "Great Power Competition", "Research & Analysis", "Research Assistant", "Reports", "About", "Contact Us"]
 )
 
 with dash1:
@@ -1330,6 +1387,9 @@ with dash3:
 
 with dash4:
     render_greatpower_dashboard(df)
+
+with dash_longform:
+    render_research_analysis_tab(load_longform_articles())
 
 with dash_chat:
     render_research_assistant(df)
