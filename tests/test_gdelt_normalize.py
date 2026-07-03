@@ -12,6 +12,7 @@ Usage:
 
 import sys
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -20,6 +21,8 @@ from scripts.ingestion.gdelt_normalize import (
     normalize_batch,
     compute_severity_score,
     make_meridian_event_id,
+    fetch_article_headline,
+    enrich_headlines,
 )
 
 # Sample raw GDELT record shaped like real 2.0 export output (fight event, Mali).
@@ -201,6 +204,56 @@ def test_raw_data_preserved_for_audit():
     result = normalize_gdelt_event(SAMPLE_FIGHT_EVENT)
     assert result["raw_source_data"] == SAMPLE_FIGHT_EVENT
     print("✓ test_raw_data_preserved_for_audit passed")
+
+
+def test_fetch_article_headline_extracts_title_tag():
+    fake_response = MagicMock(status_code=200, text="<html><head><title>Real headline here</title></head></html>")
+    with patch("scripts.ingestion.gdelt_normalize.requests.get", return_value=fake_response):
+        headline = fetch_article_headline("https://example.com/article")
+    assert headline == "Real headline here"
+    print("✓ test_fetch_article_headline_extracts_title_tag passed")
+
+
+def test_fetch_article_headline_returns_none_on_http_error():
+    fake_response = MagicMock(status_code=404, text="")
+    with patch("scripts.ingestion.gdelt_normalize.requests.get", return_value=fake_response):
+        headline = fetch_article_headline("https://example.com/dead-link")
+    assert headline is None
+    print("✓ test_fetch_article_headline_returns_none_on_http_error passed")
+
+
+def test_fetch_article_headline_returns_none_on_network_exception():
+    with patch("scripts.ingestion.gdelt_normalize.requests.get", side_effect=ConnectionError("boom")):
+        headline = fetch_article_headline("https://example.com/timeout")
+    assert headline is None
+    print("✓ test_fetch_article_headline_returns_none_on_network_exception passed")
+
+
+def test_fetch_article_headline_returns_none_for_empty_url():
+    assert fetch_article_headline("") is None
+    assert fetch_article_headline(None) is None
+    print("✓ test_fetch_article_headline_returns_none_for_empty_url passed")
+
+
+def test_enrich_headlines_replaces_summary_when_headline_found():
+    events = normalize_batch([SAMPLE_FIGHT_EVENT])
+    fake_response = MagicMock(status_code=200, text="<title>JNIM clashes with Mali army near Gao</title>")
+    with patch("scripts.ingestion.gdelt_normalize.requests.get", return_value=fake_response):
+        enriched_count = enrich_headlines(events)
+    assert enriched_count == 1
+    assert "JNIM clashes with Mali army near Gao" in events[0]["narrative_summary"]
+    assert "JNIM" in events[0]["narrative_summary"] and "MALI" in events[0]["narrative_summary"]
+    print("✓ test_enrich_headlines_replaces_summary_when_headline_found passed")
+
+
+def test_enrich_headlines_keeps_fallback_summary_on_fetch_failure():
+    events = normalize_batch([SAMPLE_FIGHT_EVENT])
+    original_summary = events[0]["narrative_summary"]
+    with patch("scripts.ingestion.gdelt_normalize.requests.get", side_effect=ConnectionError("boom")):
+        enriched_count = enrich_headlines(events)
+    assert enriched_count == 0
+    assert events[0]["narrative_summary"] == original_summary
+    print("✓ test_enrich_headlines_keeps_fallback_summary_on_fetch_failure passed")
 
 
 if __name__ == "__main__":

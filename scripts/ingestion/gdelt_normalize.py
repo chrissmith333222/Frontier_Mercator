@@ -14,13 +14,18 @@ Or as a module:
 """
 
 import sys
+import re
+import html
 import argparse
 import json
 import hashlib
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime, timezone
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+import requests
 
 from scripts.lib.gdelt_geo import lookup_any_country
 
@@ -159,6 +164,64 @@ def normalize_gdelt_event(record: dict) -> dict | None:
     }
 
 
+_TITLE_TAG_PATTERN = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+
+
+def fetch_article_headline(url: str, timeout: float = 4.0) -> str | None:
+    """Best-effort fetch of the real headline from a GDELT event's source
+    article (Chris: "I click the link and it actually describes the
+    event" -- GDELT's raw Events table has no headline field at all, only
+    actor codes + a CAMEO action code, but the linked article obviously
+    has a real description). Returns None on any failure (dead link,
+    timeout, paywall, non-HTML response) rather than raising, since this
+    runs across a whole batch and most individual failures should just
+    fall back to the existing CAMEO-based summary, not abort the batch."""
+    if not url:
+        return None
+    try:
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=timeout)
+        if response.status_code != 200:
+            return None
+        match = _TITLE_TAG_PATTERN.search(response.text)
+        if not match:
+            return None
+        title = html.unescape(match.group(1)).strip()
+        title = re.sub(r"\s+", " ", title)
+        if len(title) < 8:
+            return None
+        return title[:300]
+    except Exception:
+        return None
+
+
+def enrich_headlines(events: list[dict], max_workers: int = 20) -> int:
+    """Replaces each event's narrative_summary with the real article
+    headline where one can be fetched, keeping the existing CAMEO-based
+    summary as the fallback. Runs fetches concurrently (GDELT batches can
+    be thousands of events; a sequential per-event HTTP fetch would make
+    a routine ingestion run take hours) -- opt-in via --enrich-headlines,
+    not run by default, since it's slow and network-dependent in a way
+    unit tests and quick local re-normalization shouldn't have to pay for.
+    Returns the number of events successfully enriched."""
+    events_by_url = {e["meridian_event_id"]: e for e in events if e.get("source_url")}
+    enriched_count = 0
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(fetch_article_headline, event["source_url"]): event_id
+            for event_id, event in events_by_url.items()
+        }
+        for future in as_completed(futures):
+            event_id = futures[future]
+            headline = future.result()
+            if headline:
+                event = events_by_url[event_id]
+                actor_context = event["narrative_summary"].split(": ", 1)
+                actors = actor_context[0] if len(actor_context) == 2 else ""
+                event["narrative_summary"] = f"{headline} ({actors})" if actors else headline
+                enriched_count += 1
+    return enriched_count
+
+
 def normalize_batch(raw_events: list[dict]) -> list[dict]:
     """Normalizes a list of raw GDELT events, skipping records that fail to
     normalize (malformed or non-mandate-country) rather than failing the batch."""
@@ -185,10 +248,20 @@ def main():
     parser = argparse.ArgumentParser(description="Normalize raw GDELT events into MERIDIAN schema")
     parser.add_argument("--input", type=str, required=True, help="Path to raw GDELT JSON (from gdelt_fetch.py)")
     parser.add_argument("--output", type=str, default=None, help="Output path. Omit to print to stdout.")
+    parser.add_argument("--enrich-headlines", action="store_true",
+                         help="Fetch each event's source article and use its real headline as the "
+                              "narrative_summary where possible, falling back to the CAMEO-based "
+                              "summary otherwise. Slower (one HTTP request per event, concurrently) "
+                              "and network-dependent -- off by default.")
     args = parser.parse_args()
 
     raw_events = json.loads(Path(args.input).read_text())
     normalized = normalize_batch(raw_events)
+
+    if args.enrich_headlines:
+        enriched_count = enrich_headlines(normalized)
+        print(f"Enriched {enriched_count}/{len(normalized)} events with a real article headline.",
+              file=sys.stderr)
 
     output_json = json.dumps(normalized, indent=2)
     if args.output:

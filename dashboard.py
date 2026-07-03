@@ -1249,8 +1249,12 @@ def render_unified_map(df):
         # explicit ask for important things to "pop out of the white noise."
         border_color = b.GOLD if is_hot else color
         border_weight = 3 if is_hot else 1
+        # Radius kept deliberately compact (Chris: circles were "getting
+        # too big and crowded") -- still differentiates by significance,
+        # just within a smaller overall range so a dense cluster of
+        # markers doesn't visually overwhelm the map.
         folium.CircleMarker(
-            location=[lat, lon], radius=(6 if is_hot else 4) + (significance / 1.5),
+            location=[lat, lon], radius=(3.5 if is_hot else 2.5) + (significance / 2.8),
             popup=folium.Popup(popup_text, max_width=340),
             color=border_color, fill=True, fillColor=color,
             fillOpacity=fill_opacity, weight=border_weight, opacity=min(0.95, fill_opacity + 0.15),
