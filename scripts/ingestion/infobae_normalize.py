@@ -87,6 +87,21 @@ def _detect_country(text: str) -> tuple[str | None, str, str, bool]:
     return None, "Global", GLOBAL_OTHER_REGION, False
 
 
+_IMG_TAG_PATTERN = re.compile(r'<img[^>]+src="([^"]+)"', re.IGNORECASE)
+
+
+def _extract_image_url(content_encoded: str) -> str | None:
+    """Pulls the first <img src="..."> out of the article's content:encoded
+    HTML, if present -- Infobae embeds the lead image this way (see
+    infobae_fetch.py). Returns None rather than raising if there's no
+    image, since most articles this heuristic can't find one for should
+    just render without a thumbnail, not fail normalization."""
+    if not content_encoded:
+        return None
+    match = _IMG_TAG_PATTERN.search(content_encoded)
+    return match.group(1) if match else None
+
+
 def make_meridian_event_id(source: str, source_event_id: str) -> str:
     """Deterministic ID so re-running ingestion doesn't create duplicate records."""
     raw = f"{source}:{source_event_id}"
@@ -129,6 +144,7 @@ def normalize_infobae_article(raw_article: dict) -> dict | None:
         "severity_score": None,
         "narrative_summary": title,
         "source_url": raw_article.get("link"),
+        "image_url": _extract_image_url(raw_article.get("content_encoded", "")),
         "ingested_at": datetime.now(timezone.utc).isoformat(),
         "raw_source_data": None,
     }

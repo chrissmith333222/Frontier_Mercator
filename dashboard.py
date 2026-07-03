@@ -21,6 +21,7 @@ from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
+from scripts.analytics.significance import compute_significance_score, diversify_top_n, SIGNIFICANCE_HOT_THRESHOLD
 
 INDICATOR_LABELS = {code: label for code, (label, _cat) in {
     **WORLDBANK_INDICATOR_LABELS, **IMF_INDICATOR_LABELS,
@@ -375,6 +376,35 @@ st.markdown(f"""
         font-family: {b.DISPLAY_FONT_STACK};
         font-weight: 700;
         font-size: 1.6rem;
+    }}
+
+    /* "Hot"/breaking signal badge -- News & Social Signal tab and the
+       Unified Intelligence Map both flag high-significance events (see
+       scripts/analytics/significance.py) with this pill so they visually
+       stand out from routine/lower-priority items, per Chris's ask to
+       make important things "pop out of the white noise" rather than
+       reading as a flat list. */
+    .fm-hot-badge {{
+        display: inline-block;
+        background-color: {b.CRITICAL}22;
+        color: {b.CRITICAL};
+        border: 1px solid {b.CRITICAL};
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        padding: 0.1rem 0.5rem;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }}
+    .fm-news-card-hot {{
+        border-left: 3px solid {b.CRITICAL};
+        padding-left: 0.75rem;
+    }}
+    .fm-news-card-normal {{
+        border-left: 3px solid {b.BORDER};
+        padding-left: 0.75rem;
     }}
 
     /* Live stock ticker banner -- a continuously scrolling marquee strip,
@@ -862,25 +892,53 @@ def render_markets_dashboard(econ_df):
 
 def render_news_dashboard(news_df):
     st.markdown(
-        "Broader political/economic/diplomatic signal from GDELT, beyond direct conflict events. "
-        "**Preliminary** — this is GDELT's own event coding, not a curated news feed; dedicated "
-        "news/social source integration is planned."
+        "Political/economic/diplomatic and social signal from GDELT plus dedicated news sources "
+        "(Infobae, Jeune Afrique, Bellingcat). Ranked by a significance score — not just recency — "
+        "so the most important stories surface first, with a cap on how many any single source can "
+        "contribute to the top list, and no source is presented as a fixed feed of its most recent stories."
     )
     if len(news_df) == 0:
         st.info("No news/social signal data loaded yet.")
         return
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Signal Events (last window)", f"{len(news_df):,}")
     with col2:
         st.metric("Countries Covered", news_df['country'].nunique())
+    with col3:
+        st.metric("Sources", news_df['source'].nunique())
 
-    top = news_df.sort_values('event_date', ascending=False).head(30)
+    scored = news_df.copy()
+    scored["significance_score"] = compute_significance_score(scored)
+    top = diversify_top_n(scored, "significance_score", n=30, max_per_source=8)
+
+    source_mix = ", ".join(f"{src} ({n})" for src, n in top['source'].value_counts().items())
+    st.caption(f"Source mix in this list: {source_mix}")
+
     for _, event in top.iterrows():
-        st.markdown(f"**{event['country']}** — {event['event_date']} &nbsp;·&nbsp; *{event['source']}*  \n"
-                    f"{event['narrative_summary']}"
-                    + (f"  \n[Read full source →]({event['source_url']})" if pd.notna(event.get('source_url')) else ""))
+        is_hot = event["significance_score"] >= SIGNIFICANCE_HOT_THRESHOLD
+        card_class = "fm-news-card-hot" if is_hot else "fm-news-card-normal"
+        hot_badge = '<span class="fm-hot-badge">Top signal</span>' if is_hot else ""
+        image_url = event.get("image_url")
+        image_html = (
+            f'<img src="{image_url}" style="width:96px;height:96px;object-fit:cover;border-radius:4px;'
+            f'margin-right:0.75rem;flex-shrink:0;">' if pd.notna(image_url) else ""
+        )
+        source_link = (
+            f"[Read full source →]({event['source_url']})" if pd.notna(event.get('source_url')) else ""
+        )
+        st.markdown(
+            f'<div class="{card_class}" style="display:flex;align-items:flex-start;margin-bottom:1rem;">'
+            f'{image_html}<div>'
+            f"<div><strong>{event['country']}</strong> — {event['event_date']} &nbsp;·&nbsp; "
+            f"<em>{event['source']}</em>{hot_badge}</div>"
+            f"<div>{event['narrative_summary']}</div>"
+            f"</div></div>",
+            unsafe_allow_html=True,
+        )
+        if source_link:
+            st.markdown(source_link)
         st.markdown("---")
 
 
@@ -1082,19 +1140,19 @@ def render_unified_map(df):
     is_conflict = scope['event_category'].isin(CONFLICT_CATEGORIES)
     scope = scope[~is_conflict | (scope['severity_score'] >= map_min_severity)]
 
-    # Recency score (0-10, 10 = most recent in the current filtered scope) --
-    # events without a native severity_score (economic indicators, most
+    # Significance score (0-10, see scripts/analytics/significance.py) --
+    # the same blended severity/recency/fatalities/breaking-keyword score
+    # used by the News & Social Signal tab, so "what's important" means
+    # the same thing everywhere on the dashboard rather than the map using
+    # a recency-only proxy while the news list uses something else.
+    # Events without a native severity_score (economic indicators, most
     # news/social events) previously all fell back to the same flat
     # placeholder value, so when the marker cap below kicked in, ties broke
     # on row order (oldest-first in the source data) rather than anything
     # meaningful -- systematically dropping newer economic/news events in
-    # favor of older ones. Recency now drives both which events survive the
-    # cap and how prominently they're drawn (see radius/opacity below).
-    date_span = (scope['event_date'].max() - scope['event_date'].min()).days
-    if date_span > 0:
-        recency_score = 10 * (scope['event_date'] - scope['event_date'].min()).dt.days / date_span
-    else:
-        recency_score = pd.Series(10.0, index=scope.index)
+    # favor of older ones. Significance now drives both which events survive
+    # the cap and how prominently they're drawn (see radius/opacity below).
+    significance_score = compute_significance_score(scope)
 
     MAX_MAP_MARKERS = 2000
     if len(scope) > MAX_MAP_MARKERS:
@@ -1105,7 +1163,7 @@ def render_unified_map(df):
         n_types = scope['event_category'].apply(b.type_label).nunique() or 1
         per_type_cap = MAX_MAP_MARKERS // n_types
         scope = (
-            scope.assign(_rank=scope['severity_score'].fillna(recency_score))
+            scope.assign(_rank=significance_score)
             .groupby(scope['event_category'].apply(b.type_label), group_keys=False)
             .apply(lambda g: g.sort_values('_rank', ascending=False).head(per_type_cap))
         )
@@ -1113,13 +1171,9 @@ def render_unified_map(df):
             f"Showing up to {per_type_cap:,} highest-significance events per category "
             f"({len(scope):,} of {len(df):,} total matching events)."
         )
-        # Recompute against the final (post-cap) scope so recency-based
-        # sizing below reflects what's actually being drawn.
-        date_span = (scope['event_date'].max() - scope['event_date'].min()).days
-        if date_span > 0:
-            recency_score = 10 * (scope['event_date'] - scope['event_date'].min()).dt.days / date_span
-        else:
-            recency_score = pd.Series(10.0, index=scope.index)
+        # Recompute against the final (post-cap) scope so sizing below
+        # reflects what's actually being drawn.
+        significance_score = compute_significance_score(scope)
 
     m = folium.Map(location=[10, 10], zoom_start=2, tiles=None)
     folium.TileLayer(
@@ -1156,14 +1210,15 @@ def render_unified_map(df):
             if centroid is None:
                 continue
             lat, lon = centroid
-        # Events without a native severity_score (economic indicators, most
-        # news/social events) are sized and faded by recency instead of a
-        # flat placeholder -- newer events draw bigger and more opaque,
-        # older ones smaller and fainter, so recent activity visually
-        # stands out rather than looking identical to a 5-year-old data point.
-        has_severity = pd.notna(event['severity_score'])
-        significance = event['severity_score'] if has_severity else recency_score.get(idx, 5.0)
-        fill_opacity = 0.8 if has_severity else max(0.35, min(0.85, recency_score.get(idx, 5.0) / 10))
+        # Marker size/opacity/border scale with the shared significance
+        # score (see scripts/analytics/significance.py) so events that are
+        # actually important -- high severity, breaking-keyword match,
+        # recent -- visually pop out of the "white noise" of routine
+        # markers, per Chris's explicit ask, rather than every marker
+        # reading as visually equivalent regardless of importance.
+        significance = significance_score.get(idx, 4.0)
+        is_hot = significance >= SIGNIFICANCE_HOT_THRESHOLD
+        fill_opacity = max(0.35, min(0.85, significance / 10))
         color = b.type_color(event['event_category'])
         # Escape user/source-controlled text before embedding in raw popup
         # HTML (folium.Popup renders it unescaped) -- narrative_summary and
@@ -1174,6 +1229,7 @@ def render_unified_map(df):
         summary_esc = _html.escape(str(event['narrative_summary'])[:220])
         source_esc = _html.escape(str(event.get('source', 'Unknown')))
         popup_lines = [
+            (f'<b style="color:{b.CRITICAL};">TOP SIGNAL</b><br>' if is_hot else ""),
             f"<b>{country_esc}</b> — {event['event_date']}<br>",
             f"<b>Source:</b> {source_esc} &nbsp; "
             f"<b>Category:</b> {b.type_label(event['event_category'])} "
@@ -1187,11 +1243,17 @@ def render_unified_map(df):
             url_esc = _html.escape(str(source_url), quote=True)
             popup_lines.append(f'<a href="{url_esc}" target="_blank" rel="noopener">Read full source →</a>')
         popup_text = "".join(popup_lines)
+        # Hot/high-significance events get a bright gold border and a
+        # heavier stroke weight so they visually stand out from routine
+        # markers on the map itself, not just inside the popup -- Chris's
+        # explicit ask for important things to "pop out of the white noise."
+        border_color = b.GOLD if is_hot else color
+        border_weight = 3 if is_hot else 1
         folium.CircleMarker(
-            location=[lat, lon], radius=4 + (significance / 1.5),
+            location=[lat, lon], radius=(6 if is_hot else 4) + (significance / 1.5),
             popup=folium.Popup(popup_text, max_width=340),
-            color=color, fill=True, fillColor=color,
-            fillOpacity=fill_opacity, weight=1, opacity=min(0.9, fill_opacity + 0.1),
+            color=border_color, fill=True, fillColor=color,
+            fillOpacity=fill_opacity, weight=border_weight, opacity=min(0.95, fill_opacity + 0.15),
         ).add_to(m)
 
     st_folium(m, width=1200, height=650, key="unified_map")

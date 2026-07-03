@@ -106,6 +106,10 @@
     "source_url": {
       "type": ["string", "null"]
     },
+    "image_url": {
+      "type": ["string", "null"],
+      "description": "Thumbnail/article image URL, where the source feed provides one directly (e.g. an RSS content:encoded <img> tag) -- null for sources that don't carry one (most do not). Never fetched via a secondary page scrape, only pulled from data already present in the feed response."
+    },
 
     "ingested_at": {
       "type": "string",

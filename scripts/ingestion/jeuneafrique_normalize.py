@@ -149,6 +149,7 @@ def normalize_jeuneafrique_article(raw_article: dict) -> dict | None:
         "severity_score": None,
         "narrative_summary": title,
         "source_url": raw_article.get("link"),
+        "image_url": None,  # Jeune Afrique's feed doesn't embed an article image, unlike Infobae's
         "ingested_at": datetime.now(timezone.utc).isoformat(),
         "raw_source_data": None,
     }

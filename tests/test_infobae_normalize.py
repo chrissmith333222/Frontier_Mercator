@@ -19,6 +19,7 @@ from scripts.ingestion.infobae_normalize import (
     normalize_batch,
     make_meridian_event_id,
     _strip_accents,
+    _extract_image_url,
 )
 
 ACCENTED_COUNTRY_ARTICLE = {
@@ -26,6 +27,7 @@ ACCENTED_COUNTRY_ARTICLE = {
     "link": "https://www.infobae.com/mexico/2026/07/03/nota/",
     "pubDate": "Fri, 03 Jul 2026 02:15:00 +0000",
     "guid": "https://www.infobae.com/?p=1001",
+    "content_encoded": '<img src="https://www.infobae.com/resizer/v2/photo.jpg?auth=abc&width=1920" alt=""/><p>Body text.</p>',
 }
 
 ALIAS_COUNTRY_ARTICLE = {
@@ -72,6 +74,19 @@ def test_accented_country_name_resolves_via_accent_stripping():
     assert result["in_core_mandate"] is True
     assert result["event_category"] == "other"
     print("✓ test_accented_country_name_resolves_via_accent_stripping passed")
+
+
+def test_image_url_extracted_from_content_encoded():
+    result = normalize_infobae_article(ACCENTED_COUNTRY_ARTICLE)
+    assert result["image_url"] == "https://www.infobae.com/resizer/v2/photo.jpg?auth=abc&width=1920"
+    print("✓ test_image_url_extracted_from_content_encoded passed")
+
+
+def test_image_url_is_none_when_content_encoded_missing():
+    article_without_image = {**ACCENTED_COUNTRY_ARTICLE, "content_encoded": ""}
+    result = normalize_infobae_article(article_without_image)
+    assert result["image_url"] is None
+    print("✓ test_image_url_is_none_when_content_encoded_missing passed")
 
 
 def test_spanish_alias_country_name_resolves():
