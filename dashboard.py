@@ -972,8 +972,14 @@ def render_unified_map(df):
     with filter_col4:
         date_bounds = df['event_date'].dropna()
         min_date, max_date = (date_bounds.min(), date_bounds.max()) if len(date_bounds) else (None, None)
+        # Default to the last 5 years rather than the full historical span
+        # (some sources go back decades) -- users can still widen it
+        # manually via the picker's min/max bounds, but the default view
+        # should emphasize recent activity, not get diluted by old data.
+        default_start = max(min_date, max_date - pd.DateOffset(years=5)) if min_date is not None else None
         date_range = st.date_input(
-            "Date range", value=(min_date, max_date) if min_date is not None else None,
+            "Date range", value=(default_start, max_date) if min_date is not None else None,
+            min_value=min_date, max_value=max_date,
             key="unified_map_dates",
         )
 
@@ -986,6 +992,20 @@ def render_unified_map(df):
     is_conflict = scope['event_category'].isin(CONFLICT_CATEGORIES)
     scope = scope[~is_conflict | (scope['severity_score'] >= map_min_severity)]
 
+    # Recency score (0-10, 10 = most recent in the current filtered scope) --
+    # events without a native severity_score (economic indicators, most
+    # news/social events) previously all fell back to the same flat
+    # placeholder value, so when the marker cap below kicked in, ties broke
+    # on row order (oldest-first in the source data) rather than anything
+    # meaningful -- systematically dropping newer economic/news events in
+    # favor of older ones. Recency now drives both which events survive the
+    # cap and how prominently they're drawn (see radius/opacity below).
+    date_span = (scope['event_date'].max() - scope['event_date'].min()).days
+    if date_span > 0:
+        recency_score = 10 * (scope['event_date'] - scope['event_date'].min()).dt.days / date_span
+    else:
+        recency_score = pd.Series(10.0, index=scope.index)
+
     MAX_MAP_MARKERS = 2000
     if len(scope) > MAX_MAP_MARKERS:
         # Cap per category, not globally -- conflict events vastly outnumber
@@ -995,7 +1015,7 @@ def render_unified_map(df):
         n_types = scope['event_category'].apply(b.type_label).nunique() or 1
         per_type_cap = MAX_MAP_MARKERS // n_types
         scope = (
-            scope.assign(_rank=scope['severity_score'].fillna(3.0))
+            scope.assign(_rank=scope['severity_score'].fillna(recency_score))
             .groupby(scope['event_category'].apply(b.type_label), group_keys=False)
             .apply(lambda g: g.sort_values('_rank', ascending=False).head(per_type_cap))
         )
@@ -1003,6 +1023,13 @@ def render_unified_map(df):
             f"Showing up to {per_type_cap:,} highest-significance events per category "
             f"({len(scope):,} of {len(df):,} total matching events)."
         )
+        # Recompute against the final (post-cap) scope so recency-based
+        # sizing below reflects what's actually being drawn.
+        date_span = (scope['event_date'].max() - scope['event_date'].min()).days
+        if date_span > 0:
+            recency_score = 10 * (scope['event_date'] - scope['event_date'].min()).dt.days / date_span
+        else:
+            recency_score = pd.Series(10.0, index=scope.index)
 
     m = folium.Map(location=[10, 10], zoom_start=2, tiles=None)
     folium.TileLayer(
@@ -1032,14 +1059,21 @@ def render_unified_map(df):
     ).add_to(m)
     folium.LayerControl(collapsed=True).add_to(m)
 
-    for _, event in scope.iterrows():
+    for idx, event in scope.iterrows():
         lat, lon = event['latitude'], event['longitude']
         if pd.isna(lat) or pd.isna(lon):
             centroid = get_centroid(event.get('iso3', ''))
             if centroid is None:
                 continue
             lat, lon = centroid
-        significance = event['severity_score'] if pd.notna(event['severity_score']) else 3.0
+        # Events without a native severity_score (economic indicators, most
+        # news/social events) are sized and faded by recency instead of a
+        # flat placeholder -- newer events draw bigger and more opaque,
+        # older ones smaller and fainter, so recent activity visually
+        # stands out rather than looking identical to a 5-year-old data point.
+        has_severity = pd.notna(event['severity_score'])
+        significance = event['severity_score'] if has_severity else recency_score.get(idx, 5.0)
+        fill_opacity = 0.8 if has_severity else max(0.35, min(0.85, recency_score.get(idx, 5.0) / 10))
         color = b.type_color(event['event_category'])
         # Escape user/source-controlled text before embedding in raw popup
         # HTML (folium.Popup renders it unescaped) -- narrative_summary and
@@ -1067,7 +1101,7 @@ def render_unified_map(df):
             location=[lat, lon], radius=4 + (significance / 1.5),
             popup=folium.Popup(popup_text, max_width=340),
             color=color, fill=True, fillColor=color,
-            fillOpacity=0.8, weight=1, opacity=0.9,
+            fillOpacity=fill_opacity, weight=1, opacity=min(0.9, fill_opacity + 0.1),
         ).add_to(m)
 
     st_folium(m, width=1200, height=650, key="unified_map")
