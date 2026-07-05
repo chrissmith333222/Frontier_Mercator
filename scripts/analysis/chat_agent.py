@@ -69,12 +69,17 @@ returns -- cite the source, date, and country for any fact you draw from it.
 2. Use the web_search tool for anything current-events-related, or anything the platform's own data \
 doesn't cover. Say clearly when a claim comes from the open web rather than the platform's curated data.
 3. If the user asks for "a report," "a brief," "a write-up," "a summary document," or any other \
-document-shaped deliverable -- not just when they explicitly say "a file" or "a PDF" -- always call \
-export_pdf (or export_excel for tabular/data-heavy output) and let the file download, rather than \
-printing the report as inline chat text. A "report" is a downloadable document by default on this \
-platform, never a wall of chat text: if you find yourself about to write several paragraphs or a long \
-structured breakdown in your reply, stop and call export_pdf with that same content as the file's \
-sections instead. Reserve inline text for direct questions and short answers.
+document-shaped deliverable -- not just when they explicitly say "a file" or "a PDF" -- always \
+produce a downloadable file, never inline chat text. Specifically: for an overall country report, \
+investment brief, or political/risk characterization of a SINGLE country, call \
+generate_country_intelligence_brief rather than assembling your own from search results -- it draws \
+on the platform's full dataset for that country (risk scorecard, political/security landscape, macro \
+overview, investment activity, AI pattern analysis), not just whatever search_intelligence_data \
+happened to return in this conversation. For anything else document-shaped (a custom research \
+question, a cross-country comparison, an ad-hoc write-up), use export_pdf (or export_excel for \
+tabular/data-heavy output). If you find yourself about to write several paragraphs or a long \
+structured breakdown in your reply, stop and call the appropriate tool instead. Reserve inline text \
+for direct questions and short answers.
 4. Never fabricate a citation, event, or data point. If you don't have grounding for a claim, say so.
 5. This is a research aid, not a source of investment advice -- if asked to recommend a specific \
 trade or allocation decision, describe what the data/research shows and let the analyst decide.
@@ -167,8 +172,29 @@ _PDF_TOOL = {
     },
 }
 
+_COUNTRY_BRIEF_TOOL = {
+    "name": "generate_country_intelligence_brief",
+    "description": (
+        "Generates the platform's standard Country Intelligence Brief PDF for one country -- a "
+        "comprehensive, institutional-style report covering the risk scorecard, political/security "
+        "landscape, macroeconomic overview, investment activity, and AI pattern analysis (when "
+        "cached). Use this INSTEAD OF assembling your own report/export_pdf whenever the user asks "
+        "for an overall country report, investment brief, or political/risk characterization of a "
+        "single country -- it draws on the platform's full dataset for that country, not just "
+        "whatever search_intelligence_data happens to return in this conversation."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "country": {"type": "string", "description": "Country name, e.g. 'Kenya', 'Mozambique'."},
+        },
+        "required": ["country"],
+    },
+}
+
 TOOLS = [
     _SEARCH_TOOL,
+    _COUNTRY_BRIEF_TOOL,
     _EXCEL_TOOL,
     _PDF_TOOL,
     {"type": "web_search_20250305", "name": "web_search", "max_uses": 3},
@@ -313,6 +339,36 @@ def _export_pdf(input_: dict) -> tuple[str, dict]:
     return confirmation, file_record
 
 
+def _generate_country_brief(df: pd.DataFrame, input_: dict) -> tuple[str, dict | None]:
+    """Wraps the platform's standard Country Intelligence Brief generator
+    (scripts/reports/pdf_report.py -- risk scorecard, political/security
+    landscape, macro overview, investment activity, AI pattern analysis)
+    so the chat assistant produces the SAME comprehensive report as the
+    Reports tab's "Generate Country Brief" button, rather than assembling
+    its own shallower version from whatever search_intelligence_data
+    happened to return in this conversation (Chris: a chat-generated
+    report "seemed to almost explicitly be pulling ACLED data" instead of
+    a comprehensive investment/political risk picture)."""
+    from scripts.lib.world_countries import ALL_COUNTRIES
+    from scripts.reports.pdf_report import generate_country_brief
+
+    country = str(input_.get("country", "")).strip()
+    valid_names = {name for _iso3, (name, _region, _mandate) in ALL_COUNTRIES.items()}
+    if country not in valid_names:
+        # Case-insensitive fallback match before giving up -- the model
+        # may pass "kenya" or "KENYA" rather than the exact "Kenya".
+        match = next((name for name in valid_names if name.lower() == country.lower()), None)
+        if match is None:
+            return f"'{country}' is not a recognized country name in this platform's dataset.", None
+        country = match
+
+    pdf_bytes = generate_country_brief(df, country)
+    filename = f"{country.replace(' ', '_')}_Intelligence_Brief.pdf"
+    confirmation = f"Country Intelligence Brief for {country} generated ({filename})."
+    file_record = {"filename": filename, "mime": "application/pdf", "bytes": pdf_bytes}
+    return confirmation, file_record
+
+
 def _to_plain_block(block) -> dict:
     if isinstance(block, dict):
         return block
@@ -324,6 +380,11 @@ def _to_plain_block(block) -> dict:
 def _execute_tool(name: str, tool_input: dict, df: pd.DataFrame, generated_files: list) -> str:
     if name == "search_intelligence_data":
         return _search_intelligence_data(df, tool_input)
+    if name == "generate_country_intelligence_brief":
+        confirmation, file_record = _generate_country_brief(df, tool_input)
+        if file_record:
+            generated_files.append(file_record)
+        return confirmation
     if name == "export_excel":
         confirmation, file_record = _export_excel(tool_input)
         generated_files.append(file_record)
