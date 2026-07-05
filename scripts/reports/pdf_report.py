@@ -45,6 +45,25 @@ from scripts.lib.world_countries import ALL_COUNTRIES
 
 _NAME_TO_ISO3 = {name: iso3 for iso3, (name, _region, _mandate) in ALL_COUNTRIES.items()}
 _ANALYSIS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "analysis"
+_SCORECARD_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "scorecards"
+
+
+def _load_scorecard(country: str) -> dict | None:
+    """Reads a pre-generated risk scorecard (scripts/analytics/risk_scorecard.py)
+    for `country`, if one exists -- same cache the dashboard's Risk
+    Scorecard badges read from. Previously only shown in the Streamlit UI,
+    never in the PDF itself, which left the printed brief without the
+    single "how bad is this" number an institutional readahead leads with."""
+    iso3 = _NAME_TO_ISO3.get(country)
+    if not iso3:
+        return None
+    path = _SCORECARD_DIR / f"{iso3}_scorecard.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
 
 
 def _load_cached_assessment(country: str) -> dict | None:
@@ -291,6 +310,83 @@ def _investment_table(investment_scope: pd.DataFrame, limit: int = 10) -> Table 
     return table
 
 
+def _scorecard_badges_table(scorecard: dict | None) -> Table | None:
+    """Renders the decomposed 0-10 risk scorecard (Overall/Security/
+    Political Stability/Economic) as color-coded badges -- the same
+    severity palette used everywhere else on this dashboard/report, so a
+    reader gets the "how bad is this" read without parsing a paragraph
+    first. Returns None if no scorecard is cached for this country."""
+    if not scorecard:
+        return None
+    scores = scorecard["scores"]
+    badges = [
+        ("Overall", scorecard["overall_risk"]),
+        ("Security", scores["security_risk"]),
+        ("Political Stability", scores["political_stability_risk"]),
+        ("Economic", scores["economic_risk"]),
+    ]
+    header = [Paragraph(label, CELL_HEADER_STYLE) for label, _ in badges]
+    values = []
+    for _label, val in badges:
+        style = ParagraphStyle(
+            "ScoreVal", parent=CELL_STYLE, textColor=_severity_color(val),
+            fontName="Helvetica-Bold", fontSize=13, alignment=1,
+        )
+        values.append(Paragraph(f"{val:.1f}", style))
+    table = Table([header, values], colWidths=[1.7 * inch] * 4)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("TEXTCOLOR", (0, 0), (-1, 0), TEXT_PRIMARY),
+        ("BACKGROUND", (0, 1), (-1, 1), PANEL),
+        ("FONTSIZE", (0, 0), (-1, 0), 8.5),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("GRID", (0, 0), (-1, -1), 0.5, BORDER),
+    ]))
+    return table
+
+
+def _executive_summary_flowables(
+    scorecard: dict | None, assessment: dict | None,
+    conflict_scope: pd.DataFrame, econ_scope: pd.DataFrame, investment_scope: pd.DataFrame,
+) -> list:
+    """A 3-5 sentence synthesis at the top of the brief -- the "read this
+    first" paragraph an institutional readahead (portfolio memo, sovereign
+    risk note) leads with, rather than making the reader assemble the
+    picture themselves from tables. Prefers the AI-synthesized trend
+    summary + top risk flag when a cached assessment exists; falls back to
+    a plain data-driven summary (event/investment counts) when it doesn't,
+    so every brief gets SOME framing sentence rather than jumping straight
+    into raw tables."""
+    parts = []
+    if assessment:
+        analysis = assessment["analysis"]
+        if analysis.get("trend_summary"):
+            parts.append(analysis["trend_summary"])
+        if analysis.get("risk_flags"):
+            parts.append(f"Most notable risk flag: {analysis['risk_flags'][0]}")
+    else:
+        n_conflict, n_econ, n_invest = len(conflict_scope), len(econ_scope), len(investment_scope)
+        parts.append(
+            f"This scope has {n_conflict:,} conflict/security event(s), {n_econ:,} macroeconomic "
+            f"indicator reading(s), and {n_invest:,} investment/development-finance record(s) on file "
+            f"in the current dataset. No AI-synthesized pattern analysis has been generated for this "
+            f"scope yet -- see the tables below for the underlying data."
+        )
+    if scorecard:
+        parts.append(
+            f"Overall risk score: {scorecard['overall_risk']:.1f}/10 "
+            f"({b.severity_label(scorecard['overall_risk'])})."
+        )
+    return [
+        Paragraph("Executive Summary", SECTION_STYLE),
+        Paragraph(" ".join(parts), BODY_STYLE),
+        Spacer(1, 8),
+    ]
+
+
 def _analysis_flowables(assessment: dict | None) -> list:
     """Renders the cached AI pattern-analysis section (see
     scripts/analysis/reasoning_agent.py) if one exists for this country.
@@ -349,12 +445,19 @@ def _footer_flowables(has_ai_analysis: bool = False) -> list:
     ]
 
 
-def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame, assessment: dict | None = None) -> bytes:
+def _build_pdf(
+    title: str, subtitle: str, scope: pd.DataFrame,
+    assessment: dict | None = None, scorecard: dict | None = None,
+) -> bytes:
     """`scope` is the full merged multi-source dataset already filtered to a
     country or region -- split here into conflict events (for the severity
     summary/table) and economic indicators (for the macro snapshot).
-    `assessment` is an optional cached AI pattern-analysis dict (country
-    briefs only -- see scripts/analysis/reasoning_agent.py)."""
+    `assessment` is an optional cached AI pattern-analysis dict and
+    `scorecard` an optional cached risk scorecard (both country briefs
+    only -- see scripts/analysis/reasoning_agent.py and
+    scripts/analytics/risk_scorecard.py). Leads with an Executive Summary
+    and the risk-score badges, institutional-readahead style, rather than
+    opening straight into raw tables."""
     conflict_scope = scope[scope["event_category"].isin(b.CONFLICT_CATEGORIES)]
     econ_scope = scope[scope["event_category"] == b.ECON_CATEGORY]
     investment_scope = scope[scope["event_category"] == "investment"]
@@ -367,8 +470,16 @@ def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame, assessment: dict 
     )
 
     story = _header_flowables(title, subtitle)
+    story.extend(_executive_summary_flowables(scorecard, assessment, conflict_scope, econ_scope, investment_scope))
+
+    scorecard_table = _scorecard_badges_table(scorecard)
+    if scorecard_table is not None:
+        story.append(Paragraph("Risk Scorecard", SECTION_STYLE))
+        story.append(scorecard_table)
+        story.append(Spacer(1, 8))
 
     summary_table, date_range = _summary_table(conflict_scope)
+    story.append(Paragraph("Political & Security Landscape", SECTION_STYLE))
     if date_range:
         story.append(Paragraph(f"<b>Reporting period:</b> {date_range}", BODY_STYLE))
         story.append(Spacer(1, 6))
@@ -376,7 +487,7 @@ def _build_pdf(title: str, subtitle: str, scope: pd.DataFrame, assessment: dict 
 
     macro_table = _macro_snapshot_table(econ_scope)
     if macro_table is not None:
-        story.append(Paragraph("Macroeconomic Snapshot", SECTION_STYLE))
+        story.append(Paragraph("Economic Overview", SECTION_STYLE))
         story.append(macro_table)
 
     investment_table = _investment_table(investment_scope)
@@ -403,7 +514,8 @@ def generate_country_brief(df: pd.DataFrame, country: str) -> bytes:
     title = f"{country} — Country Intelligence Brief"
     subtitle = "Frontier Mercator Group | Emerging Market Intelligence"
     assessment = _load_cached_assessment(country)
-    return _build_pdf(title, subtitle, scope, assessment=assessment)
+    scorecard = _load_scorecard(country)
+    return _build_pdf(title, subtitle, scope, assessment=assessment, scorecard=scorecard)
 
 
 def generate_regional_brief(df: pd.DataFrame, region: str) -> bytes:
