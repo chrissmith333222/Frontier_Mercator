@@ -388,24 +388,25 @@ def _executive_summary_flowables(
 
 
 def _analysis_flowables(assessment: dict | None) -> list:
-    """Renders the cached AI pattern-analysis section (see
-    scripts/analysis/reasoning_agent.py) if one exists for this country.
-    Returns an empty list when no assessment is cached -- country briefs
-    without one just fall back to the statistical snapshot, same as
-    before this section existed."""
+    """Renders the cross-cutting parts of the cached AI pattern-analysis
+    (see scripts/analysis/reasoning_agent.py) that don't belong to one
+    specific section -- notable relationships spanning categories, risk
+    flags, and data caveats. The per-dimension narrative paragraphs
+    (security/political-stability/economic/investment analysis) are
+    rendered inline within their own sections instead (see _build_pdf) --
+    BTI-style, a score paired with its explanation, not a separate wall of
+    text at the end. Returns an empty list when no assessment is cached."""
     if not assessment:
         return []
     analysis = assessment["analysis"]
     flowables = [
-        Paragraph("AI-Synthesized Pattern Analysis", SECTION_STYLE),
+        Paragraph("Notable Relationships & Risk Flags", SECTION_STYLE),
         Paragraph(
             f"Generated {assessment['generated_at'][:10]} from {assessment['total_events_analyzed']:,} "
-            f"ingested events. Preliminary statistical synthesis grounded in the data below -- "
+            f"ingested events. Preliminary statistical synthesis grounded in the data above -- "
             f"not an investment recommendation or forecast.",
             DISCLAIMER_STYLE,
         ),
-        Spacer(1, 4),
-        Paragraph(analysis.get("trend_summary", ""), BODY_STYLE),
     ]
     if analysis.get("key_relationships"):
         flowables.append(Spacer(1, 4))
@@ -478,22 +479,41 @@ def _build_pdf(
         story.append(scorecard_table)
         story.append(Spacer(1, 8))
 
+    analysis = assessment["analysis"] if assessment else {}
+
     summary_table, date_range = _summary_table(conflict_scope)
     story.append(Paragraph("Political & Security Landscape", SECTION_STYLE))
     if date_range:
         story.append(Paragraph(f"<b>Reporting period:</b> {date_range}", BODY_STYLE))
         story.append(Spacer(1, 6))
     story.append(summary_table)
+    # BTI-style pairing: the quantitative snapshot above, then a written
+    # paragraph explaining what specifically drives it -- Chris's reference
+    # example (Bertelsmann Transformation Index) pairs every numeric score
+    # with plain-language analysis rather than leaving the reader to
+    # interpret a table alone.
+    if analysis.get("security_analysis"):
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(analysis["security_analysis"], BODY_STYLE))
+    if analysis.get("political_stability_analysis"):
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(analysis["political_stability_analysis"], BODY_STYLE))
 
     macro_table = _macro_snapshot_table(econ_scope)
     if macro_table is not None:
         story.append(Paragraph("Economic Overview", SECTION_STYLE))
         story.append(macro_table)
+        if analysis.get("economic_analysis"):
+            story.append(Spacer(1, 6))
+            story.append(Paragraph(analysis["economic_analysis"], BODY_STYLE))
 
     investment_table = _investment_table(investment_scope)
     if investment_table is not None:
         story.append(Paragraph("Notable Development Finance Activity", SECTION_STYLE))
         story.append(investment_table)
+        if analysis.get("investment_analysis"):
+            story.append(Spacer(1, 6))
+            story.append(Paragraph(analysis["investment_analysis"], BODY_STYLE))
 
     story.append(Paragraph("Highest-Severity Events", SECTION_STYLE))
     if len(conflict_scope) > 0:

@@ -71,10 +71,16 @@ Ground rules, followed strictly:
 knowledge about the country's history, politics, or economy that isn't reflected in the data given.
 2. If the data is thin, contradictory, or doesn't support a conclusion, say so explicitly rather \
 than filling the gap with plausible-sounding speculation.
-3. Every claim in "key_relationships" and "risk_flags" must be traceable to specific events in the \
-data -- reference them by date and source (e.g. "ACLED, 2026-03-14").
+3. Every claim in "key_relationships", "risk_flags", and the four dimension-analysis fields must be \
+traceable to specific events in the data -- reference them by date and source (e.g. "ACLED, 2026-03-14").
 4. This is a preliminary statistical/pattern synthesis, not a finished investment recommendation. \
 Do not tell the reader whether to invest; describe what the data shows.
+5. The four dimension-analysis fields (security_analysis, political_stability_analysis, \
+economic_analysis, investment_analysis) are meant to read like an institutional country-risk report's \
+section write-ups (e.g. the Bertelsmann Transformation Index format Chris uses as a reference: a \
+numeric score paired with a plain-language paragraph explaining what specifically drives it) -- write \
+in that register: substantive, specific, citing the actual events/figures behind the assessment, not \
+generic boilerplate that could apply to any country.
 
 Record your assessment using the record_country_assessment tool."""
 
@@ -87,6 +93,30 @@ _ASSESSMENT_TOOL = {
             "trend_summary": {
                 "type": "string",
                 "description": "3-5 sentences on the overall pattern across categories in the given window.",
+            },
+            "security_analysis": {
+                "type": "string",
+                "description": "2-4 sentences of plain-language analysis specifically explaining the "
+                                "security/conflict picture -- what's driving the Security risk score, "
+                                "citing specific conflict/explosion events by date and source.",
+            },
+            "political_stability_analysis": {
+                "type": "string",
+                "description": "2-4 sentences specifically on political stability -- protest/civil "
+                                "unrest and political-violence-targeting-civilians patterns, citing "
+                                "specific events by date and source.",
+            },
+            "economic_analysis": {
+                "type": "string",
+                "description": "2-4 sentences specifically on the macroeconomic picture -- what the "
+                                "latest inflation/current account/debt/GDP growth figures show, citing "
+                                "the specific indicator values and their source (World Bank/IMF).",
+            },
+            "investment_analysis": {
+                "type": "string",
+                "description": "2-4 sentences specifically on investment/development-finance activity "
+                                "-- who is financing what in this country, citing specific projects, "
+                                "financiers, sectors, and dates from the data.",
             },
             "key_relationships": {
                 "type": "array",
@@ -106,7 +136,10 @@ _ASSESSMENT_TOOL = {
                                 "confidence is low.",
             },
         },
-        "required": ["trend_summary", "key_relationships", "risk_flags", "data_caveats"],
+        "required": [
+            "trend_summary", "security_analysis", "political_stability_analysis",
+            "economic_analysis", "investment_analysis", "key_relationships", "risk_flags", "data_caveats",
+        ],
     },
 }
 

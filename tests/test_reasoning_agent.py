@@ -93,6 +93,10 @@ class _FakeClient:
 
 VALID_ANALYSIS = {
     "trend_summary": "Mixed signal: continued Chinese-financed infrastructure alongside episodic border conflict.",
+    "security_analysis": "Border clashes reported (ACLED, 2026-03-14) with no fatalities recorded.",
+    "political_stability_analysis": "No protest/civil-unrest events in this window.",
+    "economic_analysis": "GDP growth reported at 5.2% (World Bank, 2025).",
+    "investment_analysis": "China Eximbank financed a road project (AidData, 2026-01-10).",
     "key_relationships": ["China Eximbank financed a road project (AidData, 2026-01-10) in the same window as border clashes (ACLED, 2026-03-14)."],
     "risk_flags": ["Border-area conflict event within the same reporting window as active development finance."],
     "data_caveats": "Only 3 events in this window; not enough to establish a trend with confidence.",
@@ -150,6 +154,33 @@ def test_generate_assessment_reads_tool_use_input():
     # Confirm the tool was actually forced, not left optional.
     assert fake_client.messages.last_call_kwargs["tool_choice"]["name"] == "record_country_assessment"
     print("✓ test_generate_assessment_reads_tool_use_input passed")
+
+
+def test_generate_assessment_includes_per_dimension_analysis():
+    """The BTI-style pairing (score + written paragraph per dimension) --
+    security_analysis/political_stability_analysis/economic_analysis/
+    investment_analysis must all come back so pdf_report.py can render
+    them next to their corresponding scorecard section."""
+    db_path = _make_temp_kb()
+    import scripts.knowledge.queries as queries_module
+
+    fake_client = _FakeClient(VALID_ANALYSIS)
+
+    def _snapshot_from_temp(iso3, db_path_arg=db_path):
+        return queries_module.country_snapshot(iso3, db_path=db_path_arg)
+
+    import scripts.analysis.reasoning_agent as agent_module
+    original_snapshot_fn = agent_module.country_snapshot
+    agent_module.country_snapshot = _snapshot_from_temp
+    try:
+        result = generate_country_assessment("KEN", "Kenya", client=fake_client)
+    finally:
+        agent_module.country_snapshot = original_snapshot_fn
+
+    for field in ["security_analysis", "political_stability_analysis", "economic_analysis", "investment_analysis"]:
+        assert field in result["analysis"]
+        assert len(result["analysis"][field]) > 0
+    print("✓ test_generate_assessment_includes_per_dimension_analysis passed")
 
 
 VALID_CROSS_CUTTING_ANALYSIS = {
