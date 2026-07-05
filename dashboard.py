@@ -1541,6 +1541,19 @@ if not events:
 
 df = prepare_dataframe(events)
 
+# Chat lives in the sidebar (not a tab) so it's genuinely persistent --
+# visible on every page/tab, not something you have to click into. Chris:
+# "that inset window should be fixed on the screen." Streamlit doesn't
+# support a truly floating overlay without a custom component, but the
+# sidebar IS visible regardless of which main-content tab or ?view= page
+# is active, which is the closest native equivalent -- rendered here,
+# before the view router, so it shows on About/Contact too, not just the
+# main dashboard tabs.
+with st.sidebar:
+    st.markdown("---")
+    with st.expander("Research Assistant", expanded=False):
+        render_research_assistant(df)
+
 # Simple query-param page router -- About and Contact Us are deliberately
 # NOT part of the main st.tabs() row anymore. The Unified Intelligence Map
 # renders once, below the whole tabs widget (not inside any single tab),
@@ -1589,9 +1602,9 @@ news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")
 
-dash1, dash2, dash3, dash4, dash_longform, dash_chat, dash5 = st.tabs(
+dash1, dash2, dash3, dash4, dash_longform, dash5 = st.tabs(
     ["Conflict & Security", "Markets & Economy", "News & Social Signal",
-     "Great Power Competition", "Long Form Pieces", "Research Assistant", "Reports"]
+     "Great Power Competition", "Long Form Pieces", "Reports"]
 )
 
 with dash1:
@@ -1608,9 +1621,6 @@ with dash4:
 
 with dash_longform:
     render_research_analysis_tab(load_longform_articles())
-
-with dash_chat:
-    render_research_assistant(df)
 
 with dash5:
     st.markdown("### Intelligence Briefs")
