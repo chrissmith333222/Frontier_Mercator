@@ -168,6 +168,104 @@ def render_research_analysis_tab(articles: list[dict]):
             st.markdown("---")
 
 
+def render_about_page():
+    """Standalone page (routed via ?view=about, see the header nav and the
+    bottom of this file) -- deliberately NOT rendered as one of the main
+    st.tabs() entries, since the Unified Intelligence Map lives below the
+    whole tabs widget as a page-level footer and would otherwise show up
+    underneath this static page too. Chris: "I don't need to see the
+    unified intelligence map on the 'about' or 'contact us' pages.\""""
+    st.markdown('<div id="fm-about"></div>', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="fm-about-hero">
+        <p>In the sixteenth century, a cartographer named Gerardus Mercator reimagined how the
+        world could be viewed — flattening a sphere onto a plane so that distant shores, unfamiliar
+        coastlines, and the paths between them could finally be read at a glance. His projection
+        did not simplify the world, but it made visible what before was unseen.</p>
+        <p>Frontier Mercator Group carries that legacy into an age where the map is no longer
+        paper, and the terrain is no longer only geography. We believe that instinct and vision
+        have never mattered more than they do now, in the frontier markets of the globe — where
+        the world's next chapters of growth, risk, and opportunity are already being written, often
+        long before they reach wider attention. Frontier Mercator stands at that frontier:
+        synthesizing conflict, capital, and the quiet movements of power into a single strategic
+        vantage point.</p>
+        <p>Not to predict the future. To see the present clearly enough that the future stops
+        being a surprise.</p>
+        <p class="fm-about-signoff">FRONTIER MERCATOR — INTELLIGENCE FOR THE FRONTIER</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("---")
+
+    st.markdown("### About This Platform")
+    st.markdown("""
+    Frontier Mercator Group's intelligence platform provides structured, real-time analysis of
+    conflict, political risk, macroeconomic conditions, and emerging market trends across the
+    world's frontier markets.
+
+    #### Data Sources
+    - **ACLED:** Armed Conflict Location & Event Data — geo-coded conflict and protest events
+    - **GDELT:** global event database, 15-minute update cadence
+    - **World Bank / IMF:** GDP growth, inflation, debt, current account, unemployment
+    - ReliefWeb (UN OCHA humanitarian/displacement data) — pending appname approval
+
+    #### Methodology
+    Events are normalized to a common schema. Conflict events are scored 0-10 using event-type
+    classification and fatality/conflict-intensity weighting; economic indicators are shown as
+    reported, not severity-scored.
+
+    #### Intelligence Standards
+    - All analysis follows IC tradecraft conventions
+    - Confidence levels: "we assess," "reporting indicates," "key intelligence gap"
+    - Source attribution required for all claims
+    - Designed for professional use in investment and national security contexts
+
+    #### Satellite Imagery & OSINT Resources
+    The Unified Intelligence Map (on the main dashboard) includes a **Recent Satellite** layer
+    (NASA GIBS, ~1-day-old MODIS imagery, free/no-auth) alongside the high-resolution Esri
+    base layer — use the layer control in the map's top-right corner to switch. For deeper,
+    continuously-updated OSINT on specific conflict zones, these organizations already do
+    this well and are worth going directly to rather than duplicating their work:
+    - **[Institute for the Study of War](https://understandingwar.org)** — daily control-of-terrain
+      maps for Ukraine and the Middle East
+    - **[Liveuamap](https://liveuamap.com)** — crowd-sourced, geolocated live conflict event maps
+      (Ukraine, Middle East, and other active theaters)
+    - **[Critical Threats Project](https://criticalthreats.org)** (AEI) — Iran/Middle East-focused analysis
+    - **[UNOSAT](https://unosat.org)** — UN satellite-based damage assessments for conflict/disaster zones
+    - **[Sentinel Hub EO Browser](https://apps.sentinel-hub.com/eo-browser/)** — free Sentinel-1/2
+      satellite imagery (Sentinel-1 radar sees through cloud cover, useful for persistently
+      overcast conflict zones); planned as a proper ingested data source, not just a link
+    - **[Bellingcat](https://www.bellingcat.com)** — open-source investigation methodology and findings
+    """)
+
+
+def render_contact_page():
+    """Standalone page (routed via ?view=contact) -- see render_about_page's
+    docstring for why this isn't one of the main st.tabs() entries."""
+    st.markdown('<div id="fm-contact"></div>', unsafe_allow_html=True)
+    # Everything inside ONE st.markdown call so the wrapping <div> actually
+    # contains the content in the DOM -- Streamlit renders each st.markdown
+    # call as its own isolated container, so a <div> opened in one call
+    # can't wrap content from a separate later call.
+    st.markdown(
+        """
+        <div class="fm-watermark-bg">
+        <h3>Contact Us</h3>
+        <p>Frontier Mercator Group works directly with investors, analysts, and institutions
+        operating across the world's frontier markets. For inquiries about custom research,
+        platform access, or partnership opportunities, reach out below.</p>
+        <p><b>Contact:</b>
+        <a href="mailto:research@frontiermercator.com">research@frontiermercator.com</a></p>
+        <p>Distribution of Frontier Mercator Group intelligence products is restricted to
+        authorized recipients. Reach out to discuss access.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def _emblem_base64() -> str:
     import base64
     return base64.b64encode((Path(__file__).parent / "static" / "fm_emblem.svg").read_bytes()).decode("ascii")
@@ -1406,11 +1504,13 @@ st.markdown('<div id="fm-top"></div>', unsafe_allow_html=True)
 st.markdown(
     f"""
     <div class="fm-topbar">
-        <a href="#fm-top" class="fm-topbar-brand">
+        <a href="?" class="fm-topbar-brand">
             <span class="fm-topbar-emblem">{_load_text(str(Path(__file__).parent / "static" / "fm_emblem.svg"))}</span>
             <span class="fm-topbar-brand-text">FRONTIER MERCATOR</span>
         </a>
-        <a href="#fm-top">Home</a>
+        <a href="?">Home</a>
+        <a href="?view=about">About</a>
+        <a href="?view=contact">Contact</a>
     </div>
     """,
     unsafe_allow_html=True,
@@ -1425,6 +1525,27 @@ if not events:
     st.stop()
 
 df = prepare_dataframe(events)
+
+# Simple query-param page router -- About and Contact Us are deliberately
+# NOT part of the main st.tabs() row anymore. The Unified Intelligence Map
+# renders once, below the whole tabs widget (not inside any single tab),
+# so when About/Contact were tabs in that same row the map always showed
+# up underneath them too, regardless of which tab was selected -- Streamlit
+# tabs don't support per-tab conditional content outside the tabs
+# themselves. Routing About/Contact as separate pages instead is the clean
+# fix (see render_about_page/render_contact_page's docstrings).
+view = st.query_params.get("view", "dashboard")
+
+if view == "about":
+    render_about_page()
+    render_footer(df)
+    st.stop()
+elif view == "contact":
+    render_contact_page()
+    render_footer(df)
+    st.stop()
+
+# --- Dashboard view (default, view == "dashboard") ---
 
 # Sidebar filters (apply to the Conflict & Security dashboard)
 st.sidebar.markdown("### Filters")
@@ -1453,9 +1574,9 @@ news_df = df[df['event_category'].isin(NEWS_CATEGORIES)].copy()
 
 st.markdown("---")
 
-dash1, dash2, dash3, dash4, dash_longform, dash_chat, dash5, dash6, dash7 = st.tabs(
+dash1, dash2, dash3, dash4, dash_longform, dash_chat, dash5 = st.tabs(
     ["Conflict & Security", "Markets & Economy", "News & Social Signal",
-     "Great Power Competition", "Research & Analysis", "Research Assistant", "Reports", "About", "Contact Us"]
+     "Great Power Competition", "Research & Analysis", "Research Assistant", "Reports"]
 )
 
 with dash1:
@@ -1513,25 +1634,16 @@ with dash5:
                 mime="application/pdf", key="dl_country_brief",
             )
 
-        assessment = load_cached_assessment(country_choice)
-        if assessment:
-            analysis = assessment["analysis"]
-            st.markdown("##### AI-Synthesized Pattern Analysis")
-            st.caption(
-                f"Generated {assessment['generated_at'][:10]} from {assessment['total_events_analyzed']:,} "
-                f"events — preliminary statistical synthesis, not an investment recommendation."
-            )
-            st.markdown(analysis["trend_summary"])
-            if analysis.get("key_relationships"):
-                st.markdown("**Notable relationships**")
-                for item in analysis["key_relationships"]:
-                    st.markdown(f"- {item}")
-            if analysis.get("risk_flags"):
-                st.markdown("**Risk flags**")
-                for item in analysis["risk_flags"]:
-                    st.markdown(f"- {item}")
-            if analysis.get("data_caveats"):
-                st.caption(f"Data caveats: {analysis['data_caveats']}")
+        # Deliberately no inline text preview of the AI-synthesized pattern
+        # analysis here -- Chris: "I don't want the country reports to
+        # actually publish as text on the reports tab... pull that off the
+        # active site page." Previously this rendered the full trend
+        # summary/risk flags as page text for whatever country happened to
+        # be the selectbox's default (alphabetically first), which read as
+        # a stale report stuck on the page rather than something the user
+        # asked for. The PDF (with its own Executive Summary section) is
+        # now the only way to see this content -- click "Generate Country
+        # Brief" above and download it.
 
         scorecard = load_scorecard(country_choice)
         if scorecard:
@@ -1585,23 +1697,17 @@ with dash5:
             "a recent coup or resource discovery\"). Generated offline via "
             "`scripts/analysis/reasoning_agent.py --query \"...\" --save`."
         )
+        # No inline text preview of the answer here either -- same fix as
+        # the Country Intelligence Brief section above (Chris doesn't want
+        # report content rendered as page text, only as a downloadable
+        # PDF). Just pick a question and generate the file.
         query_labels = {a["query"]: a for a in custom_analyses}
         query_choice = st.selectbox("Question", options=list(query_labels.keys()), key="custom_analysis_select")
         selected = query_labels[query_choice]
-        analysis = selected["analysis"]
         st.caption(
             f"Generated {selected['generated_at'][:10]} from {selected['events_retrieved']:,} "
             f"retrieved events — preliminary statistical synthesis, not an investment recommendation."
         )
-        st.markdown(analysis["answer"])
-        if analysis.get("countries_involved"):
-            st.markdown(f"**Countries involved:** {', '.join(analysis['countries_involved'])}")
-        if analysis.get("supporting_evidence"):
-            st.markdown("**Supporting evidence**")
-            for item in analysis["supporting_evidence"]:
-                st.markdown(f"- {item}")
-        if analysis.get("data_caveats"):
-            st.caption(f"Data caveats: {analysis['data_caveats']}")
         if st.button("Generate PDF", key="gen_custom_report"):
             pdf_bytes = generate_custom_report(selected)
             archive_report(pdf_bytes, report_type="custom", label=selected["query"])
@@ -1648,94 +1754,6 @@ with dash5:
                         file_name=f"Frontier_Mercator_{report['label'][:40].replace(' ', '_')}.pdf",
                         mime="application/pdf", key=f"dl_archive_{report['id']}",
                     )
-
-with dash6:
-    st.markdown('<div id="fm-about"></div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div class="fm-about-hero">
-        <p>In the sixteenth century, a cartographer named Gerardus Mercator reimagined how the
-        world could be viewed — flattening a sphere onto a plane so that distant shores, unfamiliar
-        coastlines, and the paths between them could finally be read at a glance. His projection
-        did not simplify the world, but it made visible what before was unseen.</p>
-        <p>Frontier Mercator Group carries that legacy into an age where the map is no longer
-        paper, and the terrain is no longer only geography. We believe that instinct and vision
-        have never mattered more than they do now, in the frontier markets of the globe — where
-        the world's next chapters of growth, risk, and opportunity are already being written, often
-        long before they reach wider attention. Frontier Mercator stands at that frontier:
-        synthesizing conflict, capital, and the quiet movements of power into a single strategic
-        vantage point.</p>
-        <p>Not to predict the future. To see the present clearly enough that the future stops
-        being a surprise.</p>
-        <p class="fm-about-signoff">FRONTIER MERCATOR — INTELLIGENCE FOR THE FRONTIER</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown("---")
-
-    st.markdown("### About This Platform")
-    st.markdown("""
-    Frontier Mercator Group's intelligence platform provides structured, real-time analysis of
-    conflict, political risk, macroeconomic conditions, and emerging market trends across the
-    world's frontier markets.
-
-    #### Data Sources
-    - **ACLED:** Armed Conflict Location & Event Data — geo-coded conflict and protest events
-    - **GDELT:** global event database, 15-minute update cadence
-    - **World Bank / IMF:** GDP growth, inflation, debt, current account, unemployment
-    - ReliefWeb (UN OCHA humanitarian/displacement data) — pending appname approval
-
-    #### Methodology
-    Events are normalized to a common schema. Conflict events are scored 0-10 using event-type
-    classification and fatality/conflict-intensity weighting; economic indicators are shown as
-    reported, not severity-scored.
-
-    #### Intelligence Standards
-    - All analysis follows IC tradecraft conventions
-    - Confidence levels: "we assess," "reporting indicates," "key intelligence gap"
-    - Source attribution required for all claims
-    - Designed for professional use in investment and national security contexts
-
-    #### Satellite Imagery & OSINT Resources
-    The Unified Intelligence Map (bottom of page) includes a **Recent Satellite** layer
-    (NASA GIBS, ~1-day-old MODIS imagery, free/no-auth) alongside the high-resolution Esri
-    base layer — use the layer control in the map's top-right corner to switch. For deeper,
-    continuously-updated OSINT on specific conflict zones, these organizations already do
-    this well and are worth going directly to rather than duplicating their work:
-    - **[Institute for the Study of War](https://understandingwar.org)** — daily control-of-terrain
-      maps for Ukraine and the Middle East
-    - **[Liveuamap](https://liveuamap.com)** — crowd-sourced, geolocated live conflict event maps
-      (Ukraine, Middle East, and other active theaters)
-    - **[Critical Threats Project](https://criticalthreats.org)** (AEI) — Iran/Middle East-focused analysis
-    - **[UNOSAT](https://unosat.org)** — UN satellite-based damage assessments for conflict/disaster zones
-    - **[Sentinel Hub EO Browser](https://apps.sentinel-hub.com/eo-browser/)** — free Sentinel-1/2
-      satellite imagery (Sentinel-1 radar sees through cloud cover, useful for persistently
-      overcast conflict zones); planned as a proper ingested data source, not just a link
-    - **[Bellingcat](https://www.bellingcat.com)** — open-source investigation methodology and findings
-    """)
-
-with dash7:
-    st.markdown('<div id="fm-contact"></div>', unsafe_allow_html=True)
-    # Everything inside ONE st.markdown call so the wrapping <div> actually
-    # contains the content in the DOM -- Streamlit renders each st.markdown
-    # call as its own isolated container, so a <div> opened in one call
-    # can't wrap content from a separate later call.
-    st.markdown(
-        """
-        <div class="fm-watermark-bg">
-        <h3>Contact Us</h3>
-        <p>Frontier Mercator Group works directly with investors, analysts, and institutions
-        operating across the world's frontier markets. For inquiries about custom research,
-        platform access, or partnership opportunities, reach out below.</p>
-        <p><b>Contact:</b>
-        <a href="mailto:research@frontiermercator.com">research@frontiermercator.com</a></p>
-        <p>Distribution of Frontier Mercator Group intelligence products is restricted to
-        authorized recipients. Reach out to discuss access.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 st.markdown("---")
 render_unified_map(df)
