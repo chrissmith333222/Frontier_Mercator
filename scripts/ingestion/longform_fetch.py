@@ -1,11 +1,14 @@
 """
 scripts/ingestion/longform_fetch.py
 
-Fetches the free, publicly-published RSS feeds of major outlets (The
-Economist, Foreign Affairs, Foreign Policy, NYT World, WSJ World) for the
-Research & Analysis tab -- Chris's ask for scholarly/policy/long-form
-reading material distinct from the event-driven News & Social Signal
-tab, presented WSJ/NYT-style with a thumbnail "grabber" image per piece.
+Fetches the free, publicly-published RSS feeds of policy/academic
+long-form outlets (The Economist, Foreign Affairs, Foreign Policy, JSTOR
+Daily, War on the Rocks) for the Research & Analysis tab. Chris
+deliberately narrowed this tab's scope: "I want to keep the research and
+analysis tab to be more purely...elevated, longer form stuff" -- general
+current-events newspaper coverage (NYT, WSJ) moved to the News & Social
+Signal tab instead (see scripts/ingestion/general_news_fetch.py), since
+this tab is for deep policy/academic reading, not daily news.
 
 Important scope boundary: this ONLY ever reads each outlet's own public
 RSS feed (headline + teaser/dek + link, exactly what any RSS reader
@@ -17,11 +20,12 @@ programmatically) and risks Chris's own accounts. If he wants the full
 text of a specific piece, the "Read full article" link takes him to the
 publisher's site where his own subscription/login applies normally.
 
-Not every outlet's feed follows the same image convention -- NYT and
-Foreign Affairs use <media:content>, Foreign Policy uses <enclosure>,
-WSJ and The Economist don't embed an image at all. _extract_image_url
-checks all the conventions this batch of feeds actually uses; add more
-if a new source needs one this doesn't already handle.
+Not every outlet's feed follows the same image convention -- Foreign
+Affairs uses <media:content>, Foreign Policy uses <enclosure>, The
+Economist/JSTOR Daily/War on the Rocks don't embed a per-article image
+at all. _extract_image_url checks all the conventions this batch of
+feeds actually uses; add more if a new source needs one this doesn't
+already handle.
 
 Usage (CLI):
     python scripts/ingestion/longform_fetch.py --output raw_longform.json
@@ -42,16 +46,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 import requests
 
 # (source name, feed URL) -- verified reachable and genuinely RSS (not an
-# HTML redirect) as of 2026-07-03. Brookings and Carnegie Endowment were
-# checked too but their most obvious feed URLs return their HTML homepage,
-# not RSS -- skipped rather than guessing at undocumented feed paths;
-# worth revisiting if their real feed URL is found later.
+# HTML redirect) as of 2026-07-03. Brookings, Carnegie Endowment, NBER,
+# Peterson Institute, Chatham House, RAND, Lawfare, CSIS, Stimson Center,
+# and National Interest were all checked too but their most obvious feed
+# URLs 403/404 or return an HTML homepage, not RSS -- skipped rather than
+# guessing at undocumented feed paths; worth revisiting if a real feed
+# URL for any of them turns up later.
 FEEDS = [
     ("The Economist", "https://www.economist.com/international/rss.xml"),
-    ("The New York Times", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"),
     ("Foreign Affairs", "https://www.foreignaffairs.com/rss.xml"),
     ("Foreign Policy", "https://foreignpolicy.com/feed/"),
-    ("The Wall Street Journal", "https://feeds.a.dj.com/rss/RSSWorldNews.xml"),
+    ("JSTOR Daily", "https://daily.jstor.org/feed/"),
+    ("War on the Rocks", "https://warontherocks.com/feed/"),
 ]
 
 _MEDIA_CONTENT_TAG = "{http://search.yahoo.com/mrss/}content"

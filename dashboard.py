@@ -985,10 +985,11 @@ def render_markets_dashboard(econ_df):
 
 def render_news_dashboard(news_df):
     st.markdown(
-        "Political/economic/diplomatic and social signal from GDELT plus dedicated news sources "
-        "(Infobae, Jeune Afrique, Bellingcat). Ranked by a significance score — not just recency — "
+        "Current-events news and social signal — GDELT, Infobae, Jeune Afrique, Bellingcat, The New "
+        "York Times, and The Wall Street Journal. Ranked by a significance score — not just recency — "
         "so the most important stories surface first, with a cap on how many any single source can "
-        "contribute to the top list, and no source is presented as a fixed feed of its most recent stories."
+        "contribute to the top list, and no source is presented as a fixed feed of its most recent "
+        "stories. For deeper policy/academic long-form reading, see the Research & Analysis tab."
     )
     if len(news_df) == 0:
         st.info("No news/social signal data loaded yet.")
@@ -1034,18 +1035,15 @@ def render_news_dashboard(news_df):
     tier_thresholds = compute_tier_thresholds(scored["significance_score"])
     TIER_LABELS = {"urgent": "Urgent", "top": "Top signal", "medium": "Notable"}
 
-    for _, event in top.iterrows():
+    # Same 3-column card-grid layout as the Research & Analysis tab
+    # (image on top, title/meta/body below) -- Chris asked for a
+    # consistent look-and-feel across both reading-material tabs.
+    cols = st.columns(3)
+    for i, (_, event) in enumerate(top.iterrows()):
         tier = significance_tier(event["significance_score"], tier_thresholds)
         card_class = f"fm-news-card-{tier or 'routine'}"
         tier_badge = f'<span class="fm-badge fm-badge-{tier}">{TIER_LABELS[tier]}</span>' if tier else ""
         image_url = event.get("image_url")
-        image_html = (
-            f'<img src="{image_url}" style="width:96px;height:96px;object-fit:cover;border-radius:4px;'
-            f'margin-right:0.75rem;flex-shrink:0;">' if pd.notna(image_url) else ""
-        )
-        source_link = (
-            f"[Read full source →]({event['source_url']})" if pd.notna(event.get('source_url')) else ""
-        )
         # Non-English sources (Infobae/Spanish, Jeune Afrique/French) carry
         # an English translation in narrative_summary_en when normalized
         # with --translate -- show English by default, with the original
@@ -1053,21 +1051,28 @@ def render_news_dashboard(news_df):
         translation = event.get("narrative_summary_en")
         has_translation = pd.notna(translation) and translation and translation != event['narrative_summary']
         display_text = translation if has_translation else event['narrative_summary']
-        st.markdown(
-            f'<div class="{card_class}" style="display:flex;align-items:flex-start;margin-bottom:1rem;">'
-            f'{image_html}<div>'
-            f"<div><strong>{event['country']}</strong> — {event['event_date']} &nbsp;·&nbsp; "
-            f"<em>{event['source']}</em>{tier_badge}</div>"
-            f"<div>{display_text}</div>"
-            f"</div></div>",
-            unsafe_allow_html=True,
-        )
-        if has_translation:
-            with st.expander(f"Show original ({event['source']})"):
-                st.markdown(event['narrative_summary'])
-        if source_link:
-            st.markdown(source_link)
-        st.markdown("---")
+
+        with cols[i % 3]:
+            if pd.notna(image_url):
+                st.markdown(
+                    f'<img src="{image_url}" style="width:100%;aspect-ratio:16/9;'
+                    f'object-fit:cover;border-radius:4px;margin-bottom:0.4rem;">',
+                    unsafe_allow_html=True,
+                )
+            st.markdown(
+                f'<div class="{card_class}">'
+                f"<div><strong>{event['country']}</strong> — {event['event_date']} &nbsp;·&nbsp; "
+                f"<em>{event['source']}</em>{tier_badge}</div>"
+                f"<div>{display_text}</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+            if has_translation:
+                with st.expander(f"Show original ({event['source']})"):
+                    st.markdown(event['narrative_summary'])
+            if pd.notna(event.get('source_url')):
+                st.markdown(f"[Read full source →]({event['source_url']})")
+            st.markdown("---")
 
 
 # Keyword heuristic for the Great Power Competition dashboard -- there's no
