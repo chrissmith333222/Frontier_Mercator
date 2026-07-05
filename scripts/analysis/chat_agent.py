@@ -52,6 +52,18 @@ from datetime import datetime, timezone
 import pandas as pd
 from dotenv import load_dotenv
 
+# Imported at module level (not lazily inside the functions that use them)
+# deliberately -- a lazy `import` executed for the first time inside
+# Streamlit's per-session script-rerun thread hit a real
+# "KeyError: 'scripts.branding'" import-machinery race the first time a
+# chat request exercised this code path (Python's import lock and
+# Streamlit's script-thread model don't mix well for a module's first
+# import happening off the main thread). Both of these are already
+# core, always-installed project dependencies (not optional/heavy
+# packages), so there's no cost to importing them eagerly here.
+from scripts.lib.world_countries import ALL_COUNTRIES
+from scripts.reports.pdf_report import generate_country_brief
+
 MAX_TURNS_PER_SESSION = 40
 DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
 MAX_TOOL_ROUNDS = 6
@@ -349,9 +361,6 @@ def _generate_country_brief(df: pd.DataFrame, input_: dict) -> tuple[str, dict |
     happened to return in this conversation (Chris: a chat-generated
     report "seemed to almost explicitly be pulling ACLED data" instead of
     a comprehensive investment/political risk picture)."""
-    from scripts.lib.world_countries import ALL_COUNTRIES
-    from scripts.reports.pdf_report import generate_country_brief
-
     country = str(input_.get("country", "")).strip()
     valid_names = {name for _iso3, (name, _region, _mandate) in ALL_COUNTRIES.items()}
     if country not in valid_names:

@@ -193,7 +193,7 @@ def test_run_chat_turn_collects_generated_file_from_export_tool():
 
 
 def test_generate_country_brief_produces_pdf_for_valid_country():
-    with patch("scripts.reports.pdf_report.generate_country_brief", return_value=b"%PDF-fake") as mock_gen:
+    with patch("scripts.analysis.chat_agent.generate_country_brief", return_value=b"%PDF-fake") as mock_gen:
         confirmation, file_record = _generate_country_brief(FIXTURE_DF, {"country": "Kenya"})
     mock_gen.assert_called_once()
     assert file_record["filename"] == "Kenya_Intelligence_Brief.pdf"
@@ -202,7 +202,7 @@ def test_generate_country_brief_produces_pdf_for_valid_country():
 
 
 def test_generate_country_brief_case_insensitive_match():
-    with patch("scripts.reports.pdf_report.generate_country_brief", return_value=b"%PDF-fake"):
+    with patch("scripts.analysis.chat_agent.generate_country_brief", return_value=b"%PDF-fake"):
         confirmation, file_record = _generate_country_brief(FIXTURE_DF, {"country": "kenya"})
     assert file_record["filename"] == "Kenya_Intelligence_Brief.pdf"
 
@@ -221,7 +221,7 @@ def test_run_chat_turn_calls_country_brief_tool():
         ),
         _FakeResponse([_FakeTextBlock("Here's the Kenya brief.")], stop_reason="end_turn"),
     ])
-    with patch("scripts.reports.pdf_report.generate_country_brief", return_value=b"%PDF-fake"):
+    with patch("scripts.analysis.chat_agent.generate_country_brief", return_value=b"%PDF-fake"):
         result = run_chat_turn(FIXTURE_DF, history=[], user_message="Give me a report on Kenya", client=client)
     assert len(result["generated_files"]) == 1
     assert result["generated_files"][0]["filename"] == "Kenya_Intelligence_Brief.pdf"
