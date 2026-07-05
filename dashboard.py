@@ -22,7 +22,7 @@ from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
-    compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier,
+    compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier, top_n_badges,
 )
 from scripts.analytics.conflict_signal_promotion import detect_corroborated_conflict_signals
 
@@ -1127,18 +1127,20 @@ def render_news_dashboard(news_df):
     source_mix = ", ".join(f"{src} ({n})" for src, n in top['source'].value_counts().items())
     st.caption(f"Source mix in this list: {source_mix}")
 
-    # Tiers are relative to this scope's own score distribution (not a
-    # fixed number) -- otherwise a ranked top-30 list, being mostly high
-    # scorers by construction, badges nearly everything the same tier.
-    tier_thresholds = compute_tier_thresholds(scored["significance_score"])
+    # Hard cap of 3 badges total across this list -- Chris: "I should only
+    # see the top three data points available for a specific tab marked
+    # that way." Rank 1 = Urgent, ranks 2-3 = Top signal, everything else
+    # gets no badge at all (replaces the earlier percentile-tier approach,
+    # which could still badge more than 3 items on a wide score spread).
+    badges_by_idx = top_n_badges(top["significance_score"], n=3)
     TIER_LABELS = {"urgent": "Urgent", "top": "Top signal", "medium": "Notable"}
 
     # Same 3-column card-grid layout as the Research & Analysis tab
     # (image on top, title/meta/body below) -- Chris asked for a
     # consistent look-and-feel across both reading-material tabs.
     cols = st.columns(3)
-    for i, (_, event) in enumerate(top.iterrows()):
-        tier = significance_tier(event["significance_score"], tier_thresholds)
+    for i, (idx, event) in enumerate(top.iterrows()):
+        tier = badges_by_idx.get(idx)
         card_class = f"fm-news-card-{tier or 'routine'}"
         tier_badge = f'<span class="fm-badge fm-badge-{tier}">{TIER_LABELS[tier]}</span>' if tier else ""
         image_url = event.get("image_url")
@@ -1217,11 +1219,24 @@ def render_greatpower_dashboard(df):
                 conflict_count = len(subset[subset['event_category'].isin(CONFLICT_CATEGORIES)])
                 st.metric("Conflict-Related", conflict_count)
 
-            top = subset.sort_values('event_date', ascending=False).head(20)
-            for _, event in top.iterrows():
+            # Ranked by significance, not just recency -- Chris: "mark/
+            # prioritize the...great power competition and Iran conflict
+            # data points by prioritization as well," capped at exactly 3
+            # badges per tab (see top_n_badges' docstring for why a hard
+            # cap beats a percentile tier here).
+            scored_subset = subset.copy()
+            scored_subset["significance_score"] = compute_significance_score(scored_subset)
+            top = scored_subset.sort_values("significance_score", ascending=False).head(20)
+            badges_by_idx = top_n_badges(top["significance_score"], n=3)
+            TIER_LABELS = {"urgent": "Urgent", "top": "Top signal"}
+
+            for idx, event in top.iterrows():
+                tier = badges_by_idx.get(idx)
+                tier_badge = f' <span class="fm-badge fm-badge-{tier}">{TIER_LABELS[tier]}</span>' if tier else ""
                 st.markdown(
                     f"**{event['country']}** — {event['event_date']} "
-                    f"*({b.type_label(event['event_category'])})*  \n{event['narrative_summary']}"
+                    f"*({b.type_label(event['event_category'])})*{tier_badge}  \n{event['narrative_summary']}",
+                    unsafe_allow_html=True,
                 )
                 st.markdown("---")
 

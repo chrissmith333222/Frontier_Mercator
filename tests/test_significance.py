@@ -23,6 +23,7 @@ from scripts.analytics.significance import (
     diversify_top_n,
     compute_tier_thresholds,
     significance_tier,
+    top_n_badges,
     SIGNIFICANCE_HOT_THRESHOLD,
 )
 
@@ -134,6 +135,28 @@ def test_high_absolute_score_gets_urgent_tier():
 def test_empty_scores_thresholds_never_match_anything():
     thresholds = compute_tier_thresholds(pd.Series([], dtype=float))
     assert significance_tier(10.0, thresholds) is None
+
+
+def test_top_n_badges_caps_at_exactly_three():
+    scores = pd.Series([9.0, 8.0, 7.0, 6.0, 5.0, 4.0], index=["a", "b", "c", "d", "e", "f"])
+    badges = top_n_badges(scores, n=3)
+    assert len(badges) == 3
+    assert badges["a"] == "urgent"
+    assert badges["b"] == "top"
+    assert badges["c"] == "top"
+    assert "d" not in badges and "e" not in badges and "f" not in badges
+
+
+def test_top_n_badges_handles_fewer_items_than_n():
+    scores = pd.Series([5.0, 3.0], index=["x", "y"])
+    badges = top_n_badges(scores, n=3)
+    assert len(badges) == 2
+    assert badges["x"] == "urgent"
+    assert badges["y"] == "top"
+
+
+def test_top_n_badges_empty_series_returns_empty_dict():
+    assert top_n_badges(pd.Series([], dtype=float)) == {}
 
 
 if __name__ == "__main__":

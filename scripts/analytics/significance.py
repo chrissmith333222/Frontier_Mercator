@@ -85,6 +85,25 @@ def compute_tier_thresholds(scores: pd.Series) -> dict:
     }
 
 
+def top_n_badges(scores: pd.Series, n: int = 3) -> dict:
+    """Returns {index: tier} for ONLY the top `n` scores in `scores`,
+    rank 1 gets 'urgent' and ranks 2-3 get 'top' -- everything else maps
+    to None (no badge at all). Chris: "I should only see the top three
+    data points available for a specific tab marked that way" -- a
+    stricter, simpler rule than the percentile-based significance_tier()
+    below (which can still badge more than 3 items on a tab with a wide
+    score spread). Use this for tabs where a hard cap of 3 badges matters
+    more than a smooth percentile gradient (News & Social Signal, Great
+    Power Competition, US-Iran Conflict)."""
+    if len(scores) == 0:
+        return {}
+    ranked = scores.sort_values(ascending=False)
+    badges = {}
+    for rank, (idx, _score) in enumerate(ranked.head(n).items(), start=1):
+        badges[idx] = "urgent" if rank == 1 else "top"
+    return badges
+
+
 def significance_tier(score: float, thresholds: dict) -> str | None:
     """Returns 'urgent', 'top', 'medium', or None (routine -- no badge).
     Requires both the percentile cutoff AND the absolute floor, so a tier
