@@ -1087,7 +1087,7 @@ def render_news_dashboard(news_df):
         "York Times, and The Wall Street Journal. Ranked by a significance score — not just recency — "
         "so the most important stories surface first, with a cap on how many any single source can "
         "contribute to the top list, and no source is presented as a fixed feed of its most recent "
-        "stories. For deeper policy/academic long-form reading, see the Research & Analysis tab."
+        "stories. For deeper policy/academic long-form reading, see the Long Form Pieces tab."
     )
     if len(news_df) == 0:
         st.info("No news/social signal data loaded yet.")
@@ -1591,7 +1591,7 @@ st.markdown("---")
 
 dash1, dash2, dash3, dash4, dash_longform, dash_chat, dash5 = st.tabs(
     ["Conflict & Security", "Markets & Economy", "News & Social Signal",
-     "Great Power Competition", "Research & Analysis", "Research Assistant", "Reports"]
+     "Great Power Competition", "Long Form Pieces", "Research Assistant", "Reports"]
 )
 
 with dash1:
