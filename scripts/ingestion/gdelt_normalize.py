@@ -166,6 +166,16 @@ def normalize_gdelt_event(record: dict) -> dict | None:
 
 _TITLE_TAG_PATTERN = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
 
+# Matches enrich_headlines()'s exact "<headline> (ACTOR1 <-> ACTOR2)" output
+# format -- requires "<->" inside the trailing parenthetical so this doesn't
+# also match the unrelated legacy "ACTOR1 <-> ACTOR2 (CAMEO 190)" fallback
+# format, which also ends in a parenthetical but isn't real article text.
+_ENRICHED_SUFFIX_PATTERN = re.compile(r"^(.*)\s\(([^()]*<->[^()]*)\)$")
+
+# Splits off a trailing " - Outlet Name" / " | Outlet Name" attribution
+# suffix from a headline -- see revalidate_geolocation for why this matters.
+_OUTLET_SUFFIX_PATTERN = re.compile(r"\s[-|]\s")
+
 
 def fetch_article_headline(url: str, timeout: float = 4.0) -> str | None:
     """Best-effort fetch of the real headline from a GDELT event's source
@@ -222,6 +232,83 @@ def enrich_headlines(events: list[dict], max_workers: int = 20) -> int:
     return enriched_count
 
 
+def revalidate_geolocation(events: list[dict]) -> int:
+    """Cross-checks each event's ActionGeo-derived country against its
+    enriched headline text (only meaningful after enrich_headlines() has
+    run -- events without a real headline have nothing to cross-check
+    against) and corrects the country/region/mandate/coordinates when
+    the headline clearly indicates a different country than ActionGeo
+    resolved to. GDELT's ActionGeo field is documented as the action's
+    own location, but empirically sometimes reflects the article's
+    dateline/bureau location instead -- Chris caught a real case where a
+    Central African Republic attack, sourced from a Yaounde (Cameroon)
+    news bureau, was mapped as a Cameroon event.
+
+    Deliberately conservative: only reassigns when (a) the headline does
+    NOT mention the current country by name, AND (b) exactly one other
+    tracked country is clearly mentioned. A blind "trust whichever geo
+    field disagrees with ActionGeo" heuristic is unsafe -- verified
+    against this project's own ingested data that events where
+    Actor1Geo/Actor2Geo both point to a country different from ActionGeo
+    are often genuinely foreign-actor-in-local-event cases (e.g. a
+    Chinese-financed project at a Peruvian port, correctly geocoded to
+    Peru even though both actors are Shanghai-based) -- acting on actor-
+    geo disagreement alone would make that case WORSE, not better. Text
+    cross-validation against the real headline avoids that failure mode.
+
+    Returns the number of events corrected."""
+    from scripts.lib.gdelt_geo import NAME_TO_COUNTRY
+    from scripts.lib.world_countries import get_centroid
+
+    corrected = 0
+    for event in events:
+        summary = event.get("narrative_summary", "")
+        # Only trust this as real article text if it matches
+        # enrich_headlines()'s exact "<headline> (ACTOR1 <-> ACTOR2)"
+        # format -- specifically requiring "<->" inside the trailing
+        # parenthetical. A plain `.endswith(")")` check is NOT enough: a
+        # real bug caught while testing this function was that un-enriched
+        # events in the older "ACTOR1 <-> ACTOR2 (CAMEO 190)" fallback
+        # format also end in ")", and their "headline" portion under a
+        # naive split is just the GDELT actor names (e.g. "SPAIN",
+        # "IRAN") -- which are frequently themselves country names,
+        # causing this function to "correct" a country to match an actor
+        # name with zero connection to real article content.
+        match = _ENRICHED_SUFFIX_PATTERN.match(summary)
+        if not match:
+            continue  # not the real-headline format -- nothing genuine to cross-check
+        # Strip a trailing " - Outlet Name" / " | Outlet Name" attribution
+        # suffix (a very common headline convention) before scanning --
+        # without this, outlet names that happen to contain a country
+        # ("Daily Post Nigeria", "Israel National News", "Israel & Jewish
+        # News - JNS") get mistaken for the article being about that
+        # country, when the actual story may have nothing to do with it.
+        headline = _OUTLET_SUFFIX_PATTERN.split(match.group(1), maxsplit=1)[0].lower()
+        current_country = (event.get("country") or "").lower()
+        if not current_country or current_country == "global":
+            continue
+        if current_country in headline:
+            continue  # headline confirms the existing country -- no change needed
+
+        mentioned = {
+            info for name, info in NAME_TO_COUNTRY.items()
+            if name != current_country and re.search(r"\b" + re.escape(name) + r"\b", headline)
+        }
+        if len(mentioned) != 1:
+            continue  # ambiguous (0 or 2+ candidates) -- leave as-is rather than guess
+
+        new_name, new_iso3, new_region, new_mandate = next(iter(mentioned))
+        event["country"] = new_name
+        event["iso3"] = new_iso3
+        event["region"] = new_region
+        event["in_core_mandate"] = new_mandate
+        centroid = get_centroid(new_iso3)
+        if centroid:
+            event["latitude"], event["longitude"] = centroid
+        corrected += 1
+    return corrected
+
+
 def normalize_batch(raw_events: list[dict]) -> list[dict]:
     """Normalizes a list of raw GDELT events, skipping records that fail to
     normalize (malformed or non-mandate-country) rather than failing the batch."""
@@ -262,6 +349,12 @@ def main():
         enriched_count = enrich_headlines(normalized)
         print(f"Enriched {enriched_count}/{len(normalized)} events with a real article headline.",
               file=sys.stderr)
+        # Geolocation cross-checking is only meaningful once a real
+        # headline exists to check against, so it rides along with
+        # --enrich-headlines rather than being a separate flag.
+        corrected_count = revalidate_geolocation(normalized)
+        print(f"Corrected {corrected_count}/{len(normalized)} events' geolocation based on "
+              f"a headline/ActionGeo mismatch.", file=sys.stderr)
 
     output_json = json.dumps(normalized, indent=2)
     if args.output:

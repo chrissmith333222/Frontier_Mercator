@@ -20,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from scripts.ingestion.gdelt_normalize import enrich_headlines
+from scripts.ingestion.gdelt_normalize import enrich_headlines, revalidate_geolocation
 
 DATA_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "normalized" / "gdelt_latest_normalized.json"
 CHUNK_SIZE = 1500
@@ -56,6 +56,14 @@ def main():
         )
 
     print(f"Done: {total_enriched}/{len(pending)} events enriched.", file=sys.stderr, flush=True)
+
+    # Geolocation cross-check over the FULL dataset (not just this run's
+    # newly-enriched chunk) -- events enriched in earlier runs never got
+    # this check, since revalidate_geolocation() didn't exist yet.
+    corrected_count = revalidate_geolocation(data)
+    DATA_PATH.write_text(json.dumps(data), encoding="utf-8")
+    print(f"Corrected {corrected_count}/{len(data)} events' geolocation based on a "
+          f"headline/ActionGeo mismatch.", file=sys.stderr, flush=True)
 
 
 if __name__ == "__main__":

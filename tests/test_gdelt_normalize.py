@@ -23,6 +23,7 @@ from scripts.ingestion.gdelt_normalize import (
     make_meridian_event_id,
     fetch_article_headline,
     enrich_headlines,
+    revalidate_geolocation,
 )
 
 # Sample raw GDELT record shaped like real 2.0 export output (fight event, Mali).
@@ -254,6 +255,95 @@ def test_enrich_headlines_keeps_fallback_summary_on_fetch_failure():
     assert enriched_count == 0
     assert events[0]["narrative_summary"] == original_summary
     print("✓ test_enrich_headlines_keeps_fallback_summary_on_fetch_failure passed")
+
+
+def test_revalidate_geolocation_corrects_bureau_location_mismatch():
+    # The real case Chris caught: a CAR attack, sourced from a Yaounde
+    # (Cameroon) news bureau, mapped as a Cameroon event -- but the actual
+    # headline text is clearly about Central African Republic, not Cameroon.
+    event = {
+        "country": "Cameroon", "iso3": "CMR", "region": "Central Africa", "in_core_mandate": True,
+        "latitude": 3.87, "longitude": 11.52,
+        "narrative_summary": "Armed group attacks village in Central African Republic, several killed (REBEL <-> CIVILIAN)",
+    }
+    corrected = revalidate_geolocation([event])
+    assert corrected == 1
+    assert event["country"] == "Central African Republic"
+    assert event["iso3"] == "CAF"
+
+
+def test_revalidate_geolocation_leaves_confirmed_country_unchanged():
+    # Counter-example found in this project's own data: a Chinese-financed
+    # project at a Peruvian port, correctly geocoded to Peru even though
+    # both GDELT actors are Shanghai-based -- the headline confirms Peru,
+    # so nothing should change (this function never even looks at actor
+    # geo fields, which is exactly what avoids that failure mode).
+    event = {
+        "country": "Peru", "iso3": "PER", "region": "Andean Region", "in_core_mandate": True,
+        "latitude": -12.0, "longitude": -77.0,
+        "narrative_summary": "China's Cosco opens Chancay megaport in Peru (COSCO <-> PERU)",
+    }
+    corrected = revalidate_geolocation([event])
+    assert corrected == 0
+    assert event["country"] == "Peru"
+
+
+def test_revalidate_geolocation_skips_ambiguous_multi_country_mentions():
+    event = {
+        "country": "Kenya", "iso3": "KEN", "region": "East Africa / Horn", "in_core_mandate": True,
+        "latitude": -1.28, "longitude": 36.8,
+        "narrative_summary": "Summit brings together leaders from Uganda and Tanzania (LEADER <-> LEADER)",
+    }
+    corrected = revalidate_geolocation([event])
+    assert corrected == 0
+    assert event["country"] == "Kenya"
+
+
+def test_revalidate_geolocation_ignores_legacy_cameo_fallback_format():
+    # Regression test for a real bug caught while building this feature:
+    # the legacy "ACTOR1 <-> ACTOR2 (CAMEO NNN)" fallback format also ends
+    # in a parenthetical, and a naive "split on the last '(' " approach
+    # treated the actor names themselves as "headline text" -- actor names
+    # are frequently just a country's own name (e.g. Actor1Name="SPAIN"),
+    # so this used to "correct" events to whatever country an actor
+    # happened to be named after, completely disconnected from any real
+    # article content.
+    event = {
+        "country": "Ukraine", "iso3": "UKR", "region": "Europe", "in_core_mandate": False,
+        "latitude": 50.45, "longitude": 30.52,
+        "narrative_summary": "SPAIN <-> VIKTOR YANUKOVYCH (CAMEO 193)",
+    }
+    corrected = revalidate_geolocation([event])
+    assert corrected == 0
+    assert event["country"] == "Ukraine"
+
+
+def test_revalidate_geolocation_ignores_country_name_in_outlet_attribution():
+    # Real false positive caught while verifying this against live data:
+    # a Columbia University (US) personnel story, published by "Israel &
+    # Jewish News" (JNS), got "corrected" from Norway to Israel purely
+    # because the OUTLET's name contains "Israel" -- the actual headline
+    # content has nothing to do with Israel geographically.
+    event = {
+        "country": "Norway", "iso3": "NOR", "region": "Europe", "in_core_mandate": False,
+        "latitude": 59.91, "longitude": 10.75,
+        "narrative_summary": "Columbia names former law school dean as Jewish life liaison - "
+                              "Israel & Jewish News - JNS (COLLEGE <-> DEAN)",
+    }
+    corrected = revalidate_geolocation([event])
+    assert corrected == 0
+    assert event["country"] == "Norway"
+
+
+def test_revalidate_geolocation_skips_unenriched_events():
+    event = {
+        "country": "Cameroon", "iso3": "CMR", "region": "Central Africa", "in_core_mandate": True,
+        "latitude": 3.87, "longitude": 11.52,
+        "narrative_summary": "REBEL <-> CIVILIAN: was the site of fighting",
+    }
+    corrected = revalidate_geolocation([event])
+    assert corrected == 0
+    assert event["country"] == "Cameroon"
 
 
 if __name__ == "__main__":

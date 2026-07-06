@@ -176,3 +176,16 @@ def lookup_any_country(fips_code: str) -> tuple[str, str, str, bool] | None:
     if extended is not None:
         return (*extended, False)
     return None
+
+
+# Reverse lookup (lowercased country name -> its FIPS entry) over every
+# country this module tracks -- used by gdelt_normalize.py's geolocation
+# cross-check to scan article headline text for a country mention.
+NAME_TO_COUNTRY = {
+    name.lower(): (name, iso3, region, True)
+    for name, iso3, region in FIPS_TO_COUNTRY.values()
+}
+NAME_TO_COUNTRY.update({
+    name.lower(): (name, iso3, region, False)
+    for name, iso3, region in EXTENDED_FIPS_TO_COUNTRY.values()
+})
