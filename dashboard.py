@@ -282,7 +282,11 @@ st.set_page_config(
     page_title="Frontier Mercator — Intelligence for the Frontier",
     page_icon=str(Path(__file__).parent / "static" / "fm_emblem.svg"),
     layout="wide",
-    initial_sidebar_state="collapsed"
+    # Expanded, not collapsed: the Research Assistant chat lives in the
+    # sidebar now (Chris's persistent-window ask) -- with the sidebar
+    # collapsed by default he literally couldn't find the chat at all,
+    # since it was hidden behind the tiny ">>" toggle.
+    initial_sidebar_state="expanded"
 )
 
 # Custom CSS for branding — dark theme, shared palette from scripts/branding.py.
@@ -1569,9 +1573,10 @@ df = prepare_dataframe(events)
 # before the view router, so it shows on About/Contact too, not just the
 # main dashboard tabs.
 with st.sidebar:
-    st.markdown("---")
-    with st.expander("Research Assistant", expanded=False):
+    st.markdown("### 💬 Research Assistant")
+    with st.expander("Open chat", expanded=True):
         render_research_assistant(df)
+    st.markdown("---")
 
 # Simple query-param page router -- About and Contact Us are deliberately
 # NOT part of the main st.tabs() row anymore. The Unified Intelligence Map
