@@ -27,6 +27,7 @@ def test_build_digest_text_includes_all_sections():
         git_log="abc1234 Add new source",
         freshness=[("acled", "2026-07-01 12:00:00"), ("gdelt", "2026-07-03 08:00:00")],
         test_summary="218 passed in 5.27s",
+        takeaways="",
     )
     assert "abc1234 Add new source" in text
     assert "acled: last ingested 2026-07-01 12:00:00" in text
@@ -35,8 +36,18 @@ def test_build_digest_text_includes_all_sections():
 
 
 def test_build_digest_text_handles_empty_freshness_list():
-    text = build_digest_text(git_log="", freshness=[], test_summary="0 passed")
+    text = build_digest_text(git_log="", freshness=[], test_summary="0 passed", takeaways="")
     assert "DATA FRESHNESS" in text
+
+
+def test_takeaways_section_included_when_provided():
+    text = build_digest_text(git_log="", freshness=[], test_summary="ok",
+                              takeaways="- Copper rally flags EM risk compression.")
+    assert "INTELLIGENCE TAKEAWAYS" in text
+    assert "Copper rally" in text
+    # And omitted entirely when empty -- the email must not show an empty header.
+    without = build_digest_text(git_log="", freshness=[], test_summary="ok", takeaways="")
+    assert "INTELLIGENCE TAKEAWAYS" not in without
 
 
 def test_send_digest_email_raises_without_credentials(monkeypatch):

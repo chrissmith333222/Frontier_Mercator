@@ -104,8 +104,15 @@ def fetch_market_snapshot(tickers_factory=None) -> dict:
     unreachable -- callers should handle an all-empty snapshot gracefully
     (show a "market data unavailable" message, not crash). `tickers_factory`
     is injectable for tests."""
+    from datetime import datetime, timezone
     return {
         "us_indices": _fetch_quotes(US_INDICES, tickers_factory),
         "foreign_indices": _fetch_quotes(FOREIGN_INDICES, tickers_factory),
         "movers": _fetch_quotes(MARKET_MOVERS, tickers_factory),
+        # When the quotes were actually pulled from Yahoo Finance -- the
+        # dashboard caches this snapshot (5-min TTL) AND Streamlit only
+        # reruns on user interaction, so displayed quotes can be older
+        # than they look; Chris asked for an explicit "current as of"
+        # stamp after catching stale values at market open.
+        "fetched_at": datetime.now(timezone.utc).strftime("%d %b %Y %H:%M UTC"),
     }

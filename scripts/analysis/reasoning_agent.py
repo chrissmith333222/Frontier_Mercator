@@ -60,27 +60,37 @@ ANALYSIS_DIR = REPO_ROOT / "data" / "analysis"
 CUSTOM_ANALYSIS_DIR = ANALYSIS_DIR / "custom"
 DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
 
-SYSTEM_PROMPT = """You are an intelligence analyst for Frontier Mercator Group, producing internal \
-research notes on emerging-market investment risk (Africa/Latin America focus, with extended \
-monitoring elsewhere). You will be given structured, machine-collected event data for one country: \
-recent conflict/unrest events, economic indicators, investment/development-finance activity, \
-humanitarian/OSINT signals, and the actors most active in that country across all of the above.
+SYSTEM_PROMPT = """You are a senior analyst at Frontier Mercator Group, writing the analytical \
+sections of a client-facing country intelligence brief for institutional investors (Africa/Latin \
+America focus, with extended monitoring elsewhere). You will be given structured, machine-collected \
+event data for one country -- conflict/unrest events, economic indicators, investment/development-\
+finance activity, humanitarian/OSINT signals, most-active actors -- and, when available, a summary \
+of recent open-web reporting.
 
-Ground rules, followed strictly:
-1. Reason ONLY from the data provided in the user message. Do not draw on general background \
-knowledge about the country's history, politics, or economy that isn't reflected in the data given.
-2. If the data is thin, contradictory, or doesn't support a conclusion, say so explicitly rather \
-than filling the gap with plausible-sounding speculation.
-3. Every claim in "key_relationships", "risk_flags", and the four dimension-analysis fields must be \
-traceable to specific events in the data -- reference them by date and source (e.g. "ACLED, 2026-03-14").
-4. This is a preliminary statistical/pattern synthesis, not a finished investment recommendation. \
-Do not tell the reader whether to invest; describe what the data shows.
-5. The four dimension-analysis fields (security_analysis, political_stability_analysis, \
-economic_analysis, investment_analysis) are meant to read like an institutional country-risk report's \
-section write-ups (e.g. the Bertelsmann Transformation Index format Chris uses as a reference: a \
-numeric score paired with a plain-language paragraph explaining what specifically drives it) -- write \
-in that register: substantive, specific, citing the actual events/figures behind the assessment, not \
-generic boilerplate that could apply to any country.
+VOICE AND REGISTER -- this is the product's differentiator, follow it exactly:
+- Write like an investment prospectus crossed with a government intelligence assessment crossed \
+with a journal article: confident, declarative, so-what-first. The reader is a portfolio principal \
+who cares about conclusions, not methodology.
+- NEVER write "the data shows", "the dataset", "in the data provided", "records indicate", "events \
+in this window", or any phrasing that exposes that a database sits under this report. Attribute \
+conclusions to their real-world sources instead: "IMF projections indicate...", "ACLED-recorded \
+incidents through June...", "DFC's recent commitments concentrate in...", or simply state the \
+conclusion directly.
+- Never expose internal field names (no snake_case like "political_violence_targeting_civilians" \
+-- write "political violence against civilians"), record counts as hedges, or scoring machinery.
+- Keep source-and-date attributions (e.g. "(ACLED, June 2026)") -- those read as professional \
+citations, not machinery.
+
+ANALYTICAL GROUND RULES, still followed strictly:
+1. Ground every claim in the supplied event data and (when provided) the open-web reporting \
+summary. Do not draw on unstated background knowledge; do not invent facts, figures, or sources.
+2. If the available material is thin or contradictory on some point, handle it the way an \
+intelligence product does: state the assessed picture with calibrated confidence language ("limited \
+reporting suggests", "assessed with low confidence") rather than either speculating or lapsing into \
+database-speak.
+3. Every claim in "key_relationships", "risk_flags", and the four dimension-analysis fields must \
+be traceable to a specific event, figure, or reported development, cited by source and date.
+4. Describe risks and opportunities; do not issue buy/sell directives.
 
 Record your assessment using the record_country_assessment tool."""
 
@@ -331,6 +341,40 @@ def _get_client():
     return anthropic.Anthropic(api_key=api_key)
 
 
+def _fetch_web_context(client, country_name: str, model: str = DEFAULT_MODEL) -> str:
+    """Live web-search pass before the assessment call -- Chris: "is the
+    tool still pulling from and referencing the web...? I want it to be
+    interacting with the web to make sure we have the most complete
+    product." Uses Anthropic's hosted web-search server tool with auto
+    tool choice (a forced tool_choice would prevent the search tool from
+    running, which is why this is a separate pass from the forced
+    record_country_assessment call). Returns "" on ANY failure -- web
+    search has real transient outages (observed live), and a country
+    assessment should degrade to data-only rather than fail outright."""
+    try:
+        response = client.messages.create(
+            model=model,
+            max_tokens=2000,
+            tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 4}],
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"Search the web for significant political, security, economic, and "
+                    f"investment developments in {country_name} from the last 60 days. "
+                    f"Summarize the genuinely important developments in up to 400 words, "
+                    f"attributing each to its source and date. Only include things you "
+                    f"actually found -- no filler."
+                ),
+            }],
+        )
+        text = "\n".join(blk.text for blk in response.content if getattr(blk, "type", None) == "text").strip()
+        return text
+    except Exception as e:
+        print(f"    web-context fetch failed for {country_name} (continuing data-only): {e}",
+              file=sys.stderr)
+        return ""
+
+
 def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAULT_MODEL, client=None) -> dict:
     """Pulls a structured knowledge-base snapshot for `iso3`, sends it to
     Claude for synthesis, and returns the combined result (raw data +
@@ -349,9 +393,18 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
 
     if client is None:
         client = _get_client()
+
+    user_message = _build_user_message(snapshot, country_name)
+    web_context = _fetch_web_context(client, country_name, model=model)
+    if web_context:
+        user_message += (
+            "\n\nRecent open-web reporting (from live web search -- attribute to the named "
+            "outlets/dates, weigh against the structured data above):\n" + web_context
+        )
+
     analysis = _call_with_forced_tool(
         client, model, SYSTEM_PROMPT + _load_reviewer_guidance(), _ASSESSMENT_TOOL,
-        _build_user_message(snapshot, country_name), context_label=f"{country_name} ({iso3})",
+        user_message, context_label=f"{country_name} ({iso3})",
     )
 
     return {

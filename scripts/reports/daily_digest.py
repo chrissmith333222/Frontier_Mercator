@@ -98,26 +98,99 @@ def _test_summary() -> str:
         return f"(test run failed to execute: {e})"
 
 
+def build_intelligence_takeaways(client=None, model: str | None = None) -> str:
+    """The second half of Chris's daily-email ask: "most relevant
+    takeaways from all of our data as well as the web focused on
+    investment opportunities and political risk across the developing
+    world." One Claude call with live web search, fed the platform's own
+    freshest high-significance events and discovered correlation
+    insights as grounding. Returns "" on ANY failure -- the status email
+    must still send even when the AI pass or web search is down."""
+    try:
+        import pandas as pd
+        from scripts.analytics.significance import compute_significance_score, diversify_top_n
+
+        df = pd.DataFrame(json.loads(
+            (NORMALIZED_DIR / "merged_dataset.json").read_text(encoding="utf-8")
+        ))
+        df["event_date"] = pd.to_datetime(df["event_date"], errors="coerce")
+        cutoff = pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(days=7)
+        recent = df[df["event_date"] >= cutoff].copy()
+        recent["significance_score"] = compute_significance_score(recent)
+        top = diversify_top_n(recent, "significance_score", n=12, max_per_source=4)
+        top_events = "\n".join(
+            f"- {r['country']} ({r['event_date'].date()}, {r['source']}): "
+            f"{str(r.get('narrative_summary_en') or r['narrative_summary'])[:160]}"
+            for _, r in top.iterrows()
+        )
+
+        insights_path = REPO_ROOT / "data" / "insights" / "discovered_insights.json"
+        insight_lines = ""
+        if insights_path.exists():
+            insights = json.loads(insights_path.read_text(encoding="utf-8")).get("insights", [])
+            insight_lines = "\n".join(f"- {i['headline']}" for i in insights)
+
+        if client is None:
+            load_dotenv()
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
+            if not api_key:
+                return ""
+            import anthropic
+            client = anthropic.Anthropic(api_key=api_key)
+
+        response = client.messages.create(
+            model=model or os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5"),
+            max_tokens=1500,
+            tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 3}],
+            messages=[{
+                "role": "user",
+                "content": (
+                    "You are writing the intelligence-takeaways section of a daily email for the "
+                    "principal of a frontier-markets investment intelligence firm. Using the "
+                    "platform's freshest high-significance events below, plus a quick web check "
+                    "for anything major they miss, write 4-6 concise bullets on the most "
+                    "investment-relevant developments and political risks across the developing "
+                    "world in the last day or two. Attribute claims to sources. So-what-first, "
+                    "no filler, plain text (no markdown).\n\n"
+                    f"PLATFORM'S TOP RECENT SIGNALS:\n{top_events}\n\n"
+                    + (f"ACTIVE CORRELATION INSIGHTS:\n{insight_lines}\n" if insight_lines else "")
+                ),
+            }],
+        )
+        return "\n".join(
+            blk.text for blk in response.content if getattr(blk, "type", None) == "text"
+        ).strip()
+    except Exception as e:
+        print(f"Intelligence takeaways failed (email continues without them): {e}", file=sys.stderr)
+        return ""
+
+
 def build_digest_text(
     git_log: str | None = None, freshness: list[tuple[str, str]] | None = None,
-    test_summary: str | None = None,
+    test_summary: str | None = None, takeaways: str | None = None,
 ) -> str:
-    """Assembles the plain-text digest body. All three inputs are
-    injectable for tests; when omitted, each is computed for real
-    (git log, per-source freshness, live test run)."""
+    """Assembles the plain-text digest body. All inputs are injectable
+    for tests; when omitted, each is computed for real (git log,
+    per-source freshness, live test run, AI takeaways with web search)."""
     if git_log is None:
         git_log = _recent_git_log()
     if freshness is None:
         freshness = _source_freshness()
     if test_summary is None:
         test_summary = _test_summary()
+    if takeaways is None:
+        takeaways = build_intelligence_takeaways()
 
     freshness_lines = "\n".join(f"  {name}: last ingested {ts}" for name, ts in freshness)
     date_str = datetime.now(timezone.utc).strftime("%A, %d %B %Y")
 
+    takeaways_section = (
+        f"INTELLIGENCE TAKEAWAYS (data + live web):\n{takeaways}\n\n" if takeaways else ""
+    )
     return (
         f"Frontier Mercator / Parallax -- Daily Status ({date_str})\n"
         f"{'=' * 60}\n\n"
+        f"{takeaways_section}"
         f"COMMITS (last 24h):\n{git_log}\n\n"
         f"DATA FRESHNESS (per source, last ingested):\n{freshness_lines}\n\n"
         f"TEST SUITE:\n  {test_summary}\n\n"

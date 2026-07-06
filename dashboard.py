@@ -717,6 +717,21 @@ def render_market_ticker():
         st.info("Market data temporarily unavailable.")
         return
 
+    # Freshness stamp + manual refresh. Quotes refresh automatically no
+    # more than every 5 minutes (cache TTL), and only when the page
+    # actually reruns (any interaction) -- Streamlit can't push updates to
+    # an idle page, so an untouched tab CAN show stale quotes. The stamp
+    # makes that visible instead of misleading; the button forces a fresh
+    # pull immediately.
+    stamp_col, refresh_col = st.columns([0.8, 0.2])
+    with stamp_col:
+        st.caption(f"Quotes current as of: {snapshot.get('fetched_at', 'unknown')} "
+                   f"(auto-refreshes every 5 min on page activity)")
+    with refresh_col:
+        if st.button("Refresh quotes", key="refresh_market"):
+            _load_market_snapshot.clear()
+            st.rerun()
+
     ticker_items = "".join(
         f'<span class="fm-ticker-item">{q["label"]} '
         f'<b>{q["price"]:,.2f}</b> '
@@ -1572,12 +1587,12 @@ def render_unified_map(df):
         # explicit ask for important things to "pop out of the white noise."
         border_color = b.GOLD if is_hot else color
         border_weight = 3 if is_hot else 1
-        # Radius kept deliberately compact (Chris: circles were "getting
-        # too big and crowded") -- still differentiates by significance,
-        # just within a smaller overall range so a dense cluster of
-        # markers doesn't visually overwhelm the map.
+        # Radius tuned twice per Chris's feedback: first shrunk ("too big
+        # and crowded"), then bumped back up a notch ("can't click on
+        # them because they're too small") -- current range ~4.5-10px is
+        # the middle ground: clickable targets without the crowding.
         folium.CircleMarker(
-            location=[lat, lon], radius=(3.5 if is_hot else 2.5) + (significance / 2.8),
+            location=[lat, lon], radius=(5.5 if is_hot else 4.5) + (significance / 2.2),
             popup=folium.Popup(popup_text, max_width=340),
             color=border_color, fill=True, fillColor=color,
             fillOpacity=fill_opacity, weight=border_weight, opacity=min(0.95, fill_opacity + 0.15),

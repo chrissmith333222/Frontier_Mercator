@@ -94,7 +94,8 @@ def test_fetch_quotes_skips_symbol_that_raises():
 def test_fetch_market_snapshot_returns_all_three_categories():
     fixtures = {"^DJI": {"lastPrice": 50000.0, "previousClose": 49500.0}}
     snapshot = fetch_market_snapshot(tickers_factory=_make_factory(fixtures))
-    assert set(snapshot.keys()) == {"us_indices", "foreign_indices", "movers"}
+    assert set(snapshot.keys()) == {"us_indices", "foreign_indices", "movers", "fetched_at"}
+    assert "UTC" in snapshot["fetched_at"]  # freshness stamp shown above the ticker
     dji = next((q for q in snapshot["us_indices"] if q["symbol"] == "^DJI"), None)
     assert dji is not None
     assert dji["change"] == 500.0
