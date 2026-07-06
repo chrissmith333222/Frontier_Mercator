@@ -662,6 +662,21 @@ def _load_market_snapshot() -> dict:
 
 
 @st.cache_data
+def _load_discovered_insights() -> dict:
+    """Reads the cached correlation-discovery insights (see
+    scripts/analytics/correlation_discovery.py -- generated offline, read
+    statically here, same pattern as every other AI artifact). Returns {}
+    if the discovery pipeline hasn't been run yet."""
+    path = Path(__file__).parent / "data" / "insights" / "discovered_insights.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+@st.cache_data
 def _cached_country_graph(country: str) -> dict:
     """build_country_graph scans the full ~68k-event dataset AND runs
     networkx's spring_layout physics simulation -- uncached, it re-ran on
@@ -980,7 +995,45 @@ def render_markets_dashboard(econ_df):
         st.info("No economic/investment data loaded yet.")
         return
 
-    indicators_tab, investment_tab = st.tabs(["Macro Indicators", "Investment Projects"])
+    indicators_tab, investment_tab, insights_tab = st.tabs(
+        ["Macro Indicators", "Investment Projects", "Discovered Insights"]
+    )
+
+    with insights_tab:
+        st.markdown(
+            "Cross-cutting correlations discovered by an automated statistical screen over "
+            "country-month event data and monthly commodity prices, then curated by AI for "
+            "economic plausibility and investment relevance — only findings that could actually "
+            "shape strategy or flag risk are surfaced, not every test that was run. "
+            "**Correlation is not causation** — each finding carries its own specific caveat."
+        )
+        insights_data = _load_discovered_insights()
+        if not insights_data or not insights_data.get("insights"):
+            st.info(
+                "No discovered insights yet — run "
+                "`python scripts/analytics/correlation_discovery.py` to generate them."
+            )
+        else:
+            st.caption(
+                f"Generated {insights_data['generated_at'][:10]} — "
+                f"{len(insights_data['insights'])} insight(s) kept from "
+                f"{insights_data['total_hits_screened']} statistically significant hits "
+                f"(hundreds of tests screened)."
+            )
+            for insight in insights_data["insights"]:
+                st.markdown(
+                    f'<div class="fm-news-card-top" style="margin-bottom:1rem;">'
+                    f"<div><strong>{insight['headline']}</strong></div>"
+                    f"<div>{insight['detail']}</div>"
+                    f"<div style='color:{b.TEXT_MUTED};font-size:0.85rem;margin-top:0.3rem;'>"
+                    f"Caveat: {insight['caveat']}</div>"
+                    f"<div style='color:{b.TEXT_MUTED};font-size:0.8rem;margin-top:0.3rem;'>"
+                    f"{insight['country']} — {insight['series_x'].replace('_', ' ')} vs "
+                    f"{insight['series_y'].replace('_', ' ')} · r={insight['r']} · "
+                    f"lag {int(insight['lag_months'])}mo · n={int(insight['n_months'])} months</div>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
 
     with indicators_tab:
         indicator_df = econ_df[econ_df['event_category'] == b.ECON_CATEGORY]
