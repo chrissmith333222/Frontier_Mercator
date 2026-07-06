@@ -97,6 +97,7 @@ VALID_ANALYSIS = {
     "political_stability_analysis": "No protest/civil-unrest events in this window.",
     "economic_analysis": "GDP growth reported at 5.2% (World Bank, 2025).",
     "investment_analysis": "China Eximbank financed a road project (AidData, 2026-01-10).",
+    "investment_opportunities": ["Transport-corridor financing activity signals bankable infrastructure appetite (AidData, 2026-01-10)."],
     "key_relationships": ["China Eximbank financed a road project (AidData, 2026-01-10) in the same window as border clashes (ACLED, 2026-03-14)."],
     "risk_flags": ["Border-area conflict event within the same reporting window as active development finance."],
     "data_caveats": "Only 3 events in this window; not enough to establish a trend with confidence.",

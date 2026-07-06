@@ -51,6 +51,12 @@ def test_takeaways_section_included_when_provided():
 
 
 def test_send_digest_email_raises_without_credentials(monkeypatch):
+    # Stub load_dotenv too -- the real .env now contains live SMTP
+    # credentials (Chris added them 2026-07-06), so without this stub the
+    # deleted env vars get silently restored from the file and the test
+    # would attempt a real SMTP login.
+    import scripts.reports.daily_digest as digest_module
+    monkeypatch.setattr(digest_module, "load_dotenv", lambda *a, **k: None)
     monkeypatch.delenv("SMTP_USERNAME", raising=False)
     monkeypatch.delenv("SMTP_PASSWORD", raising=False)
     monkeypatch.delenv("DIGEST_TO_EMAIL", raising=False)

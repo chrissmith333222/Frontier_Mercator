@@ -387,6 +387,13 @@ def _executive_summary_flowables(
     ]
 
 
+def _bullet_text(item: str) -> str:
+    """Strips a leading "- "/bullet the model sometimes writes inside
+    bullet-array items -- the PDF prepends its own bullet glyph, so
+    without this the rendered line reads "• - ..."."""
+    return item.strip().removeprefix("- ").removeprefix("• ").strip()
+
+
 def _analysis_flowables(assessment: dict | None) -> list:
     """Renders the cross-cutting parts of the cached AI pattern-analysis
     (see scripts/analysis/reasoning_agent.py) that don't belong to one
@@ -399,28 +406,38 @@ def _analysis_flowables(assessment: dict | None) -> list:
     if not assessment:
         return []
     analysis = assessment["analysis"]
-    flowables = [
+    flowables = []
+    # Investment Opportunities leads this closing block -- the World Bank
+    # Compact-with-Africa prospectus Chris supplied as a reference is
+    # organized around sector-specific OPPORTUNITY blocks, not just risk;
+    # his product goal is "identifying biggest opportunities and risks for
+    # holistic investment," so upside framing gets equal billing with the
+    # risk flags rather than the report reading as risk-only.
+    if analysis.get("investment_opportunities"):
+        flowables.append(Paragraph("Investment Opportunities", SECTION_STYLE))
+        for item in analysis["investment_opportunities"]:
+            flowables.append(Paragraph(f"&bull; {_bullet_text(item)}", BODY_STYLE))
+    flowables.extend([
         Paragraph("Notable Relationships & Risk Flags", SECTION_STYLE),
         Paragraph(
-            f"Generated {assessment['generated_at'][:10]} from {assessment['total_events_analyzed']:,} "
-            f"ingested events. Preliminary statistical synthesis grounded in the data above -- "
+            f"Generated {assessment['generated_at'][:10]}. Preliminary synthesis -- "
             f"not an investment recommendation or forecast.",
             DISCLAIMER_STYLE,
         ),
-    ]
+    ])
     if analysis.get("key_relationships"):
         flowables.append(Spacer(1, 4))
         flowables.append(Paragraph("<b>Notable relationships:</b>", BODY_STYLE))
         for item in analysis["key_relationships"]:
-            flowables.append(Paragraph(f"&bull; {item}", BODY_STYLE))
+            flowables.append(Paragraph(f"&bull; {_bullet_text(item)}", BODY_STYLE))
     if analysis.get("risk_flags"):
         flowables.append(Spacer(1, 4))
         flowables.append(Paragraph("<b>Risk flags:</b>", BODY_STYLE))
         for item in analysis["risk_flags"]:
-            flowables.append(Paragraph(f"&bull; {item}", BODY_STYLE))
+            flowables.append(Paragraph(f"&bull; {_bullet_text(item)}", BODY_STYLE))
     if analysis.get("data_caveats"):
         flowables.append(Spacer(1, 4))
-        flowables.append(Paragraph(f"Data caveats: {analysis['data_caveats']}", DISCLAIMER_STYLE))
+        flowables.append(Paragraph(f"Coverage note: {analysis['data_caveats']}", DISCLAIMER_STYLE))
     return flowables
 
 
@@ -671,7 +688,7 @@ def generate_custom_report(assessment: dict) -> bytes:
         story.append(Spacer(1, 8))
         story.append(Paragraph("Supporting Evidence", SECTION_STYLE))
         for item in analysis["supporting_evidence"]:
-            story.append(Paragraph(f"&bull; {item}", BODY_STYLE))
+            story.append(Paragraph(f"&bull; {_bullet_text(item)}", BODY_STYLE))
 
     if analysis.get("data_caveats"):
         story.append(Spacer(1, 8))

@@ -134,6 +134,19 @@ _ASSESSMENT_TOOL = {
                 "description": "2-5 bullet-style strings describing notable actor/event/category "
                                 "intersections, each citing specific dates/sources.",
             },
+            "investment_opportunities": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "1-4 bullet-style strings on concrete, sector-specific investment "
+                                "opportunities grounded in the financing activity, macro trends, and "
+                                "recent reporting -- the investment-prospectus register (e.g. 'DFC and "
+                                "World Bank PPI commitments concentrate in renewable generation, with "
+                                "the Menengai geothermal expansion (2024) signaling bankable "
+                                "public-private structures in the power sector'). Each cites its "
+                                "source(s). Opportunities, not recommendations -- name what the "
+                                "activity signals, not what to buy. Empty if the material genuinely "
+                                "supports none.",
+            },
             "risk_flags": {
                 "type": "array",
                 "items": {"type": "string"},
@@ -148,7 +161,8 @@ _ASSESSMENT_TOOL = {
         },
         "required": [
             "trend_summary", "security_analysis", "political_stability_analysis",
-            "economic_analysis", "investment_analysis", "key_relationships", "risk_flags", "data_caveats",
+            "economic_analysis", "investment_analysis", "key_relationships",
+            "investment_opportunities", "risk_flags", "data_caveats",
         ],
     },
 }
