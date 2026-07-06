@@ -266,6 +266,23 @@ def test_normalize_tool_output_repairs_real_malformed_response():
     print("✓ test_normalize_tool_output_repairs_real_malformed_response passed")
 
 
+def test_normalize_tool_output_parses_json_stringified_array_with_parameter_wrapper():
+    """Second real malformed shape, from report_qa.py's first live run: an
+    array field arrived as a pseudo-XML `<parameter name="...">` wrapper
+    around an otherwise-valid JSON array string. The old repair split it
+    on newlines, producing one garbage mega-item instead of the real list."""
+    malformed = {
+        "answer": "Fine.",
+        "supporting_evidence": '<parameter name="supporting_evidence">["First item.", "Second item."]',
+        "countries_involved": '["Kenya", "Ghana"]',
+        "data_caveats": "None.",
+    }
+    normalized = _normalize_tool_output(malformed, _CROSS_CUTTING_TOOL)
+    assert normalized["supporting_evidence"] == ["First item.", "Second item."]
+    assert normalized["countries_involved"] == ["Kenya", "Ghana"]
+    print("✓ test_normalize_tool_output_parses_json_stringified_array_with_parameter_wrapper passed")
+
+
 def test_normalize_tool_output_leaves_well_formed_response_unchanged():
     well_formed = {
         "answer": "A clean answer.",

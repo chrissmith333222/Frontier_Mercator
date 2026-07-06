@@ -111,6 +111,7 @@ def load_custom_analyses() -> list[dict]:
     return sorted(analyses, key=lambda a: a.get("generated_at", ""), reverse=True)
 
 
+@st.cache_data
 def load_longform_articles() -> list[dict]:
     """Reads the Research & Analysis tab's reading material (scripts/
     ingestion/longform_fetch.py + longform_normalize.py -- The Economist,
@@ -654,6 +655,19 @@ def _load_market_snapshot() -> dict:
     page load. 5 minutes balances "reasonably fresh" against not hammering
     Yahoo Finance's free endpoint on a busy session."""
     return fetch_market_snapshot()
+
+
+@st.cache_data
+def _cached_country_graph(country: str) -> dict:
+    """build_country_graph scans the full ~68k-event dataset AND runs
+    networkx's spring_layout physics simulation -- uncached, it re-ran on
+    EVERY rerun of this script (i.e. every widget interaction anywhere on
+    the page), a real contributor to Chris's "everything takes 5 seconds"
+    latency complaint. Cached per country; the underlying events list only
+    changes on redeploy, so no TTL needed. Calls load_events() (itself
+    cached) rather than closing over the module-level `events` global so
+    the dependency is explicit regardless of definition order."""
+    return build_country_graph(load_events(), country)
 
 
 def _quote_color(change: float) -> str:
@@ -1512,7 +1526,12 @@ def render_unified_map(df):
             fillOpacity=fill_opacity, weight=border_weight, opacity=min(0.95, fill_opacity + 0.15),
         ).add_to(m)
 
-    st_folium(m, width=1200, height=650, key="unified_map")
+    # returned_objects=[] makes the map render-only: without it, st_folium
+    # sets up bidirectional sync so every pan/zoom/click ON THE MAP fires a
+    # full script rerun (the single biggest "why does everything take 5
+    # seconds" contributor Chris hit) -- we never read anything back from
+    # the map, so there's nothing to sync.
+    st_folium(m, width=1200, height=650, key="unified_map", returned_objects=[])
 
 
 st.markdown('<div id="fm-top"></div>', unsafe_allow_html=True)
@@ -1690,7 +1709,7 @@ with dash5:
             badge_html = "".join(_risk_badge_html(label, value) for label, value in badges)
             st.markdown(f'<div class="fm-risk-badges">{badge_html}</div>', unsafe_allow_html=True)
 
-        country_graph = build_country_graph(events, country_choice)
+        country_graph = _cached_country_graph(country_choice)
         if country_graph["nodes"]:
             st.markdown("##### Relationship Network")
             st.caption(

@@ -211,11 +211,22 @@ def _normalize_tool_output(analysis: dict, schema: dict) -> dict:
             if value is None:
                 normalized[field_name] = []
             elif isinstance(value, str):
-                # Split on <item>...</item> tags if present, else on newlines.
-                items = re.findall(r"<item>(.*?)</item>", value, re.DOTALL)
+                # Strip a pseudo-XML wrapper if present (a real run of
+                # report_qa.py returned `<parameter name="...">[...]` around
+                # an otherwise-valid JSON array), then try json.loads before
+                # falling back to <item>-tag / newline splitting.
+                stripped = re.sub(r'^<parameter[^>]*>\s*|\s*</parameter>$', "", value.strip())
+                try:
+                    parsed = json.loads(stripped)
+                    if isinstance(parsed, list):
+                        normalized[field_name] = [str(item) for item in parsed]
+                        continue
+                except (json.JSONDecodeError, ValueError):
+                    pass
+                items = re.findall(r"<item>(.*?)</item>", stripped, re.DOTALL)
                 if not items:
-                    items = [line.strip() for line in value.splitlines() if line.strip()]
-                normalized[field_name] = [re.sub(r"</?[a-z_]+>", "", item).strip() for item in items] or [value.strip()]
+                    items = [line.strip() for line in stripped.splitlines() if line.strip()]
+                normalized[field_name] = [re.sub(r"</?[a-z_]+>", "", item).strip() for item in items] or [stripped]
         elif field_schema["type"] == "string":
             if value is None:
                 normalized[field_name] = ""
@@ -255,6 +266,27 @@ def _build_cross_cutting_user_message(query: str, events: list[dict]) -> str:
         f"Retrieved events (ranked by semantic similarity to the question, most similar first):\n"
         f"{json.dumps(trimmed, indent=2, default=str)}"
     )
+
+
+_REVIEWER_GUIDANCE_PATH = REPO_ROOT / "data" / "report_qa" / "reviewer_guidance.md"
+
+
+def _load_reviewer_guidance() -> str:
+    """The closing half of the report-QA feedback loop (see
+    scripts/analysis/report_qa.py): that script has an LLM reviewer grade
+    a generated report and distill concrete generation-prompt improvements
+    into reviewer_guidance.md; this appends them to the system prompt so
+    every FUTURE assessment is generated with the reviewer's corrections
+    baked in. Returns "" when no QA pass has run yet (the loop degrades
+    gracefully to exactly the old behavior). Capped defensively so a
+    malformed/bloated guidance file can't blow up the prompt."""
+    try:
+        guidance = _REVIEWER_GUIDANCE_PATH.read_text(encoding="utf-8").strip()
+    except (OSError, FileNotFoundError):
+        return ""
+    if not guidance:
+        return ""
+    return "\n\nEditorial reviewer guidance from prior report QA (apply these):\n" + guidance[:4000]
 
 
 def _call_with_forced_tool(client, model: str, system_prompt: str, tool: dict, user_message: str,
@@ -318,7 +350,7 @@ def generate_country_assessment(iso3: str, country_name: str, model: str = DEFAU
     if client is None:
         client = _get_client()
     analysis = _call_with_forced_tool(
-        client, model, SYSTEM_PROMPT, _ASSESSMENT_TOOL,
+        client, model, SYSTEM_PROMPT + _load_reviewer_guidance(), _ASSESSMENT_TOOL,
         _build_user_message(snapshot, country_name), context_label=f"{country_name} ({iso3})",
     )
 

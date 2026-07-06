@@ -1,0 +1,31 @@
+{
+  "country": "Kenya",
+  "iso3": "KEN",
+  "assessed_at": "2026-07-06T12:10:46.885597+00:00",
+  "professionalism": 6,
+  "accuracy": 4,
+  "citation_quality": 5,
+  "clarity": 6,
+  "structure": 7,
+  "specific_issues": [
+    "Event counts don't reconcile with dataset summary: report states 'Total Events 191' and 'Reporting period: 05 Oct 2023 \u2013 03 Jul 2026' in the Political & Security Landscape table, but the dataset summary shows conflict-related categories (conflict 109 + protest_civil_unrest 45 + political_violence_targeting_civilians 36 + explosion_remote_violence 1 = 191) span 1983-2026, and the report's own footer says 'Generated 2026-07-05 from 663 ingested events' \u2014 yet the dataset summary lists 779 total events. These numbers are inconsistent and never reconciled in the text.",
+    "Report claims '33 political_violence_targeting_civilians events and 22 protest_civil_unrest events' but the dataset summary shows 36 political_violence_targeting_civilians and 45 protest_civil_unrest \u2014 both figures are wrong (understated), a direct factual inaccuracy against the source data.",
+    "Report says 'No ACLED-labeled events are present in the supplied conflict sample despite 106 conflict-category events being counted' \u2014 dataset summary shows conflict category total is 109, and ACLED is a listed source with 33 events, so the claim that no ACLED-labeled events are present contradicts the source list showing ACLED as an active source with material volume.",
+    "The Notable Development Finance Activity narrative states Chinese state financiers total '192 combined mentions' (83+52+35+22=192) but AidData (the presumed source for Chinese financing) totals only 249 in the entire dataset across all its categories, and the report does not clarify whether these are event mentions, distinct projects, or actor-tag counts \u2014 creating an unverifiable and likely inflated claim not clearly traceable to the dataset summary.",
+    "Executive summary asserts '350 investment events, led by Chinese state financiers and the U.S. DFC' which matches the 350 investment count, but then in the finance section every listed 'Notable Development Finance Activity' example is dated 2024-01-01, all suspiciously identical placeholder dates, suggesting the underlying date field may be a data-quality artifact not disclosed to the reader as such (beyond the generic staleness caveat).",
+    "The Risk Scorecard gives 'Political Stability 0.8' out of what is presumably a 10-point scale, but the body text repeatedly emphasizes 'notably tense and contested political environment' and a medium-high volume of high-severity events (9.0-9.3) \u2014 a 0.8 stability score seems potentially inverted or mislabeled (e.g., is lower better = more unstable, or is this a scoring error?) without any explanation of the scorecard's scale/methodology.",
+    "The report cites 'UNOSAT' and 'Bellingcat' in the closing source list ('ACLED, GDELT, World Bank, IMF, AidData, DFC, World Bank PPI, UNOSAT, Bellingcat') but Bellingcat is not listed anywhere in the underlying dataset summary's source breakdown, meaning a source is cited that does not appear to exist in the actual ingested data.",
+    "Raw CAMEO codes are exposed to the reader untranslated, e.g., 'KENYA <-> SCHOOL (CAMEO 182)' and 'ADMINISTRATION <-> unspecified actor (CAMEO 181)' \u2014 these are not explained in plain language, violating institutional-report readability standards for a non-technical investor audience.",
+    "The phrase 'Notable Relationships & Risk Flags' section header appears to duplicate/overlap with the Executive Summary's 'Most notable risk flag' bullet almost verbatim, indicating redundant content generation rather than distinct analytical sections."
+  ],
+  "improvement_suggestions": [
+    "Add an explicit reconciliation step in the prompt: before generating any 'Total Events' figures, sum the category counts from the dataset summary and use that exact number consistently across the executive summary, scorecard header, and footer, rather than allowing different subsets (e.g., 191, 663, 779) to appear without explanation.",
+    "Instruct the model to always cross-check every stated per-category event count (e.g., 'X political_violence_targeting_civilians events') directly against the dataset summary's 'By category' dictionary and use the exact figures verbatim, not paraphrased or rounded incorrectly.",
+    "Require the prompt to define and print the Risk Scorecard's scoring scale/methodology (e.g., '0=stable/low risk, 10=high risk' or vice versa) directly beneath the scorecard table so readers can interpret sub-scores like 'Political Stability 0.8' without ambiguity.",
+    "Add a rule that source names appearing in the closing citation/footer list must be restricted strictly to sources present in the dataset summary's 'By source' field \u2014 do not append boilerplate source names (e.g., Bellingcat, UNOSAT) unless they actually contributed records to this specific report's dataset.",
+    "Add a formatting rule to translate all raw CAMEO codes and GDELT actor-pair notations into plain-language descriptions (e.g., 'CAMEO 182: use of unconventional violence' or a short parenthetical gloss) rather than presenting codes like '(CAMEO 182)' or 'KENYA <-> SCHOOL' unexplained.",
+    "Instruct the model to deduplicate near-identical content between the Executive Summary risk flag and the later 'Risk flags' section \u2014 either cross-reference ('see Risk Flags section below') or vary the framing/detail level so the two sections are not redundant.",
+    "Add an explicit instruction to flag and investigate suspicious data patterns, such as multiple financing records sharing an identical placeholder date (2024-01-01), and disclose this as a specific data-quality caveat rather than only offering a generic staleness note.",
+    "Add a validation step requiring the model to state the total ingested event count once, consistently, and cite where that number appears in the dataset summary, rather than allowing different totals (191 vs 663 vs 779) to appear in different parts of the same report without a reconciling footnote."
+  ]
+}
