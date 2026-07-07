@@ -22,6 +22,7 @@ from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
 from scripts.lib.commodity_data import fetch_commodity_snapshot
 from scripts.ingestion.unctad_maritime_fetch import load_maritime_stats
+from scripts.lib.supabase_auth import get_config as get_auth_config, sign_in, sign_up, fetch_profiles
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
     compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier, top_n_badges,
@@ -1901,10 +1902,82 @@ df = prepare_dataframe(events)
 # is active, which is the closest native equivalent -- rendered here,
 # before the view router, so it shows on About/Contact too, not just the
 # main dashboard tabs.
+def render_auth_sidebar(auth_config: dict | None):
+    """Login/signup UI in the sidebar. Only the Research Assistant chatbot
+    is gated (it's the one live paid-API surface on the site); everything
+    else stays open so Chris can share the link freely. Session state keys:
+    auth_token / auth_email / auth_name."""
+    if auth_config is None:
+        return  # auth not configured (e.g. local dev without secrets) -- no login UI
+
+    if st.session_state.get("auth_token"):
+        st.caption(f"Signed in as {st.session_state.get('auth_name') or st.session_state.get('auth_email')}")
+        if st.button("Log out", key="auth_logout"):
+            for key in ("auth_token", "auth_email", "auth_name"):
+                st.session_state.pop(key, None)
+            st.rerun()
+        return
+
+    with st.expander("Log in / Sign up", expanded=False):
+        login_tab, signup_tab = st.tabs(["Log in", "Create account"])
+        with login_tab:
+            login_email = st.text_input("Email", key="login_email")
+            login_password = st.text_input("Password", type="password", key="login_password")
+            if st.button("Log in", key="auth_login_btn"):
+                result = sign_in(auth_config, login_email.strip(), login_password)
+                if result["ok"]:
+                    st.session_state.auth_token = result["access_token"]
+                    st.session_state.auth_email = result["email"]
+                    st.session_state.auth_name = result["full_name"]
+                    st.rerun()
+                else:
+                    st.error(result["message"])
+        with signup_tab:
+            signup_name = st.text_input("Full name", key="signup_name")
+            signup_email = st.text_input("Email", key="signup_email")
+            signup_password = st.text_input("Password (8+ characters)", type="password", key="signup_password")
+            if st.button("Create account", key="auth_signup_btn"):
+                if not signup_name.strip() or not signup_email.strip() or len(signup_password) < 8:
+                    st.error("Please fill in your name, email, and a password of at least 8 characters.")
+                else:
+                    result = sign_up(auth_config, signup_email.strip(), signup_password, signup_name.strip())
+                    (st.success if result["ok"] else st.error)(result["message"])
+
+
+def render_admin_panel(auth_config: dict | None):
+    """Member admin -- only rendered for the admin email, and the data
+    itself is additionally protected server-side by Supabase RLS (a
+    non-admin token gets zero rows back from Postgres even if they somehow
+    render this panel)."""
+    if (auth_config is None or not st.session_state.get("auth_token")
+            or st.session_state.get("auth_email", "").lower() != auth_config["admin_email"].lower()):
+        return
+    with st.expander("👥 Member admin", expanded=False):
+        result = fetch_profiles(auth_config, st.session_state.auth_token)
+        if not result["ok"]:
+            st.error(result["message"])
+            return
+        profiles = result["profiles"]
+        st.caption(f"{len(profiles)} member(s) signed up.")
+        if profiles:
+            members_df = pd.DataFrame(profiles).rename(columns={
+                "full_name": "Name", "email": "Email", "created_at": "Signed up",
+            })
+            members_df["Signed up"] = members_df["Signed up"].str[:16].str.replace("T", " ")
+            st.dataframe(members_df, use_container_width=True, hide_index=True)
+
+
+_AUTH_CONFIG = get_auth_config()
+
 with st.sidebar:
     st.markdown("### 💬 Research Assistant")
-    with st.expander("Open chat", expanded=True):
-        render_research_assistant(df)
+    render_auth_sidebar(_AUTH_CONFIG)
+    if _AUTH_CONFIG is not None and not st.session_state.get("auth_token"):
+        st.info("The Research Assistant is available to members -- log in or create a free account above.")
+    else:
+        with st.expander("Open chat", expanded=True):
+            render_research_assistant(df)
+    render_admin_panel(_AUTH_CONFIG)
     st.markdown("---")
 
 # Simple query-param page router -- About and Contact Us are deliberately
