@@ -160,7 +160,14 @@ def normalize_gdelt_event(record: dict) -> dict | None:
         "narrative_summary": narrative_summary,
         "source_url": record.get("SOURCEURL"),
         "ingested_at": datetime.now(timezone.utc).isoformat(),
-        "raw_source_data": record,
+        # None, not the raw record (same precedent as aiddata_normalize):
+        # GDELT is the highest-volume source by far, and keeping the full
+        # 60-column raw record per event was 55% of a 72MB file pushing
+        # merged_dataset.json toward GitHub's 100MB hard limit (measured
+        # 2026-07-07). Nothing downstream reads it -- reasoning_agent
+        # explicitly excludes it -- and any raw record is refetchable from
+        # GDELT's public archive by the GLOBALEVENTID in source_event_id.
+        "raw_source_data": None,
     }
 
 

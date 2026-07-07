@@ -32,6 +32,17 @@ def build() -> list[dict]:
         with open(path, "r", encoding="utf-8") as f:
             events.extend(json.load(f))
 
+    # merged_dataset.json is the PRESENTATION dataset -- it's what the
+    # deployed app loads and what gets committed to git. Nothing downstream
+    # reads raw_source_data from it (dashboard, knowledge base, reasoning
+    # agent all ignore it), and it was the single biggest contributor to
+    # this file approaching GitHub's 100MB hard limit (measured 2026-07-07).
+    # The per-source *_latest_normalized.json files keep their raw payloads
+    # where their normalizers retain them (ACLED, WorldBank, IMF) -- audit
+    # trail preserved there, not here.
+    for event in events:
+        event["raw_source_data"] = None
+
     events = resolve_batch(events)
     events, removed = dedupe_conflict_events(events)
 

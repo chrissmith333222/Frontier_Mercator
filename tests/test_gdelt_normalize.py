@@ -201,10 +201,15 @@ def test_batch_normalization_filters_and_skips():
     print(f"✓ test_batch_normalization_filters_and_skips passed ({len(results)}/3 normalized)")
 
 
-def test_raw_data_preserved_for_audit():
+def test_raw_data_dropped_for_size():
+    """GDELT deliberately does NOT keep raw_source_data (aiddata precedent:
+    highest-volume source, raw record was 55% of a 72MB file pushing the
+    merged dataset toward GitHub's 100MB hard limit). Raw records remain
+    refetchable from GDELT's archive via source_event_id."""
     result = normalize_gdelt_event(SAMPLE_FIGHT_EVENT)
-    assert result["raw_source_data"] == SAMPLE_FIGHT_EVENT
-    print("✓ test_raw_data_preserved_for_audit passed")
+    assert result["raw_source_data"] is None
+    assert result["source_event_id"]  # the refetch key must still be present
+    print("✓ test_raw_data_dropped_for_size passed")
 
 
 def test_fetch_article_headline_extracts_title_tag():
