@@ -373,6 +373,16 @@ st.markdown(f"""
         margin-bottom: 1rem;
     }}
 
+    /* Thin section divider between information types within a tab --
+       subtler than .header-line (which marks the page header), same
+       gold-to-navy brand gradient language. */
+    .fm-divider {{
+        height: 1px;
+        background: linear-gradient(90deg, {b.GOLD} 0%, {b.BORDER} 35%, transparent 100%);
+        margin: 1.1rem 0 1.1rem 0;
+        border: none;
+    }}
+
     .fm-panel {{
         background-color: {b.PANEL};
         border: 1px solid {b.BORDER};
@@ -668,7 +678,7 @@ def _load_market_snapshot() -> dict:
     return fetch_market_snapshot()
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def _load_discovered_insights() -> dict:
     """Reads the cached correlation-discovery insights (see
     scripts/analytics/correlation_discovery.py -- generated offline, read
@@ -696,6 +706,13 @@ def _cached_country_graph(country: str) -> dict:
     return build_country_graph(load_events(), country)
 
 
+def _divider():
+    """Thin branded divider between information types on a page (Chris:
+    'clearer divisions between information types that are being presented
+    on the screen')."""
+    st.markdown('<div class="fm-divider"></div>', unsafe_allow_html=True)
+
+
 def _quote_color(change: float) -> str:
     if change > 0:
         return b.LOW  # green
@@ -712,32 +729,17 @@ def _quote_arrow(change: float) -> str:
     return "—"
 
 
-def render_market_ticker():
-    """Live-updating stock market tracker -- major US indices, foreign
-    markets, and market movers, color-coded green/red by daily change.
-    See scripts/lib/market_data.py for why this calls a live API directly
-    from the deployed app (a deliberate exception to this project's usual
-    "keep API calls off the deployed site" pattern)."""
+def render_ticker_banner():
+    """The thin scrolling marquee only -- full-width strip at the top of
+    Markets & Economy. The per-market quote lists live in the right-hand
+    rail (render_quotes_rail), per Chris's 2026-07-08 layout direction:
+    'push all the stock, commodities, and market movers tickers to the
+    right side of the site.'"""
     snapshot = _load_market_snapshot()
     all_quotes = snapshot["us_indices"] + snapshot["foreign_indices"] + snapshot["movers"]
     if not all_quotes:
         st.info("Market data temporarily unavailable.")
         return
-
-    # Freshness stamp + manual refresh. Quotes refresh automatically no
-    # more than every 5 minutes (cache TTL), and only when the page
-    # actually reruns (any interaction) -- Streamlit can't push updates to
-    # an idle page, so an untouched tab CAN show stale quotes. The stamp
-    # makes that visible instead of misleading; the button forces a fresh
-    # pull immediately.
-    stamp_col, refresh_col = st.columns([0.8, 0.2])
-    with stamp_col:
-        st.caption(f"Quotes current as of: {snapshot.get('fetched_at', 'unknown')} "
-                   f"(auto-refreshes every 5 min on page activity)")
-    with refresh_col:
-        if st.button("Refresh quotes", key="refresh_market"):
-            _load_market_snapshot.clear()
-            st.rerun()
 
     ticker_items = "".join(
         f'<span class="fm-ticker-item">{q["label"]} '
@@ -756,26 +758,59 @@ def render_market_ticker():
         unsafe_allow_html=True,
     )
 
-    st.caption(f"Live market data (Yahoo Finance, ~15-min delayed), refreshed every 5 minutes.")
 
-    col1, col2, col3 = st.columns(3)
-    for col, title, quotes in (
-        (col1, "US Indices", snapshot["us_indices"]),
-        (col2, "Foreign Markets", snapshot["foreign_indices"]),
-        (col3, "Market Movers", snapshot["movers"]),
+def _render_quote_rows(quotes: list[dict]):
+    for q in quotes:
+        color = _quote_color(q["change"])
+        st.markdown(
+            f'<div class="fm-quote-row">'
+            f'<span>{q["label"]}</span>'
+            f'<span><b>{q["price"]:,.2f}</b> '
+            f'<span style="color:{color};">{_quote_arrow(q["change"])} {q["change_pct"]:+.2f}%</span></span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+
+def render_quotes_rail():
+    """Right-hand market rail: US indices, foreign markets, market movers,
+    and commodities stacked compactly down the side of the Markets &
+    Economy tab -- keeps the main column free for the analytical content
+    (sub-tabs) while prices stay glanceable."""
+    snapshot = _load_market_snapshot()
+    all_quotes = snapshot["us_indices"] + snapshot["foreign_indices"] + snapshot["movers"]
+    if not all_quotes:
+        st.info("Market data temporarily unavailable.")
+        return
+
+    # Freshness stamp + manual refresh. Quotes refresh automatically no
+    # more than every 5 minutes (cache TTL), and only when the page
+    # actually reruns (any interaction) -- Streamlit can't push updates to
+    # an idle page, so an untouched tab CAN show stale quotes. The stamp
+    # makes that visible instead of misleading; the button forces a fresh
+    # pull immediately.
+    st.caption(f"Quotes as of {snapshot.get('fetched_at', 'unknown')} "
+               f"(Yahoo Finance, ~15-min delayed; auto-refresh every 5 min on activity)")
+    if st.button("Refresh quotes", key="refresh_market"):
+        _load_market_snapshot.clear()
+        _load_commodity_snapshot.clear()
+        st.rerun()
+
+    for title, quotes in (
+        ("US Indices", snapshot["us_indices"]),
+        ("Foreign Markets", snapshot["foreign_indices"]),
+        ("Market Movers", snapshot["movers"]),
     ):
-        with col:
-            st.markdown(f"**{title}**")
-            for q in quotes:
-                color = _quote_color(q["change"])
-                st.markdown(
-                    f'<div class="fm-quote-row">'
-                    f'<span>{q["label"]}</span>'
-                    f'<span><b>{q["price"]:,.2f}</b> '
-                    f'<span style="color:{color};">{_quote_arrow(q["change"])} {q["change_pct"]:+.2f}%</span></span>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
+        st.markdown(f"**{title}**")
+        _render_quote_rows(quotes)
+        _divider()
+
+    commodity_snapshot = _load_commodity_snapshot()
+    for group_name, quotes in commodity_snapshot.get("groups", {}).items():
+        st.markdown(f"**{group_name}**")
+        _render_quote_rows(quotes)
+        _divider()
+    st.caption("Lithium/Uranium via sector ETF proxy -- no direct futures ticker exists for either.")
 
 
 @st.cache_data
@@ -825,7 +860,7 @@ def render_commodity_ticker():
                 )
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def _load_maritime_stats() -> dict:
     """Reads the cached UNCTAD maritime stats file (generated offline by
     scripts/ingestion/unctad_maritime_fetch.py, read statically here --
@@ -909,7 +944,7 @@ def render_price_history_explorer():
     st.caption("Yahoo Finance data, ~15-min delayed; interval scales with range (5-minute bars for 1D, monthly for 10Y/Max).")
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def _load_investment_theses() -> dict:
     """Reads the cached investment theses (scripts/analytics/
     investment_theses.py -- generated offline, read statically here, same
@@ -1070,6 +1105,7 @@ def render_maritime_dashboard():
         )
         st.plotly_chart(fig, use_container_width=True, key="maritime_lsci_chart")
 
+    _divider()
     chart_col1, chart_col2 = st.columns(2)
 
     # --- Container throughput (yearly) ---
@@ -1118,6 +1154,7 @@ def render_maritime_dashboard():
             st.info("No seaborne trade data for this country.")
 
     # --- Cross-country snapshot ---
+    _divider()
     st.markdown("#### Connectivity Snapshot Across Tracked Countries")
     st.caption("Latest liner shipping connectivity reading per country, with latest container throughput where available.")
     rows = []
@@ -1235,30 +1272,10 @@ def render_footer(df):
 
 
 def render_conflict_dashboard(df_filtered, news_df=None):
-    st.markdown(
-        "Security-relevant events — conflict, protest, political violence — from ACLED and GDELT. "
-        "ACLED and GDELT are refreshed manually (not on a schedule) whenever the ingestion scripts are "
-        "re-run -- see the Corroborated Signal tab for conflict-shaped news/social activity that may "
-        "be more current between refreshes."
-    )
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.metric(
-            "Total Events", f"{len(df_filtered):,}",
-            f"Latest: {df_filtered['event_date'].max().strftime('%Y-%m-%d') if len(df_filtered) > 0 else 'N/A'}"
-        )
-    with col2:
-        st.metric("Critical Events", len(df_filtered[df_filtered['severity_score'] >= 7]))
-    with col3:
-        st.metric("High Severity", len(df_filtered[
-            (df_filtered['severity_score'] >= 5) & (df_filtered['severity_score'] < 7)
-        ]))
-    with col4:
-        st.metric("Countries", df_filtered['country'].nunique())
-    with col5:
-        st.metric("Total Fatalities", f"{int(df_filtered['fatalities'].fillna(0).sum()):,}")
-
+    # Sub-tabs render FIRST, directly under the main tab row (Chris,
+    # 2026-07-08: "all the sub tabs directly below the initial tab...
+    # not way down in the middle of the page"). The summary metrics and
+    # intro caption moved inside the Analytics sub-tab.
     analytics_tab, critical_tab, corroborated_tab = st.tabs(
         ["Analytics", "Critical Events", "Corroborated Signal"]
     )
@@ -1268,6 +1285,29 @@ def render_conflict_dashboard(df_filtered, news_df=None):
     # just be a redundant, conflict-only duplicate of it.
 
     with analytics_tab:
+        st.markdown(
+            "Security-relevant events — conflict, protest, political violence — from ACLED and GDELT. "
+            "See the Corroborated Signal tab for conflict-shaped news/social activity that may "
+            "be more current between data refreshes."
+        )
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.metric(
+                "Total Events", f"{len(df_filtered):,}",
+                f"Latest: {df_filtered['event_date'].max().strftime('%Y-%m-%d') if len(df_filtered) > 0 else 'N/A'}"
+            )
+        with col2:
+            st.metric("Critical Events", len(df_filtered[df_filtered['severity_score'] >= 7]))
+        with col3:
+            st.metric("High Severity", len(df_filtered[
+                (df_filtered['severity_score'] >= 5) & (df_filtered['severity_score'] < 7)
+            ]))
+        with col4:
+            st.metric("Countries", df_filtered['country'].nunique())
+        with col5:
+            st.metric("Total Fatalities", f"{int(df_filtered['fatalities'].fillna(0).sum()):,}")
+        _divider()
+
         col1, col2 = st.columns(2)
         with col1:
             severity_counts = df_filtered['severity_label'].value_counts().reindex(
@@ -1376,22 +1416,32 @@ def render_conflict_dashboard(df_filtered, news_df=None):
 
 
 def render_markets_dashboard(econ_df):
-    render_market_ticker()
-    with st.expander("📈 Price History — chart any stock, index, or commodity over time", expanded=False):
-        render_price_history_explorer()
-    st.markdown(
-        "Macroeconomic indicators (World Bank/IMF) and investment project tracking — "
-        "who's actually putting capital into these markets, not just how the macro numbers look."
-    )
+    # Layout (Chris, 2026-07-08): thin marquee on top, then the analytical
+    # content (sub-tabs FIRST, directly under the main tab row) in a wide
+    # main column with all the stock/commodity quote lists pushed into a
+    # right-hand rail. Price History keeps its spot in the main column,
+    # below the sub-tab block.
+    render_ticker_banner()
+    _divider()
+
     if len(econ_df) == 0:
         st.info("No economic/investment data loaded yet.")
         return
 
-    (indicators_tab, investment_tab, commodities_tab, maritime_tab, demographics_tab,
-     insights_tab, theses_tab) = st.tabs(
-        ["Macro Indicators", "Investment Projects", "Commodities", "Shipping & Maritime",
-         "Demographics", "Discovered Insights", "Investment Insights"]
-    )
+    content_col, rail_col = st.columns([0.74, 0.26], gap="large")
+
+    with rail_col:
+        render_quotes_rail()
+
+    with content_col:
+        (indicators_tab, investment_tab, commodities_tab, maritime_tab, demographics_tab,
+         insights_tab, theses_tab) = st.tabs(
+            ["Macro Indicators", "Investment Projects", "Commodities", "Shipping & Maritime",
+             "Demographics", "Discovered Insights", "Investment Insights"]
+        )
+        _divider()
+        with st.expander("📈 Price History — chart any stock, index, or commodity over time", expanded=False):
+            render_price_history_explorer()
 
     with theses_tab:
         render_investment_theses()
@@ -1425,9 +1475,16 @@ def render_markets_dashboard(econ_df):
                 f"Generated {insights_data['generated_at'][:10]} — "
                 f"{len(insights_data['insights'])} insight(s) kept from "
                 f"{insights_data['total_hits_screened']} statistically significant hits "
-                f"(hundreds of tests screened)."
+                f"(hundreds of tests screened). Regenerated twice weekly (Mon/Thu) as new "
+                f"event and price data lands; display order rotates daily."
             )
-            for insight in insights_data["insights"]:
+            # Rotate display order daily (deterministic by date) so repeat
+            # visits between regenerations don't always lead with the same
+            # insight -- Chris: "either refresh or rotate the insights."
+            import random as _random
+            insights_rotated = list(insights_data["insights"])
+            _random.Random(pd.Timestamp.utcnow().strftime("%Y-%m-%d")).shuffle(insights_rotated)
+            for insight in insights_rotated:
                 st.markdown(
                     f'<div class="fm-news-card-top" style="margin-bottom:1rem;">'
                     f"<div><strong>{insight['headline']}</strong></div>"
@@ -1527,6 +1584,7 @@ def render_markets_dashboard(econ_df):
         else:
             st.info("No data for this country/indicator combination.")
 
+        _divider()
         st.markdown("#### Latest Snapshot Across Tracked Countries")
         latest = (
             indicator_df[indicator_df['event_subtype'] == indicator_choice]
@@ -1542,6 +1600,10 @@ def render_markets_dashboard(econ_df):
         st.dataframe(latest, use_container_width=True, hide_index=True)
 
     with indicators_tab:
+        st.markdown(
+            "Macroeconomic indicators (World Bank/IMF) — how the macro numbers look per country, "
+            "alongside the investment-project tracking in the next tab."
+        )
         indicator_df = econ_df[econ_df['event_category'] == b.ECON_CATEGORY]
         _render_indicator_explorer(indicator_df, "No macro indicator data loaded yet.", "econ")
 
