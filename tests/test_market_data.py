@@ -110,6 +110,46 @@ def test_fetch_market_snapshot_empty_when_all_unavailable():
     print("✓ test_fetch_market_snapshot_empty_when_all_unavailable passed")
 
 
+def test_fetch_price_history_returns_dates_and_closes():
+    import pandas as pd
+    from scripts.lib.market_data import fetch_price_history
+
+    idx = pd.date_range("2026-01-01", periods=3, freq="D")
+    frame = pd.DataFrame({"Close": [10.0, 11.5, 12.25]}, index=idx)
+
+    class _FakeHistTicker:
+        def __init__(self, symbol): pass
+        def history(self, period, interval): return frame
+
+    result = fetch_price_history("AAPL", "1M", ticker_factory=_FakeHistTicker)
+    assert result["closes"] == [10.0, 11.5, 12.25]
+    assert len(result["dates"]) == 3
+    assert result["period"] == "1M"
+    print("✓ test_fetch_price_history_returns_dates_and_closes passed")
+
+
+def test_fetch_price_history_empty_on_no_data():
+    import pandas as pd
+    from scripts.lib.market_data import fetch_price_history
+
+    class _EmptyTicker:
+        def __init__(self, symbol): pass
+        def history(self, period, interval): return pd.DataFrame()
+
+    result = fetch_price_history("DEADTICKER", "5Y", ticker_factory=_EmptyTicker)
+    assert result["closes"] == []
+    assert result["dates"] == []
+    print("✓ test_fetch_price_history_empty_on_no_data passed")
+
+
+def test_history_periods_cover_day_to_lifetime():
+    from scripts.lib.market_data import HISTORY_PERIODS
+    # Chris's explicit ask: last day, week, month, 6 months, year, 5y, 10y, lifetime
+    for label in ("1D", "5D", "1M", "6M", "1Y", "5Y", "10Y", "Max"):
+        assert label in HISTORY_PERIODS
+    print("✓ test_history_periods_cover_day_to_lifetime passed")
+
+
 if __name__ == "__main__":
     test_functions = [v for k, v in list(globals().items()) if k.startswith("test_")]
     print(f"Running {len(test_functions)} tests...\n")

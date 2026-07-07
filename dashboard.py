@@ -19,8 +19,12 @@ from scripts import branding as b
 from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_LABELS
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
-from scripts.lib.market_data import fetch_market_snapshot
-from scripts.lib.commodity_data import fetch_commodity_snapshot
+from scripts.lib.market_data import (
+    fetch_market_snapshot, fetch_price_history, HISTORY_PERIODS,
+    US_INDICES, FOREIGN_INDICES, MARKET_MOVERS,
+)
+from scripts.lib.commodity_data import fetch_commodity_snapshot, COMMODITIES as COMMODITY_TICKERS
+from scripts.lib.instrument_universe import INSTRUMENTS as INVESTMENT_INSTRUMENTS
 from scripts.ingestion.unctad_maritime_fetch import load_maritime_stats
 from scripts.lib.supabase_auth import get_config as get_auth_config, sign_in, sign_up, fetch_profiles
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
@@ -829,6 +833,82 @@ def _load_maritime_stats() -> dict:
     return load_maritime_stats()
 
 
+@st.cache_data(ttl=300)
+def _load_price_history(symbol: str, period_label: str) -> dict:
+    """Live Yahoo Finance history, cached 5 min per (symbol, period) --
+    same TTL reasoning as the quote snapshot."""
+    return fetch_price_history(symbol, period_label)
+
+
+def _price_chart_symbols() -> dict:
+    """label -> ticker for every symbol the price-history explorer offers:
+    the ticker banner's indices/movers, all tracked commodities, and the
+    verified investment-universe instruments (so anything named in an
+    Investment Insights thesis can be charted on the spot)."""
+    options = {}
+    for symbol, label in US_INDICES + FOREIGN_INDICES + MARKET_MOVERS:
+        options[f"{label} ({symbol})"] = symbol
+    for symbol, name in COMMODITY_TICKERS.items():
+        options[f"{name} ({symbol})"] = symbol
+    for symbol, (name, _layer, _note) in INVESTMENT_INSTRUMENTS.items():
+        key = f"{name} ({symbol})"
+        options.setdefault(key, symbol)
+    return options
+
+
+def render_price_history_explorer():
+    """Interactive historical price charts -- pick any tracked stock,
+    index, commodity, or thesis instrument and a time range (1 day to
+    lifetime) and see the trend (Chris, 2026-07-07: 'I want to be able to
+    click on the stock and see a chart with the historical prices over
+    time')."""
+    st.markdown("#### Price History")
+    options = _price_chart_symbols()
+    pick_col, range_col = st.columns([0.55, 0.45])
+    with pick_col:
+        choice = st.selectbox("Stock / index / commodity", options=sorted(options),
+                               key="price_history_symbol")
+    with range_col:
+        period_label = st.radio(
+            "Range", options=list(HISTORY_PERIODS), index=5, horizontal=True,
+            key="price_history_period",
+        )
+
+    symbol = options[choice]
+    history = _load_price_history(symbol, period_label)
+    if not history["closes"]:
+        st.info("No price history available for this symbol/range combination.")
+        return
+
+    closes, dates = history["closes"], history["dates"]
+    first_price, last_price = closes[0], closes[-1]
+    change = last_price - first_price
+    change_pct = (change / first_price * 100) if first_price else 0.0
+    color = b.LOW if change >= 0 else b.CRITICAL
+
+    st.markdown(
+        f'<span style="font-size:1.5rem;font-weight:700;">{last_price:,.2f}</span> '
+        f'<span style="color:{color};font-weight:600;">{_quote_arrow(change)} '
+        f'{change:+,.2f} ({change_pct:+.2f}%)</span>'
+        f'<span style="color:{b.TEXT_MUTED};"> over {period_label}</span>',
+        unsafe_allow_html=True,
+    )
+
+    fig = go.Figure(data=[go.Scatter(
+        x=dates, y=closes, mode="lines",
+        line=dict(color=color, width=2),
+        fill="tozeroy", fillcolor=f"rgba({int(color[1:3],16)},{int(color[3:5],16)},{int(color[5:7],16)},0.08)",
+        hovertemplate="<b>%{x}</b><br>%{y:,.2f}<extra></extra>",
+    )])
+    fig.update_layout(
+        template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+        height=380, margin=dict(l=40, r=20, t=20, b=40),
+        yaxis=dict(range=[min(closes) * 0.98, max(closes) * 1.02]),
+    )
+    st.plotly_chart(fig, use_container_width=True, key="price_history_chart")
+    st.caption("Yahoo Finance data, ~15-min delayed; interval scales with range (5-minute bars for 1D, monthly for 10Y/Max).")
+
+
 @st.cache_data
 def _load_investment_theses() -> dict:
     """Reads the cached investment theses (scripts/analytics/
@@ -1297,6 +1377,8 @@ def render_conflict_dashboard(df_filtered, news_df=None):
 
 def render_markets_dashboard(econ_df):
     render_market_ticker()
+    with st.expander("📈 Price History — chart any stock, index, or commodity over time", expanded=False):
+        render_price_history_explorer()
     st.markdown(
         "Macroeconomic indicators (World Bank/IMF) and investment project tracking — "
         "who's actually putting capital into these markets, not just how the macro numbers look."

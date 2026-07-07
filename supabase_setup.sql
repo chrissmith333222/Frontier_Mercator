@@ -1,18 +1,19 @@
--- supabase_setup.sql  (v2 -- no auth.users trigger)
+-- supabase_setup.sql  (v3 -- zero references to the auth schema)
 --
 -- One-time setup for Frontier Mercator's member auth. Paste this whole file
 -- into the Supabase dashboard's SQL Editor (left sidebar -> SQL Editor ->
 -- New query -> paste -> Run) for project bfushelwyvkznaagqqdu.
 --
--- v2 note: the original version created a trigger on auth.users, which
--- fails with a permissions error on newer Supabase projects (the auth
--- schema is locked down, even for the SQL editor). This version needs no
--- trigger: the dashboard upserts the member's own profile row right after
--- each successful login instead, and row-level security guarantees a user
--- can only ever write their OWN row and only the admin can read the list.
+-- v3 note: v1 failed on a trigger on auth.users; v2 removed the trigger
+-- but still had a foreign key REFERENCING auth.users, which can also hit
+-- the locked-down auth schema on newer projects. This version touches
+-- ONLY the public schema -- nothing here can fail on auth-schema
+-- permissions. The id column still holds the Supabase auth user's uuid
+-- (the dashboard supplies it on login); it's just no longer a declared
+-- foreign key, which costs us nothing except automatic cascade-delete.
 
 create table if not exists public.profiles (
-    id uuid primary key references auth.users (id) on delete cascade,
+    id uuid primary key,
     full_name text,
     email text,
     created_at timestamptz not null default now()
@@ -21,7 +22,8 @@ create table if not exists public.profiles (
 alter table public.profiles enable row level security;
 
 -- Members may create/update ONLY their own row (the dashboard does this
--- automatically on login).
+-- automatically on each login). auth.uid() reads the caller's verified
+-- JWT -- a member cannot forge someone else's id.
 drop policy if exists "users insert own profile" on public.profiles;
 create policy "users insert own profile"
     on public.profiles for insert

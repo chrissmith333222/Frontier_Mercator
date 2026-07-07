@@ -98,6 +98,52 @@ def _fetch_quotes(symbol_labels: list[tuple[str, str]], tickers_factory=None) ->
     return quotes
 
 
+# Period label -> (yfinance period, yfinance interval). Interval scales
+# with range so charts stay readable (5-minute bars for a 1-day view,
+# monthly bars for a lifetime view) and responses stay small.
+HISTORY_PERIODS = {
+    "1D": ("1d", "5m"),
+    "5D": ("5d", "30m"),
+    "1M": ("1mo", "1d"),
+    "6M": ("6mo", "1d"),
+    "YTD": ("ytd", "1d"),
+    "1Y": ("1y", "1d"),
+    "5Y": ("5y", "1wk"),
+    "10Y": ("10y", "1mo"),
+    "Max": ("max", "1mo"),
+}
+
+
+def fetch_price_history(symbol: str, period_label: str, ticker_factory=None) -> dict:
+    """Historical closes for one symbol at a range-appropriate interval --
+    Chris: 'click on the stock and see a chart with the historical prices
+    over time.' Returns {"dates": [...], "closes": [...], "period": label}
+    or empty lists when Yahoo has nothing (delisted symbol, bad period).
+    Same live-yfinance exception as the rest of this module. `ticker_factory`
+    is injectable for tests."""
+    import warnings
+
+    if ticker_factory is None:
+        ticker_factory = yf.Ticker
+    period, interval = HISTORY_PERIODS.get(period_label, ("1y", "1d"))
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        try:
+            history = ticker_factory(symbol).history(period=period, interval=interval)
+        except Exception:
+            return {"dates": [], "closes": [], "period": period_label}
+
+    if history is None or history.empty or "Close" not in history:
+        return {"dates": [], "closes": [], "period": period_label}
+    closes = history["Close"].dropna()
+    return {
+        "dates": [idx.isoformat() for idx in closes.index],
+        "closes": [round(float(v), 4) for v in closes],
+        "period": period_label,
+    }
+
+
 def fetch_market_snapshot(tickers_factory=None) -> dict:
     """Returns {"us_indices", "foreign_indices", "movers"}, each a list of
     quote dicts. Any category can come back empty if Yahoo Finance is
