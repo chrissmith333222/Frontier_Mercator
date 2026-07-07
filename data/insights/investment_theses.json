@@ -1,0 +1,433 @@
+{
+  "generated_at": "2026-07-07T15:44:17.732119+00:00",
+  "model": "claude-sonnet-5",
+  "instruments_verified": 62,
+  "theses": [
+    {
+      "headline": "West African copperbelt-adjacent and central-African copper producers outperform over 12 months as copper's 12-month price surge (+36.8%) compounds with DRC/Zambia project financing momentum.",
+      "geography": "DRC / Zambia / Central Africa",
+      "sector": "Copper/critical minerals",
+      "horizon_months": 12,
+      "conviction": "high",
+      "rationale": "Copper is the strongest-momentum industrial metal in the commodity set (+5.2% 3m, +36.8% 12m), and the intelligence shows concrete capital deployment riding that cycle: Zambia's ~$10bn four-year mining capex plan and the $710M Luanshya redevelopment targeting >1Mt copper output in 2026, DRC's Kamoa-Kakula-anchored Ivanhoe project, and Angola's Lobito Corridor logistics buildout explicitly enabling copper/rare-earth export growth (AfDB, July 2026). The Mozambique/Kenya conflict-leads-copper correlation (r=0.65-0.70) further flags that copper-linked resource-corridor activity is generating measurable on-the-ground economic signal, consistent with a live investment cycle rather than a dormant one.",
+      "supporting_signals": [
+        "Copper +5.2% 3m / +36.8% 12m (Yahoo Finance, 2026-07)",
+        "Zambia: ~$10bn mining capex over 4 years (Mines Minister Kabuswe) plus $710M Luanshya redevelopment targeting August 2026 output",
+        "Angola: Lobito Corridor $553M DFC lending + $800M World Bank PPI port/rail rehab, linked to ~$2bn nondiamond mining/rare earth investment (AfDB, July 2026)",
+        "DRC: Ivanhoe Kamoa-Kakula copper complex and Port of Banana $1.2B seaport concession signal sustained capital absorption in copper logistics"
+      ],
+      "risks": [
+        "Copper price momentum could reverse sharply if China demand or global risk sentiment turns (as the South Sudan correlation note warns, metals correlations may reflect a common global cycle rather than durable fundamentals)",
+        "DRC/Zambia security and expropriation risk remains structurally elevated; FQVLF and IVPAF are thinly traded with material single-country concentration",
+        "Currency and repatriation risk in kwacha/Congolese franc could erode USD returns even if copper prices hold",
+        "Lobito Corridor and Luanshya projects are multi-year builds -- execution slippage could delay the offtake/production ramp this thesis assumes"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "PICK",
+            "role": "Global diversified miners ex-gold -- broad, liquid way to ride copper's price cycle without single-country African risk, diluting the specific DRC/Zambia catalyst.",
+            "name": "iShares MSCI Global Metals & Mining Producers ETF",
+            "layer": "sector_etf"
+          },
+          {
+            "ticker": "COPX",
+            "role": "Copper miners sector ETF -- more concentrated copper-price beta than PICK while still diversified across global producers, a compromise between purity and liquidity.",
+            "name": "Global X Copper Miners ETF",
+            "layer": "sector_etf"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "GOLD",
+            "role": "Barrick Mining has direct African production exposure (Mali, Tanzania, DRC) -- large-cap liquidity with real Africa-copperbelt-adjacent operating footprint.",
+            "name": "Barrick Mining",
+            "layer": "company"
+          },
+          {
+            "ticker": "FCX",
+            "role": "Freeport-McMoRan as a large-cap, highly liquid pure copper-price proxy -- no direct African assets, so it expresses the commodity thesis but not the corridor-specific story.",
+            "name": "Freeport-McMoRan",
+            "layer": "company"
+          }
+        ],
+        "aggressive": [
+          {
+            "ticker": "FQVLF",
+            "role": "First Quantum Minerals -- direct Zambia copperbelt operator, the closest single-stock expression of the Zambia capex buildout, but illiquid with concentrated country risk.",
+            "name": "First Quantum Minerals",
+            "layer": "company"
+          },
+          {
+            "ticker": "IVPAF",
+            "role": "Ivanhoe Mines -- direct Kamoa-Kakula DRC exposure, the purest single-name play on the DRC copper narrative, carrying DRC political/security and liquidity risk.",
+            "name": "Ivanhoe Mines",
+            "layer": "company"
+          },
+          {
+            "ticker": "HG=F",
+            "role": "Direct copper futures -- cleanest expression of the price-momentum leg of the thesis with no equity/country overlay, but carries full commodity roll and volatility risk.",
+            "name": "Copper futures",
+            "layer": "futures"
+          }
+        ]
+      }
+    },
+    {
+      "headline": "Gold-mining equities with West African production bases stay bid over 6-12 months as gold's 12-month rally (+26.4%) persists alongside state-partnership extractives momentum in Mali, Burkina Faso and Sudan.",
+      "geography": "Mali / Burkina Faso / Sudan / West Africa",
+      "sector": "Gold mining",
+      "horizon_months": 9,
+      "conviction": "high",
+      "rationale": "Gold remains up 26.4% over 12 months even after a 9.5% three-month pullback, and West African/Sahel gold production is structurally central to state finances: Barrick's Loulo-Gounkoto complex in Mali survived a provisional-administration dispute and reverted to Barrick control (a template for recontracting risk resolution), Burkina Faso is raising state stakes in gold (Kiaka mine to 40%, Sovereign Mining Investment Fund announced May 2026) given gold is >80% of exports, and Sudan's gold sector is exceeding production targets (113% of Q1 2026 collection target) despite ongoing conflict, channeled to the UAE market. This is a case where extractive capital keeps flowing even through political rupture, supporting continued mine-level cash generation for exposed operators.",
+      "supporting_signals": [
+        "Gold +26.4% over 12 months (Yahoo Finance, 2026-07)",
+        "Mali: Barrick's Loulo-Gounkoto complex regained operator control after provisional administration -- demonstrates recontracting-risk recovery template",
+        "Burkina Faso: Sovereign Mining Investment Fund (Siniyan-Sigui, May 21 2026) and state stake increase in Kiaka gold mine to 40% (April 21 2026), with gold >80% of export revenue",
+        "Sudan: gold-sector collection at 113% of Q1 2026 target and 89% of production plan (Sudan Tribune, April 23 2026) despite active conflict"
+      ],
+      "risks": [
+        "Gold's 3-month momentum has already turned negative (-9.5%), and a continued pullback would undercut the price-support leg of the thesis",
+        "Sahel state-partnership models (rising government equity stakes) raise expropriation/renegotiation risk that could compress producer margins even as production continues",
+        "Sudan gold exposure is not directly investable given conflict and sanctions context -- thesis relies on regional West African producers rather than Sudan itself",
+        "GDX and GOLD carry concentrated single-region operational risk (security incidents, fuel/logistics disruption in the Sahel) beyond normal mining-equity volatility"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "GLD",
+            "role": "Physical gold ETF -- pure price exposure to the 12-month rally without operator or country risk, but forgoes the West Africa production-specific upside.",
+            "name": "SPDR Gold Shares",
+            "layer": "commodity"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "GDX",
+            "role": "Gold miners ETF with significant West African mine exposure -- diversifies operator risk across the sector while retaining regional relevance.",
+            "name": "VanEck Gold Miners ETF",
+            "layer": "sector_etf"
+          },
+          {
+            "ticker": "GOLD",
+            "role": "Barrick Mining -- direct operator of Mali's Loulo-Gounkoto complex, the single clearest large-cap expression of the Sahel recontracting-recovery story.",
+            "name": "Barrick Mining",
+            "layer": "company"
+          }
+        ],
+        "aggressive": [
+          {
+            "ticker": "GC=F",
+            "role": "Direct gold futures -- maximum leverage to the price cycle itself, stripped of any operator or country-specific execution risk.",
+            "name": "Gold futures",
+            "layer": "futures"
+          }
+        ]
+      }
+    },
+    {
+      "headline": "Guinea-linked diversified miners and Simandou-adjacent infrastructure plays benefit over 18 months as iron-ore-linked power and logistics buildout accelerates ahead of Simandou 2040.",
+      "geography": "Guinea",
+      "sector": "Iron ore / mining infrastructure",
+      "horizon_months": 18,
+      "conviction": "moderate",
+      "rationale": "Guinea's government is explicitly sequencing power infrastructure to Simandou's ramp: PM Amadou Oury Bah's June 28, 2026 call for power-sector transformation to support 'Simandou 2040' is backed by concrete bankable precedent -- the 180MW Kankan-Siguiri-Kouroussa-Bok\u00e9-Linsan solar PV project and the earlier $76.5M Bok\u00e9 solar park (World Bank PPI). Rio Tinto's direct Simandou iron-ore exposure makes it the natural large-cap vehicle, though iron ore itself is the weakest-momentum metal in the basket (-8.3% 3m, -0.9% 12m), meaning this is an infrastructure-buildout and market-share story more than a price-momentum one.",
+      "supporting_signals": [
+        "Guinea: 180MW Kankan-Siguiri-Kouroussa-Bok\u00e9-Linsan solar PV project and $76.5M Bok\u00e9 solar park (World Bank PPI) explicitly tied to Simandou power needs",
+        "PM Amadou Oury Bah's June 28 2026 call for power-sector transformation to support 'Simandou 2040'",
+        "Orange Guinea Conakry's $227.4M brownfield ICT investment (2023) shows continued private capital appetite despite mining-sector contract disputes",
+        "Iron ore price is flat/declining (-8.3% 3m, -0.9% 12m, Yahoo Finance) -- this is a volume/infrastructure thesis, not a price-momentum one"
+      ],
+      "risks": [
+        "Iron ore's own price trend is negative over both 3 and 12 months, meaning the commodity backdrop does not support this thesis independently of Simandou-specific volume growth",
+        "Guinea's mining-sector contract disputes (referenced directly in the intelligence) create recontracting and fiscal-term risk for Simandou-linked operators",
+        "Rio Tinto is a globally diversified major -- Guinea/Simandou is one of many assets, so the stock heavily dilutes pure Simandou exposure",
+        "Steel-sector demand (China property cycle) remains the dominant external driver of iron-ore economics, largely orthogonal to Guinea-specific execution"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "PICK",
+            "role": "Global diversified miners ETF -- includes iron-ore majors but heavily dilutes Guinea/Simandou-specific exposure in favor of liquidity.",
+            "name": "iShares MSCI Global Metals & Mining Producers ETF",
+            "layer": "sector_etf"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "SLX",
+            "role": "Steel producers ETF -- a downstream demand proxy for iron ore that indirectly benefits from Simandou supply growth, though several steps removed from Guinea itself.",
+            "name": "VanEck Steel ETF",
+            "layer": "sector_etf"
+          },
+          {
+            "ticker": "RIO",
+            "role": "Rio Tinto -- direct operator in the Simandou project, the clearest large-cap link to Guinea's iron-ore buildout, but a small share of a globally diversified portfolio.",
+            "name": "Rio Tinto",
+            "layer": "company"
+          }
+        ],
+        "aggressive": [
+          {
+            "ticker": "TIO=F",
+            "role": "Direct iron ore futures -- pure commodity-price exposure, but currently working against the thesis given negative price momentum; only appropriate for investors betting on a Simandou-driven supply/demand rebalancing over price trend.",
+            "name": "Iron Ore futures",
+            "layer": "futures"
+          }
+        ]
+      }
+    },
+    {
+      "headline": "Cocoa-exposed agribusiness processors and soft-commodity futures stay elevated over 6 months as West African (Ghana/Ivory Coast) cocoa supply tightness drives a 61% three-month price spike.",
+      "geography": "Ghana / Ivory Coast / West Africa",
+      "sector": "Agriculture (cocoa value chain)",
+      "horizon_months": 6,
+      "conviction": "high",
+      "rationale": "Cocoa is up 61.0% over three months -- by far the sharpest commodity move in the entire dataset -- even as it remains down 38.4% over 12 months, indicating a violent recent supply-side repricing centered on the two dominant West African producers. Ghana's COCOBOD syndicated financing facility (Bank of China/ICBC, ~$53-54M annual tranches within a $1.3-1.5bn structure) demonstrates that receivables-backed financing around cocoa persists across seasons, while Ivory Coast's National Development Plan explicitly targets agriculture as one of three pillars for its $209bn 2030 investment push (70% private capital). Global trading houses and processors (ADM, BG) that originate and process West African cocoa are the natural equity expression, since no direct Ghana/Ivory Coast cocoa equity exists on the instrument list.",
+      "supporting_signals": [
+        "Cocoa +61.0% over 3 months (vs. -38.4% over 12 months) -- the sharpest short-term repricing in the commodity set (Yahoo Finance, 2026-07)",
+        "Ghana: recurring multi-year, multi-bank COCOBOD syndicated facility (~$1.3-1.5bn, 2020-2021 tranches) signals structured, repeatable cocoa-receivables financing",
+        "Ivory Coast: National Development Plan targets $209bn investment through 2030 with agriculture as an explicit pillar and 70% private-capital intent (allAfrica, July 7 2026)",
+        "Ivory Coast's Strategic Sovereign Development Fund (April 2026), financed by mining/energy revenue, signals state co-financing capacity that could extend to agriculture value-chain infrastructure"
+      ],
+      "risks": [
+        "A 61% three-month spike is a classic reversal-risk setup -- cocoa remains down 38.4% over 12 months, meaning the rally could be a short squeeze rather than a durable repricing",
+        "ADM and BG are globally diversified agribusiness majors with cocoa as one input among many -- heavy dilution versus a pure West African cocoa play",
+        "Ghana and Ivory Coast cocoa-sector finances are exposed to farmgate-price regulation and government marketing-board policy shifts that can decouple local producer economics from world price moves",
+        "No direct cocoa-futures-linked equity or regional ETF exists on the approved list, forcing reliance on either diversified processors or the futures contract itself"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "DBA",
+            "role": "Diversified agriculture futures basket -- provides some cocoa-cycle participation while smoothing single-commodity reversal risk, at the cost of diluted exposure.",
+            "name": "Invesco DB Agriculture Fund",
+            "layer": "commodity"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "ADM",
+            "role": "Archer-Daniels-Midland -- major originator/processor of West African cocoa, giving processing-margin exposure to the price move with corporate diversification as compromise.",
+            "name": "Archer-Daniels-Midland",
+            "layer": "company"
+          },
+          {
+            "ticker": "BG",
+            "role": "Bunge Global -- comparable global agribusiness processor with West African sourcing exposure, offering a second liquid large-cap vehicle.",
+            "name": "Bunge Global",
+            "layer": "company"
+          }
+        ],
+        "aggressive": [
+          {
+            "ticker": "CC=F",
+            "role": "Direct cocoa futures -- the purest, highest-beta expression of the price spike itself, carrying full reversal and roll risk given the sharp 3-month move.",
+            "name": "Cocoa futures",
+            "layer": "futures"
+          }
+        ]
+      }
+    },
+    {
+      "headline": "Rice and coffee exporters/processors see margin tailwinds over 6-9 months as rice (+24.2% 3m) and coffee (+10.7% 3m) prices firm alongside East African coffee/agro-export strength.",
+      "geography": "East Africa (Burundi, Ethiopia) / broad EM agriculture",
+      "sector": "Agriculture (rice/coffee)",
+      "horizon_months": 9,
+      "conviction": "moderate",
+      "rationale": "Rice (+24.2% 3m) and coffee (+10.7% 3m) are both showing positive short-term momentum, and the intelligence flags coffee specifically as a driver of real macro outcomes: Burundi's IMF-cited 4.2% growth in 2025 is attributed partly to coffee and gold export strength, reinforced by a new gold-export levy in the FY2026/27 budget signaling government reliance on these value chains. This is a diversified-agribusiness expression rather than a single-country pure play, since no Burundi- or East Africa-specific instrument exists on the list.",
+      "supporting_signals": [
+        "Rice +24.2% over 3 months; Coffee +10.7% over 3 months (Yahoo Finance, 2026-07)",
+        "Burundi: IMF (June 2026) cites coffee and gold export strength as the driver of 2025's 4.2% growth",
+        "Burundi: new gold-export levy in record FY2026/27 budget signals fiscal reliance on agro/extractive export value chains",
+        "Burundi's IMF-endorsed Macroeconomic Stabilization Plan and disinflation from 45% to 8.6% (April 2025-April 2026) improves the policy backdrop for export-sector financing"
+      ],
+      "risks": [
+        "Neither rice nor coffee has a direct country-specific instrument on the approved list -- exposure must run through diversified global agribusiness vehicles, diluting the Burundi/East Africa-specific story",
+        "Coffee's 3-month gain sits against a -19.5% 12-month decline, suggesting the recent move could be a partial retracement rather than a new trend",
+        "Burundi itself carries no listed equity or fund exposure -- the thesis is expressed only indirectly through global agriculture producers/processors, a significant compromise",
+        "Weather and El Ni\u00f1o/La Ni\u00f1a cycles remain the dominant driver of both rice and coffee supply, a factor entirely outside the political/financing signals cited"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "VEGI",
+            "role": "Global agriculture producers ETF -- broad, liquid exposure capturing some rice/coffee-linked producer upside, heavily diversified away from East Africa specifically.",
+            "name": "iShares MSCI Global Agriculture Producers ETF",
+            "layer": "sector_etf"
+          },
+          {
+            "ticker": "DBA",
+            "role": "Diversified agriculture futures basket -- direct commodity-basket participation in the rice and coffee price moves without equity operator risk.",
+            "name": "Invesco DB Agriculture Fund",
+            "layer": "commodity"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "MOO",
+            "role": "Global agribusiness value-chain ETF -- captures equipment, processing and trading companies exposed to firming soft-commodity prices, a step closer to the value chain than broad producers.",
+            "name": "VanEck Agribusiness ETF",
+            "layer": "sector_etf"
+          }
+        ],
+        "aggressive": [
+          {
+            "ticker": "ZR=F",
+            "role": "Direct rice futures -- purest expression of the rice price move, full commodity volatility and roll risk.",
+            "name": "Rice futures",
+            "layer": "futures"
+          },
+          {
+            "ticker": "KC=F",
+            "role": "Direct coffee futures -- purest expression of the coffee price move and the closest tradable link to Burundi's export-revenue story, notwithstanding zero direct country exposure.",
+            "name": "Coffee futures",
+            "layer": "futures"
+          }
+        ]
+      }
+    },
+    {
+      "headline": "Kenyan fintech, capital-markets and renewable-power exposure firms over the next 3-6 months as Kenya's unrest-to-investment lead indicator points to a fresh wave of deal activity.",
+      "geography": "Kenya",
+      "sector": "Financial services / renewable power",
+      "horizon_months": 6,
+      "conviction": "moderate",
+      "rationale": "The firm's own correlation work shows Kenyan conflict/protest/political-violence events leading investment_events by roughly three months (r\u22480.58, n=62, the most data-rich series in the set), consistent with an electoral/policy calendar that produces both unrest and a subsequent investment wave. This dovetails with concrete, already-visible momentum: Nairobi's NIFC push (15 newly certified firms, targeted $200M in fresh capital across digital finance/AI/carbon markets) and NSE market cap at an all-time high (KSh3.73 trillion H1 2026), alongside ATIDI's $960M mobilization for Lake Turkana Wind, Kipeto Wind and Menengai Geothermal and DFC's continued fintech lending (M-Kopa $51M, Mogo Auto $10M). The unrest-leads-investment pattern argues for treating any near-term Kenyan political-violence upticks as a potential entry signal rather than a pure risk flag.",
+      "supporting_signals": [
+        "Kenya conflict/protest/political-violence events lead investment_events by ~3 months, r\u22480.58, n=62 (firm cross-cutting statistical insight)",
+        "Nairobi NIFC: 15 newly certified firms, targeted $200M in fresh capital in digital finance/AI/carbon markets (Breaking Kenya News, July 3 2026); NSE market cap at all-time high KSh3.73tn H1 2026 (Kenyan Wall Street)",
+        "ATIDI's $960M mobilization for Lake Turkana Wind, Kipeto Wind and Menengai Geothermal (The Star, July 1 2026)",
+        "DFC fintech lending pattern: M-Kopa Kenya $51.0M, Mogo Auto $10.0M, Pezesha $500K technical assistance (DFC FY2024)"
+      ],
+      "risks": [
+        "The correlation itself is explicitly flagged by the firm as likely reflecting a shared electoral/donor-calendar driver rather than causation -- unrest could simply coincide with, not predict, investment, and reverse causality (investment announcements provoking protest) is equally plausible",
+        "No direct Kenya-specific equity or ETF exists on the approved list; exposure runs through pan-African telecom/consumer names that dilute the Kenya-specific catalyst",
+        "Election-cycle unrest could also deteriorate into prolonged instability that delays rather than precedes investment, breaking the lead-lag pattern with only 62 observations underpinning it",
+        "Currency (KES) volatility around political stress periods could erode USD-denominated returns even if local capital markets perform well"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "EEM",
+            "role": "Broad emerging-markets ETF -- provides liquid, diversified EM beta with negligible direct Kenya weighting, the most diluted expression available on the list.",
+            "name": "iShares MSCI Emerging Markets ETF",
+            "layer": "regional_etf"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "MTNOY",
+            "role": "MTN Group ADR -- pan-African telecom with mobile-money/digital-finance exposure adjacent to Kenya's fintech and NIFC narrative, though headquartered in a different market (South Africa/Nigeria-centric).",
+            "name": "MTN Group ADR",
+            "layer": "company"
+          },
+          {
+            "ticker": "AAF.L",
+            "role": "Airtel Africa -- 14-market African telecom/mobile-money operator including Kenya-adjacent East African markets, a closer digitization-and-fintech proxy than MTN.",
+            "name": "Airtel Africa plc (London)",
+            "layer": "company"
+          }
+        ],
+        "aggressive": []
+      }
+    },
+    {
+      "headline": "Southern African critical-minerals and utility-scale renewables (South Africa) attract continued institutional capital over 12 months on the back of sovereign rating upgrades and rare-earths diversification.",
+      "geography": "South Africa",
+      "sector": "Critical minerals / power infrastructure",
+      "horizon_months": 12,
+      "conviction": "high",
+      "rationale": "South Africa presents the most creditworthy improving-fundamentals story in the dataset: back-to-back sovereign rating upgrades from Moody's (May 2026), S&P (June 1 2026) and Fitch (June 5 2026), tied to a third consecutive primary fiscal surplus, lower the cost of capital for co-financed infrastructure. This coincides with a deep, continuing pipeline of utility-scale renewable/battery-storage PPI deals (Oya Energy Hybrid $693.4M, Oasis 1 $386.6M, Mogobe BESS $170.0M, Virginia Solar Park $248.0M, all active 2024) and DFC's new $50M equity stake in TechMet Phalaborwa Rare Earths, aligning with Western supply-chain diversification priorities away from China-dominated rare-earth processing.",
+      "supporting_signals": [
+        "Sovereign rating upgrades: Moody's (May 2026), S&P (June 1 2026), Fitch (June 5 2026), tied to a third consecutive primary fiscal surplus",
+        "World Bank PPI-tracked 2024 greenfield renewable/BESS pipeline: Oya Energy Hybrid $693.4M, Oasis 1 $386.6M, Mogobe BESS $170.0M, Virginia Solar Park $248.0M",
+        "DFC's FY2024 $50.0M equity stake in TechMet Phalaborwa Rare Earths signals US development-finance interest in South African critical minerals",
+        "Diversified miner exposure (platinum, diamonds, copper) via Anglo American aligns South Africa with broader Southern African critical-minerals diversification themes"
+      ],
+      "risks": [
+        "Platinum and palladium -- core South African export metals -- are both down sharply over 3 months (-15.9% and -15.8% respectively) despite strong 12-month gains, creating a near-term earnings headwind for PGM-heavy miners",
+        "Eskom-linked grid and load-shedding risk remains a structural constraint on industrial and mining-sector reliability despite the renewables buildout",
+        "Rand currency volatility can offset local-currency equity gains for USD-based investors",
+        "EZA and NGLOY carry South Africa-specific political/policy risk (mining charter changes, land reform) beyond the general EM risk premium"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "EZA",
+            "role": "South Africa equities ETF -- broad, liquid exposure to the sovereign-upgrade and fiscal-improvement narrative across the full large/mid-cap market, diluting the specific minerals/renewables story.",
+            "name": "iShares MSCI South Africa ETF",
+            "layer": "regional_etf"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "NGLOY",
+            "role": "Anglo American ADR -- direct Southern African diversified miner (platinum, diamonds, copper) capturing both the PGM headwind and critical-minerals diversification themes in one large-cap vehicle.",
+            "name": "Anglo American ADR",
+            "layer": "company"
+          },
+          {
+            "ticker": "REMX",
+            "role": "Rare earth/strategic metals producers ETF -- thematically aligned with the TechMet Phalaborwa rare-earths signal, though globally diversified beyond South Africa specifically.",
+            "name": "VanEck Rare Earth/Strategic Metals ETF",
+            "layer": "sector_etf"
+          }
+        ],
+        "aggressive": [
+          {
+            "ticker": "PL=F",
+            "role": "Direct platinum futures -- pure-play exposure to South Africa's core PGM export basket, currently working against near-term momentum (-15.9% 3m) but aligned with the 12-month uptrend and long-run supply-tightness thesis.",
+            "name": "Platinum futures",
+            "layer": "futures"
+          }
+        ]
+      }
+    },
+    {
+      "headline": "Mozambique-linked LNG value chain and regional gas/oil majors benefit over 18-24 months as TotalEnergies' Mozambique LNG restart and ExxonMobil's pending Rovuma FID unlock a multi-year hydrocarbons capex cycle.",
+      "geography": "Mozambique",
+      "sector": "Oil & gas / LNG infrastructure",
+      "horizon_months": 24,
+      "conviction": "moderate",
+      "rationale": "Mozambique's hydrocarbons cycle is the clearest multi-year, large-ticket capital commitment in the entire dataset: TotalEnergies' $20 billion LNG project (40% built, first gas targeted 2029) is restarting, and ExxonMobil's $30 billion Rovuma LNG project awaits an FID by September 2026, both requiring ancillary logistics, workforce housing, and services investment per President Chapo's June 2026 statements. This is reinforced by DFC/World Bank PPI commitments concentrated in power transmission tied to the LNG corridor ($450M Chimuara-Nacala transmission, $270M Namaacha wind farm), suggesting the broader grid and infrastructure ecosystem is being built out in parallel with the hydrocarbons capex wave.",
+      "supporting_signals": [
+        "TotalEnergies' $20bn Mozambique LNG project restart, 40% built, first gas targeted 2029 (President Chapo, June 2026)",
+        "ExxonMobil's expected FID on the $30bn Rovuma LNG project by September 2026",
+        "DFC/World Bank PPI: $450M Chimuara-Nacala transmission project and $270M Namaacha wind farm (2024), signaling grid-expansion tied to the LNG corridor",
+        "Mozambique conflict-events/severity data leads copper prices by one month (r=0.65-0.70) -- flagged by the firm as a possible resource-corridor friction signal worth monitoring alongside the LNG buildout"
+      ],
+      "risks": [
+        "Security risk in Cabo Delgado (the LNG project's host region) remains the single largest execution risk to the 2029 first-gas timeline; the project has already suffered a multi-year force-majeure delay from insurgent activity",
+        "TotalEnergies exposure via TTE is a small fraction of a globally diversified oil major's business -- heavy dilution versus a pure Mozambique-LNG play",
+        "Crude oil and LNG-linked energy pricing has weakened sharply over 3 months (WTI -34.4%, Brent -36.4%), which could dampen near-term capex appetite even for a project already under construction",
+        "No direct Mozambique-listed instrument exists; exposure is entirely proxied through a global major with limited single-country transparency"
+      ],
+      "instruments": {
+        "conservative": [
+          {
+            "ticker": "XLE",
+            "role": "US large-cap energy sector ETF -- broad, liquid energy exposure that will track sector sentiment but has no specific Mozambique linkage.",
+            "name": "Energy Select Sector SPDR Fund",
+            "layer": "sector_etf"
+          }
+        ],
+        "moderate": [
+          {
+            "ticker": "TTE",
+            "role": "TotalEnergies ADR -- the direct operator of Mozambique LNG, giving explicit (if diluted) large-cap exposure to the project's restart and eventual first-gas milestone.",
+            "name": "TotalEnergies ADR",
+            "layer": "company"
+          },
+          {
+            "ticker": "IGF",
+            "role": "Global listed infrastructure ETF -- captures the transmission/power-infrastructure buildout theme accompanying the LNG corridor, globally diversified.",
+            "name": "iShares Global Infrastructure ETF",
+            "layer": "sector_etf"
+          }
+        ],
+        "aggressive": []
+      }
+    }
+  ]
+}

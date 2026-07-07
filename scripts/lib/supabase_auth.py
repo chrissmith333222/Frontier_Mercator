@@ -106,13 +106,39 @@ def sign_in(config: dict, email: str, password: str) -> dict:
         return {"ok": False, "message": f"Login failed: {detail}"}
     payload = response.json()
     user = payload.get("user", {})
-    return {
+    result = {
         "ok": True,
         "message": "Logged in.",
         "access_token": payload.get("access_token", ""),
         "email": user.get("email", email),
         "full_name": (user.get("user_metadata") or {}).get("full_name", ""),
     }
+    # Maintain the profiles mirror on every login (see upsert_own_profile
+    # for why this is client-side rather than an auth.users trigger).
+    if user.get("id"):
+        upsert_own_profile(config, result["access_token"], user["id"],
+                            result["email"], result["full_name"])
+    return result
+
+
+def upsert_own_profile(config: dict, access_token: str, user_id: str,
+                        email: str, full_name: str) -> None:
+    """Writes/refreshes the caller's own row in public.profiles right after
+    login. This replaces the original auth.users trigger approach -- newer
+    Supabase projects reject triggers on the locked-down auth schema, so
+    the client maintains the mirror itself. RLS restricts the write to the
+    caller's own row (auth.uid() = id), so this cannot touch anyone else's.
+    Best-effort: a failure here should never block a login."""
+    try:
+        requests.post(
+            f"{config['url']}/rest/v1/profiles",
+            headers={**_auth_headers(config, access_token),
+                     "Prefer": "resolution=merge-duplicates"},
+            json={"id": user_id, "email": email, "full_name": full_name},
+            timeout=DEFAULT_TIMEOUT,
+        )
+    except requests.RequestException:
+        pass
 
 
 def fetch_profiles(config: dict, access_token: str) -> dict:

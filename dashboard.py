@@ -829,6 +829,101 @@ def _load_maritime_stats() -> dict:
     return load_maritime_stats()
 
 
+@st.cache_data
+def _load_investment_theses() -> dict:
+    """Reads the cached investment theses (scripts/analytics/
+    investment_theses.py -- generated offline, read statically here, same
+    pattern as every other AI artifact). Returns {} if not yet generated."""
+    path = Path(__file__).parent / "data" / "insights" / "investment_theses.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+_TIER_LABELS = {
+    "conservative": ("Conservative", "Broad, liquid ETFs -- diluted but resilient exposure"),
+    "moderate": ("Moderate", "Focused sector/country funds and large multinationals"),
+    "aggressive": ("Aggressive", "Single names, direct futures, least-liquid pure plays"),
+}
+
+_CONVICTION_COLORS = {"high": b.LOW, "moderate": b.HIGH, "exploratory": b.TEXT_MUTED}
+
+
+def render_investment_theses():
+    """Investment Insights tab -- the platform's 'so what / what now' layer
+    (Chris, 2026-07-07): theses generated from ALL platform intelligence
+    (correlation insights, country assessments, commodity momentum, shipping
+    connectivity), each mapped down the investment stack to verified
+    tradeable instruments at three risk tiers. Because frontier markets
+    rarely have direct instruments, exposure works through the closest
+    expressible layer -- and each instrument states its compromise."""
+    st.markdown(
+        "Investment theses synthesized from the platform's full intelligence picture — each "
+        "grounded in specific signals, given an explicit horizon, and mapped down the investment "
+        "stack to **verified, currently-trading instruments** at three risk tiers. There is rarely "
+        "a direct instrument for a frontier-market view; each mapping states what compromise it "
+        "makes versus the pure thesis."
+    )
+    st.caption(
+        "Research theses describing how a view could be expressed — not investment advice, not "
+        "sized to any individual's situation, and not a recommendation to buy or sell any security. "
+        "Every instrument was verified as actively trading at generation time; verify liquidity, "
+        "spreads, and fees before acting."
+    )
+
+    data = _load_investment_theses()
+    if not data or not data.get("theses"):
+        st.info("No investment theses generated yet -- run "
+                "`python scripts/analytics/investment_theses.py` to generate them.")
+        return
+
+    st.caption(
+        f"Generated {data['generated_at'][:10]} — {len(data['theses'])} theses against "
+        f"{data.get('instruments_verified', '?')} verified instruments."
+    )
+
+    for i, thesis in enumerate(data["theses"]):
+        conviction = thesis.get("conviction", "moderate")
+        conviction_color = _CONVICTION_COLORS.get(conviction, b.TEXT_MUTED)
+        with st.expander(f"{thesis.get('headline', 'Untitled thesis')}", expanded=(i == 0)):
+            badge_html = (
+                f'<span style="color:{conviction_color};font-weight:600;">'
+                f'{conviction.upper()} CONVICTION</span>'
+                f'<span style="color:{b.TEXT_MUTED};"> &nbsp;·&nbsp; '
+                f'{thesis.get("horizon_months", "?")}-month horizon &nbsp;·&nbsp; '
+                f'{thesis.get("geography", "")} &nbsp;·&nbsp; {thesis.get("sector", "")}</span>'
+            )
+            st.markdown(badge_html, unsafe_allow_html=True)
+            st.markdown(thesis.get("rationale", ""))
+
+            sig_col, risk_col = st.columns(2)
+            with sig_col:
+                st.markdown("**Supporting signals**")
+                for signal in thesis.get("supporting_signals", []):
+                    st.markdown(f"- {signal}")
+            with risk_col:
+                st.markdown("**What breaks this thesis**")
+                for risk in thesis.get("risks", []):
+                    st.markdown(f"- {risk}")
+
+            st.markdown("**How to express it** (down the investment stack)")
+            for tier_key, (tier_label, tier_desc) in _TIER_LABELS.items():
+                instruments = thesis.get("instruments", {}).get(tier_key, [])
+                if not instruments:
+                    continue
+                st.markdown(f"*{tier_label}* — {tier_desc}")
+                rows = pd.DataFrame([
+                    {"Ticker": inst.get("ticker", ""), "Instrument": inst.get("name", ""),
+                     "Layer": inst.get("layer", "").replace("_", " "),
+                     "Why / compromise": inst.get("role", "")}
+                    for inst in instruments
+                ])
+                st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
 def render_maritime_dashboard():
     """Shipping & Maritime tab -- UNCTAD aggregate country-level shipping
     statistics: liner shipping connectivity (quarterly), container port
@@ -1210,10 +1305,14 @@ def render_markets_dashboard(econ_df):
         st.info("No economic/investment data loaded yet.")
         return
 
-    indicators_tab, investment_tab, commodities_tab, maritime_tab, demographics_tab, insights_tab = st.tabs(
+    (indicators_tab, investment_tab, commodities_tab, maritime_tab, demographics_tab,
+     insights_tab, theses_tab) = st.tabs(
         ["Macro Indicators", "Investment Projects", "Commodities", "Shipping & Maritime",
-         "Demographics", "Discovered Insights"]
+         "Demographics", "Discovered Insights", "Investment Insights"]
     )
+
+    with theses_tab:
+        render_investment_theses()
 
     with commodities_tab:
         st.markdown(

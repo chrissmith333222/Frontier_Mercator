@@ -333,7 +333,7 @@ def _load_reviewer_guidance() -> str:
 
 
 def _call_with_forced_tool(client, model: str, system_prompt: str, tool: dict, user_message: str,
-                            context_label: str) -> dict:
+                            context_label: str, max_tokens: int = 6000) -> dict:
     """Shared call path for both generate_country_assessment and
     generate_cross_cutting_assessment: forces the given tool, validates
     the response wasn't truncated, and returns the parsed tool input.
@@ -344,7 +344,7 @@ def _call_with_forced_tool(client, model: str, system_prompt: str, tool: dict, u
     characters in Claude's raw text output) before this was added."""
     response = client.messages.create(
         model=model,
-        max_tokens=6000,
+        max_tokens=max_tokens,
         system=system_prompt,
         tools=[tool],
         tool_choice={"type": "tool", "name": tool["name"]},

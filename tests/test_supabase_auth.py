@@ -56,17 +56,24 @@ def test_sign_up_failure_surfaces_supabase_message():
     print("✓ test_sign_up_failure_surfaces_supabase_message passed")
 
 
-def test_sign_in_success_returns_token_and_identity():
+def test_sign_in_success_returns_token_and_upserts_profile():
     payload = {
         "access_token": "jwt-token",
-        "user": {"email": "member@user.com", "user_metadata": {"full_name": "Member"}},
+        "user": {"id": "uuid-1", "email": "member@user.com",
+                  "user_metadata": {"full_name": "Member"}},
     }
-    with patch.object(auth.requests, "post", return_value=_response(200, payload)):
+    with patch.object(auth.requests, "post", return_value=_response(200, payload)) as mock_post:
         result = auth.sign_in(CONFIG, "member@user.com", "password123")
     assert result["ok"]
     assert result["access_token"] == "jwt-token"
     assert result["full_name"] == "Member"
-    print("✓ test_sign_in_success_returns_token_and_identity passed")
+    # Second POST = the profiles mirror upsert (replaces the auth.users
+    # trigger, which newer Supabase projects reject).
+    assert mock_post.call_count == 2
+    upsert_call = mock_post.call_args_list[1]
+    assert upsert_call.args[0].endswith("/rest/v1/profiles")
+    assert upsert_call.kwargs["json"]["id"] == "uuid-1"
+    print("✓ test_sign_in_success_returns_token_and_upserts_profile passed")
 
 
 def test_sign_in_failure_does_not_return_token():
