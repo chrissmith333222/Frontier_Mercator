@@ -92,7 +92,6 @@ class _FakeClient:
 
 
 VALID_ANALYSIS = {
-    "trend_summary": "Mixed signal: continued Chinese-financed infrastructure alongside episodic border conflict.",
     "security_analysis": "Border clashes reported (ACLED, 2026-03-14) with no fatalities recorded.",
     "political_stability_analysis": "No protest/civil-unrest events in this window.",
     "economic_analysis": "GDP growth reported at 5.2% (World Bank, 2025).",
@@ -101,6 +100,10 @@ VALID_ANALYSIS = {
     "key_relationships": ["China Eximbank financed a road project (AidData, 2026-01-10) in the same window as border clashes (ACLED, 2026-03-14)."],
     "risk_flags": ["Border-area conflict event within the same reporting window as active development finance."],
     "data_caveats": "Only 3 events in this window; not enough to establish a trend with confidence.",
+    "executive_summary": "Mixed signal: continued Chinese-financed infrastructure alongside episodic "
+                          "border conflict.\n\nTransport-corridor financing signals bankable "
+                          "infrastructure appetite.\n\nBorder-area conflict within the same window as "
+                          "active development finance warrants monitoring.",
 }
 
 
@@ -150,7 +153,7 @@ def test_generate_assessment_reads_tool_use_input():
 
     assert result["iso3"] == "KEN"
     assert result["total_events_analyzed"] == 3
-    assert "trend_summary" in result["analysis"]
+    assert "executive_summary" in result["analysis"]
     assert "China Eximbank" in result["analysis"]["key_relationships"][0]
     # Confirm the tool was actually forced, not left optional.
     assert fake_client.messages.last_call_kwargs["tool_choice"]["name"] == "record_country_assessment"

@@ -59,6 +59,15 @@ def country_snapshot(iso3: str, db_path: Path = DB_PATH) -> dict:
             )
         ]
 
+        latest_demographics = [
+            dict(row) for row in conn.execute(
+                "SELECT event_date, event_subtype, narrative_summary, source FROM events "
+                "WHERE iso3 = ? AND event_category = 'demographic_indicator' "
+                "ORDER BY event_date DESC LIMIT 15",
+                (iso3,),
+            )
+        ]
+
         top_investment = [
             dict(row) for row in conn.execute(
                 "SELECT event_date, source, event_subtype, narrative_summary, source_url FROM events "
@@ -92,6 +101,7 @@ def country_snapshot(iso3: str, db_path: Path = DB_PATH) -> dict:
             "category_counts": category_counts,
             "top_conflict_events": top_conflict,
             "latest_economic_indicators": latest_indicators,
+            "latest_demographic_indicators": latest_demographics,
             "top_investment_projects": top_investment,
             "humanitarian_and_osint_signals": humanitarian_osint,
             "top_active_actors": top_actors,

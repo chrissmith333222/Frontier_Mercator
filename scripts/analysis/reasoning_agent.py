@@ -100,10 +100,6 @@ _ASSESSMENT_TOOL = {
     "input_schema": {
         "type": "object",
         "properties": {
-            "trend_summary": {
-                "type": "string",
-                "description": "3-5 sentences on the overall pattern across categories in the given window.",
-            },
             "security_analysis": {
                 "type": "string",
                 "description": "2-4 sentences of plain-language analysis specifically explaining the "
@@ -120,7 +116,11 @@ _ASSESSMENT_TOOL = {
                 "type": "string",
                 "description": "2-4 sentences specifically on the macroeconomic picture -- what the "
                                 "latest inflation/current account/debt/GDP growth figures show, citing "
-                                "the specific indicator values and their source (World Bank/IMF).",
+                                "the specific indicator values and their source (World Bank/IMF). Where "
+                                "genuinely relevant, weave in demographic/development context (population "
+                                "growth, working-age share, urbanization, literacy) as the development "
+                                "backdrop against which the macro trend sits -- only if the data supports "
+                                "a specific point, not as a routine add-on.",
             },
             "investment_analysis": {
                 "type": "string",
@@ -158,11 +158,27 @@ _ASSESSMENT_TOOL = {
                 "description": "1-3 sentences on what this data window does NOT cover or where "
                                 "confidence is low.",
             },
+            "executive_summary": {
+                "type": "string",
+                "description": "Generate this LAST, after every other field above, since it must "
+                                "synthesize them -- up to 3 paragraphs, the equivalent of handing the "
+                                "finished brief to a colleague and asking 'summarize this in 3 "
+                                "paragraphs covering key takeaways, opportunities, and risks.' "
+                                "Paragraph 1: the overall picture and the single most important "
+                                "takeaway for a portfolio principal deciding whether to keep reading. "
+                                "Paragraph 2: the standout opportunity signal(s) from investment_opportunities "
+                                "and investment_analysis, stated concretely. Paragraph 3: the standout "
+                                "risk(s) from risk_flags and the security/political-stability analysis, "
+                                "and what would need to be true for the picture to improve or worsen. "
+                                "Separate paragraphs with a blank line. Same voice/register as everything "
+                                "else -- no buy/sell directives, cite sources/dates, no database-speak. "
+                                "This is what a reader who only reads one section should read.",
+            },
         },
         "required": [
-            "trend_summary", "security_analysis", "political_stability_analysis",
+            "security_analysis", "political_stability_analysis",
             "economic_analysis", "investment_analysis", "key_relationships",
-            "investment_opportunities", "risk_flags", "data_caveats",
+            "investment_opportunities", "risk_flags", "data_caveats", "executive_summary",
         ],
     },
 }
@@ -271,6 +287,9 @@ def _build_user_message(snapshot: dict, country_name: str) -> str:
         f"{json.dumps(snapshot['top_conflict_events'], indent=2, default=str)}\n\n"
         f"Latest economic indicators:\n"
         f"{json.dumps(snapshot['latest_economic_indicators'], indent=2, default=str)}\n\n"
+        f"Latest demographic/development indicators (population, age structure, life expectancy, "
+        f"literacy -- economic-development context for security and investment trends):\n"
+        f"{json.dumps(snapshot.get('latest_demographic_indicators', []), indent=2, default=str)}\n\n"
         f"Investment/development-finance activity:\n"
         f"{json.dumps(snapshot['top_investment_projects'], indent=2, default=str)}\n\n"
         f"Humanitarian/OSINT signals:\n"

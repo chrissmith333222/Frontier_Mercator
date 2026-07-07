@@ -20,6 +20,7 @@ from scripts.lib.worldbank_indicators import INDICATORS as WORLDBANK_INDICATOR_L
 from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
+from scripts.lib.commodity_data import fetch_commodity_snapshot
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
     compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier, top_n_badges,
@@ -771,6 +772,53 @@ def render_market_ticker():
                 )
 
 
+@st.cache_data
+def _load_commodity_snapshot() -> dict:
+    """Live Yahoo Finance commodity quotes, cached for 5 minutes -- same
+    reasoning/TTL as _load_market_snapshot (Streamlit reruns the whole
+    script on any widget interaction, so an uncached call would refetch on
+    every click)."""
+    return fetch_commodity_snapshot()
+
+
+def render_commodity_ticker():
+    """Live commodity price tracker -- metals, energy, agriculture, and
+    critical-minerals proxies -- grouped by theme rather than one flat list,
+    same color-coded green/red-by-change treatment as the stock ticker
+    (Chris: "similar to the way you're displaying stock prices")."""
+    snapshot = _load_commodity_snapshot()
+    if not snapshot["groups"]:
+        st.info("Commodity price data temporarily unavailable.")
+        return
+
+    stamp_col, refresh_col = st.columns([0.8, 0.2])
+    with stamp_col:
+        st.caption(f"Prices current as of: {snapshot.get('fetched_at', 'unknown')} "
+                   f"(auto-refreshes every 5 min on page activity)")
+    with refresh_col:
+        if st.button("Refresh prices", key="refresh_commodities"):
+            _load_commodity_snapshot.clear()
+            st.rerun()
+
+    st.caption("Live commodity futures data (Yahoo Finance, ~15-min delayed), refreshed every 5 minutes. "
+               "Lithium/Uranium shown via sector ETF proxy -- no direct futures ticker exists for either.")
+
+    cols = st.columns(len(snapshot["groups"]))
+    for col, (group_name, quotes) in zip(cols, snapshot["groups"].items()):
+        with col:
+            st.markdown(f"**{group_name}**")
+            for q in quotes:
+                color = _quote_color(q["change"])
+                st.markdown(
+                    f'<div class="fm-quote-row">'
+                    f'<span>{q["label"]}</span>'
+                    f'<span><b>{q["price"]:,.2f}</b> '
+                    f'<span style="color:{color};">{_quote_arrow(q["change"])} {q["change_pct"]:+.2f}%</span></span>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+
+
 def render_header():
     """Large centered emblem (the new brand mark) above the wordmark --
     replaces the old photographic logo entirely per Chris's direction. Built
@@ -799,7 +847,15 @@ def render_video_hero():
     Uses components.html (an iframe) rather than st.markdown because
     st.markdown strips <script> tags, and the rotation needs JS."""
     video_dir = Path(__file__).parent / "static" / "videos"
-    video_files = sorted(p.name for p in video_dir.glob("*.mp4"))
+    available = {p.name for p in video_dir.glob("*.mp4")}
+    # Explicit rotation order (Chris: container ship in port, Sahel town,
+    # ship in channel, mining site) -- alphabetical sort put Mining_Site
+    # second, not last. Any video file not in this list still plays,
+    # appended at the end, so a newly-dropped-in video isn't silently
+    # dropped from the rotation.
+    preferred_order = ["Container_Ship_Port.mp4", "Sahel_Town.mp4", "Ship_Channel.mp4", "Mining_Site.mp4"]
+    video_files = [name for name in preferred_order if name in available]
+    video_files += sorted(available - set(video_files))
     if not video_files:
         return
 
@@ -1010,9 +1066,16 @@ def render_markets_dashboard(econ_df):
         st.info("No economic/investment data loaded yet.")
         return
 
-    indicators_tab, investment_tab, insights_tab = st.tabs(
-        ["Macro Indicators", "Investment Projects", "Discovered Insights"]
+    indicators_tab, investment_tab, commodities_tab, demographics_tab, insights_tab = st.tabs(
+        ["Macro Indicators", "Investment Projects", "Commodities", "Demographics", "Discovered Insights"]
     )
+
+    with commodities_tab:
+        st.markdown(
+            "Global commodity prices relevant to frontier-market export economies and critical-minerals "
+            "supply chains -- metals, energy, and agriculture, grouped by theme."
+        )
+        render_commodity_ticker()
 
     with insights_tab:
         st.markdown(
@@ -1050,65 +1113,116 @@ def render_markets_dashboard(econ_df):
                     unsafe_allow_html=True,
                 )
 
+    def _render_indicator_explorer(indicator_df: pd.DataFrame, empty_message: str, key_prefix: str):
+        """Shared country/indicator time-series explorer for both Macro
+        Indicators and Demographics -- same World Bank/IMF data shape
+        (narrative_summary carries the formatted value, severity_score is
+        null), just scoped to a different event_category upstream."""
+        if len(indicator_df) == 0:
+            st.info(empty_message)
+            return
+
+        col1, col2 = st.columns(2)
+        with col1:
+            country_choice = st.selectbox(
+                "Country", options=sorted(indicator_df['country'].dropna().unique()), key=f"{key_prefix}_country"
+            )
+        with col2:
+            indicators = sorted(indicator_df['event_subtype'].dropna().unique())
+            indicator_choice = st.selectbox(
+                "Indicator", options=indicators, key=f"{key_prefix}_indicator",
+                format_func=lambda code: INDICATOR_LABELS.get(code, code),
+            )
+
+        subset = indicator_df[
+            (indicator_df['country'] == country_choice) & (indicator_df['event_subtype'] == indicator_choice)
+        ].sort_values('event_date')
+
+        if len(subset) > 0:
+            st.markdown(f"#### {INDICATOR_LABELS.get(indicator_choice, indicator_choice)} — {country_choice}")
+            # narrative_summary carries the formatted value (e.g. "GDP
+            # growth (annual %): 3.2% (2025)") since severity_score is
+            # null for economic_indicator/demographic_indicator events --
+            # parse the number back out for charting.
+            parsed = subset['narrative_summary'].str.extract(r':\s*(-?[\d.]+)').astype(float)[0]
+
+            # Deterministic trend callout -- Chris: don't just capture the
+            # data, "clearly show trends and give key insights." Computed
+            # directly from the earliest vs. latest point in the selected
+            # series, no LLM call involved (this renders on every page load).
+            if len(subset) > 1 and pd.notna(parsed.iloc[0]) and pd.notna(parsed.iloc[-1]):
+                first_val, last_val = parsed.iloc[0], parsed.iloc[-1]
+                first_year = str(subset['event_date'].iloc[0])[:4]
+                last_year = str(subset['event_date'].iloc[-1])[:4]
+                delta = last_val - first_val
+                arrow = "▲" if delta > 0 else ("▼" if delta < 0 else "▬")
+                trend_color = b.GOLD if abs(delta) > 1e-9 else b.TEXT_MUTED
+                # Indicators already expressed as a percentage (current
+                # account balance, GDP growth, unemployment, urbanization,
+                # etc.) can cross zero or sit near it -- "% change of a %
+                # value" produces nonsense there (e.g. 14% -> -40% reads as
+                # "-387%"). Show a point change instead for those; percent
+                # change only makes sense for magnitude series (population,
+                # debt stocks) that don't cross zero.
+                is_percentage_series = "%" in str(subset['narrative_summary'].iloc[-1])
+                if is_percentage_series:
+                    pct_text = f"{delta:+.1f} pts"
+                elif first_val != 0:
+                    pct_text = f"{delta / abs(first_val) * 100:+.1f}%"
+                else:
+                    pct_text = f"{delta:+.2f}"
+                st.markdown(
+                    f'<div style="border-left:3px solid {trend_color};padding:0.5rem 0.9rem;'
+                    f'margin-bottom:0.8rem;background:rgba(255,255,255,0.03);">'
+                    f'<span style="color:{trend_color};font-size:1.1rem;font-weight:600;">{arrow} {pct_text}</span>'
+                    f'<span style="color:{b.TEXT_MUTED};"> since {first_year} '
+                    f'({first_val:,.2f} → {last_val:,.2f}, {last_year})</span></div>',
+                    unsafe_allow_html=True,
+                )
+
+            fig = go.Figure(data=[go.Scatter(
+                x=subset['event_date'], y=parsed, mode='lines+markers',
+                line=dict(color=b.SLATE, width=2), marker=dict(size=8),
+                hovertemplate='<b>%{x|%Y}</b><br>%{y}<extra></extra>',
+            )])
+            fig.update_layout(
+                template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+                height=350, margin=dict(l=40, r=40, t=20, b=40),
+            )
+            st.plotly_chart(fig, use_container_width=True, key=f"{key_prefix}_chart")
+
+            table = subset[['event_date', 'source', 'narrative_summary']].rename(
+                columns={'event_date': 'Date', 'source': 'Source', 'narrative_summary': 'Value'}
+            )
+            st.dataframe(table, use_container_width=True, hide_index=True)
+        else:
+            st.info("No data for this country/indicator combination.")
+
+        st.markdown("#### Latest Snapshot Across Tracked Countries")
+        latest = (
+            indicator_df[indicator_df['event_subtype'] == indicator_choice]
+            .sort_values('event_date')
+            .drop_duplicates('country', keep='last')
+            [['country', 'region', 'event_date', 'narrative_summary']]
+            .rename(columns={
+                'country': 'Country', 'region': 'Region',
+                'event_date': 'Latest Data', 'narrative_summary': 'Value',
+            })
+            .sort_values('Country')
+        )
+        st.dataframe(latest, use_container_width=True, hide_index=True)
+
     with indicators_tab:
         indicator_df = econ_df[econ_df['event_category'] == b.ECON_CATEGORY]
-        if len(indicator_df) == 0:
-            st.info("No macro indicator data loaded yet.")
-        else:
-            col1, col2 = st.columns(2)
-            with col1:
-                country_choice = st.selectbox(
-                    "Country", options=sorted(indicator_df['country'].dropna().unique()), key="econ_country"
-                )
-            with col2:
-                indicators = sorted(indicator_df['event_subtype'].dropna().unique())
-                indicator_choice = st.selectbox(
-                    "Indicator", options=indicators, key="econ_indicator",
-                    format_func=lambda code: INDICATOR_LABELS.get(code, code),
-                )
+        _render_indicator_explorer(indicator_df, "No macro indicator data loaded yet.", "econ")
 
-            subset = indicator_df[
-                (indicator_df['country'] == country_choice) & (indicator_df['event_subtype'] == indicator_choice)
-            ].sort_values('event_date')
-
-            if len(subset) > 0:
-                st.markdown(f"#### {INDICATOR_LABELS.get(indicator_choice, indicator_choice)} — {country_choice}")
-                # narrative_summary carries the formatted value (e.g. "GDP
-                # growth (annual %): 3.2% (2025)") since severity_score is
-                # null for economic_indicator events -- parse the number
-                # back out for charting.
-                parsed = subset['narrative_summary'].str.extract(r':\s*(-?[\d.]+)').astype(float)[0]
-                fig = go.Figure(data=[go.Scatter(
-                    x=subset['event_date'], y=parsed, mode='lines+markers',
-                    line=dict(color=b.SLATE, width=2), marker=dict(size=8),
-                    hovertemplate='<b>%{x|%Y}</b><br>%{y}<extra></extra>',
-                )])
-                fig.update_layout(
-                    template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
-                    height=350, margin=dict(l=40, r=40, t=20, b=40),
-                )
-                st.plotly_chart(fig, use_container_width=True)
-
-                table = subset[['event_date', 'source', 'narrative_summary']].rename(
-                    columns={'event_date': 'Date', 'source': 'Source', 'narrative_summary': 'Value'}
-                )
-                st.dataframe(table, use_container_width=True, hide_index=True)
-            else:
-                st.info("No data for this country/indicator combination.")
-
-            st.markdown("#### Latest Snapshot Across Tracked Countries")
-            latest = (
-                indicator_df[indicator_df['event_subtype'] == indicator_choice]
-                .sort_values('event_date')
-                .drop_duplicates('country', keep='last')
-                [['country', 'region', 'event_date', 'narrative_summary']]
-                .rename(columns={
-                    'country': 'Country', 'region': 'Region',
-                    'event_date': 'Latest Data', 'narrative_summary': 'Value',
-                })
-                .sort_values('Country')
-            )
-            st.dataframe(latest, use_container_width=True, hide_index=True)
+    with demographics_tab:
+        st.markdown(
+            "Population, age structure, and development indicators (World Bank) — economic-development "
+            "context for security and investment trends, not investment data in its own right."
+        )
+        demo_df = econ_df[econ_df['event_category'] == b.DEMO_CATEGORY]
+        _render_indicator_explorer(demo_df, "No demographic data loaded yet.", "demo")
 
     with investment_tab:
         investment_df = econ_df[econ_df['event_category'] == 'investment']
@@ -1742,6 +1856,14 @@ with dash5:
     with report_col1:
         st.markdown("#### Country Intelligence Brief")
         country_choice = st.selectbox("Country", options=country_name_options, key="country_brief_select")
+        _cached_assessment = load_cached_assessment(country_choice)
+        if _cached_assessment and _cached_assessment.get("generated_at"):
+            st.caption(
+                f"AI pattern analysis last generated: {_cached_assessment['generated_at'][:16].replace('T', ' ')} UTC "
+                "-- ask in the Research Assistant chat for a fresh one if this looks stale."
+            )
+        else:
+            st.caption("No AI pattern analysis generated yet for this country -- ask in the Research Assistant chat to generate one.")
         if st.button("Generate Country Brief", key="gen_country_brief"):
             pdf_bytes = generate_country_brief(df, country_choice)
             archive_report(pdf_bytes, report_type="country", label=country_choice)

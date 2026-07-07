@@ -37,13 +37,18 @@ def make_meridian_event_id(source: str, source_event_id: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
 
 
+_MONETARY_CODES = {"DT.DOD.DECT.CD"}
+
+
 def _format_value(value: float, indicator_code: str) -> str:
     if "GDP" in indicator_code.replace(".", "") and "ZG" in indicator_code:
         return f"{value:.1f}%"
     if indicator_code.endswith(".ZS") or indicator_code.endswith(".ZG"):
         return f"{value:.1f}%"
-    if abs(value) >= 1_000_000:
+    if indicator_code in _MONETARY_CODES and abs(value) >= 1_000_000:
         return f"${value / 1_000_000_000:.2f}B" if abs(value) >= 1_000_000_000 else f"${value / 1_000_000:.1f}M"
+    if abs(value) >= 1_000_000:
+        return f"{value / 1_000_000_000:.2f}B" if abs(value) >= 1_000_000_000 else f"{value / 1_000_000:.1f}M"
     return f"{value:.2f}"
 
 
@@ -71,7 +76,12 @@ def normalize_worldbank_record(raw_record: dict) -> dict | None:
         region, in_core_mandate = GLOBAL_OTHER_REGION, False
 
     indicator_code = raw_record.get("indicator", {}).get("id", "")
-    indicator_label = INDICATORS.get(indicator_code, (raw_record.get("indicator", {}).get("value", indicator_code),))[0]
+    indicator_meta = INDICATORS.get(indicator_code)
+    if indicator_meta is not None:
+        indicator_label, event_category = indicator_meta
+    else:
+        indicator_label = raw_record.get("indicator", {}).get("value", indicator_code)
+        event_category = "economic_indicator"
     source_event_id = f"{iso3}:{indicator_code}:{year_str}"
 
     return {
@@ -86,7 +96,7 @@ def normalize_worldbank_record(raw_record: dict) -> dict | None:
         "in_core_mandate": in_core_mandate,
         "latitude": None,
         "longitude": None,
-        "event_category": "economic_indicator",
+        "event_category": event_category,
         "event_subtype": indicator_code,
         "actors": [],
         "fatalities": None,

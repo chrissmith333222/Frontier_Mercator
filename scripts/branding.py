@@ -53,7 +53,8 @@ CONFLICT_CATEGORIES = [
 # economy signal, just one is indicator time series and the other discrete
 # investment/project events.
 ECON_CATEGORY = "economic_indicator"
-ECON_CATEGORIES = ["economic_indicator", "investment"]
+DEMO_CATEGORY = "demographic_indicator"
+ECON_CATEGORIES = ["economic_indicator", "investment", "demographic_indicator"]
 NEWS_CATEGORIES = ["strategic_development", "other", "humanitarian"]
 
 # Type colors for the unified multi-category map -- distinct saturated hues

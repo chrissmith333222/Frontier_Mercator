@@ -276,6 +276,64 @@ def _macro_snapshot_table(econ_scope: pd.DataFrame) -> Table | None:
     return table
 
 
+def _demographic_snapshot_table(demo_scope: pd.DataFrame) -> Table | None:
+    """Latest reading + trend (vs. earliest available reading) per
+    demographic/development indicator for the report's country/region scope
+    -- population, age structure, life expectancy, literacy. Returns None if
+    nothing to show. The Trend column is computed deterministically (no LLM
+    call) from the earliest vs. latest value in scope, same math as the
+    dashboard's Demographics tab callout -- this is what makes the PDF show
+    a trend, not just a single frozen reading, per Chris's ask."""
+    if len(demo_scope) == 0:
+        return None
+    header = [Paragraph(h, CELL_HEADER_STYLE) for h in ["Country", "Indicator", "Latest Value", "Trend"]]
+    rows = [header]
+    for (country, subtype), group in demo_scope.groupby(["country", "event_subtype"]):
+        ordered = group.sort_values("event_date")
+        latest_summary = str(ordered.iloc[-1].get("narrative_summary", ""))
+        indicator_label = latest_summary.split(":")[0]
+        latest_value_text = latest_summary.split(":", 1)[1].strip() if ":" in latest_summary else latest_summary
+
+        parsed = ordered["narrative_summary"].str.extract(r":\s*(-?[\d.]+)").astype(float)[0]
+        trend_text = "—"
+        if len(ordered) > 1 and pd.notna(parsed.iloc[0]) and pd.notna(parsed.iloc[-1]):
+            first_val, last_val = parsed.iloc[0], parsed.iloc[-1]
+            first_year = str(ordered["event_date"].iloc[0])[:4]
+            delta = last_val - first_val
+            # Percentage-of-total series (working-age share, urbanization,
+            # etc.) can sit near/cross zero -- "% change of a %" is
+            # misleading there, so show a point change instead. See the
+            # matching fix in dashboard.py's _render_indicator_explorer.
+            is_percentage_series = "%" in latest_value_text
+            if is_percentage_series:
+                arrow = "+" if delta > 0 else ("-" if delta < 0 else "")
+                trend_text = f"{arrow}{abs(delta):.1f} pts since {first_year}"
+            elif first_val != 0:
+                arrow = "+" if delta > 0 else ("-" if delta < 0 else "")
+                trend_text = f"{arrow}{abs(delta / first_val * 100):.1f}% since {first_year}"
+
+        rows.append([
+            Paragraph(str(country), CELL_STYLE),
+            Paragraph(indicator_label, CELL_STYLE),
+            Paragraph(latest_value_text, CELL_STYLE),
+            Paragraph(trend_text, CELL_STYLE),
+        ])
+    if len(rows) == 1:
+        return None
+    table = Table(rows, colWidths=[1.2 * inch, 2.1 * inch, 1.3 * inch, 1.5 * inch], repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+        ("GRID", (0, 0), (-1, -1), 0.4, BORDER),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [PAGE_BG, PANEL]),
+    ]))
+    return table
+
+
 def _investment_table(investment_scope: pd.DataFrame, limit: int = 10) -> Table | None:
     """Largest development-finance projects (AidData Chinese financing +
     DFC U.S. financing) for the report's country/region scope, sorted by
@@ -360,31 +418,39 @@ def _executive_summary_flowables(
     a plain data-driven summary (event/investment counts) when it doesn't,
     so every brief gets SOME framing sentence rather than jumping straight
     into raw tables."""
-    parts = []
+    flowables = [Paragraph("Executive Summary", SECTION_STYLE)]
     if assessment:
         analysis = assessment["analysis"]
-        if analysis.get("trend_summary"):
-            parts.append(analysis["trend_summary"])
-        if analysis.get("risk_flags"):
-            parts.append(f"Most notable risk flag: {analysis['risk_flags'][0]}")
+        # executive_summary is the up-to-3-paragraph synthesis (Chris: read
+        # like asking Claude/ChatGPT to "summarize this PDF in 3 paragraphs
+        # covering key takeaways, opportunities, and risk"). Falls back to
+        # the older trend_summary field for the countries whose cached
+        # assessment predates this field, so their brief still gets SOME
+        # framing rather than an empty section.
+        summary_text = analysis.get("executive_summary") or analysis.get("trend_summary", "")
+        for para in summary_text.split("\n\n"):
+            if para.strip():
+                flowables.append(Paragraph(para.strip(), BODY_STYLE))
+                flowables.append(Spacer(1, 4))
+        if not analysis.get("executive_summary") and analysis.get("risk_flags"):
+            flowables.append(Paragraph(f"Most notable risk flag: {analysis['risk_flags'][0]}", BODY_STYLE))
     else:
         n_conflict, n_econ, n_invest = len(conflict_scope), len(econ_scope), len(investment_scope)
-        parts.append(
+        flowables.append(Paragraph(
             f"This scope has {n_conflict:,} conflict/security event(s), {n_econ:,} macroeconomic "
             f"indicator reading(s), and {n_invest:,} investment/development-finance record(s) on file "
             f"in the current dataset. No AI-synthesized pattern analysis has been generated for this "
-            f"scope yet -- see the tables below for the underlying data."
-        )
+            f"scope yet -- see the tables below for the underlying data.",
+            BODY_STYLE,
+        ))
     if scorecard:
-        parts.append(
+        flowables.append(Paragraph(
             f"Overall risk score: {scorecard['overall_risk']:.1f}/10 "
-            f"({b.severity_label(scorecard['overall_risk'])})."
-        )
-    return [
-        Paragraph("Executive Summary", SECTION_STYLE),
-        Paragraph(" ".join(parts), BODY_STYLE),
-        Spacer(1, 8),
-    ]
+            f"({b.severity_label(scorecard['overall_risk'])}).",
+            BODY_STYLE,
+        ))
+    flowables.append(Spacer(1, 8))
+    return flowables
 
 
 def _bullet_text(item: str) -> str:
@@ -538,6 +604,7 @@ def _build_pdf(
     opening straight into raw tables."""
     conflict_scope = scope[scope["event_category"].isin(b.CONFLICT_CATEGORIES)]
     econ_scope = scope[scope["event_category"] == b.ECON_CATEGORY]
+    demo_scope = scope[scope["event_category"] == b.DEMO_CATEGORY]
     investment_scope = scope[scope["event_category"] == "investment"]
 
     buffer = BytesIO()
@@ -599,6 +666,18 @@ def _build_pdf(
         if analysis.get("economic_analysis"):
             story.append(Spacer(1, 6))
             story.append(Paragraph(analysis["economic_analysis"], BODY_STYLE))
+
+    demo_table = _demographic_snapshot_table(demo_scope)
+    if demo_table is not None:
+        story.append(Paragraph("Demographic & Development Context", SECTION_STYLE))
+        story.append(demo_table)
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(
+            "Population, age structure, and development indicators (World Bank) — economic-development "
+            "backdrop for the security and macro trends above, not investment data in its own right. "
+            "Trend reflects the change between the earliest and latest available reading for each series.",
+            DISCLAIMER_STYLE,
+        ))
 
     investment_table = _investment_table(investment_scope)
     if investment_table is not None:
