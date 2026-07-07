@@ -1,0 +1,11 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Compass-rose / meridian motif referencing Gerardus Mercator -->
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#9AA5B4" stroke-width="2"/>
+  <ellipse cx="50" cy="50" rx="44" ry="18" fill="none" stroke="#505F79" stroke-width="1.5"/>
+  <ellipse cx="50" cy="50" rx="20" ry="44" fill="none" stroke="#505F79" stroke-width="1.5"/>
+  <line x1="50" y1="6" x2="50" y2="94" stroke="#505F79" stroke-width="1.5"/>
+  <line x1="6" y1="50" x2="94" y2="50" stroke="#505F79" stroke-width="1.5"/>
+  <!-- compass star -->
+  <polygon points="50,26 56,44 74,50 56,56 50,74 44,56 26,50 44,44"
+           fill="#D4AA04" stroke="#FFFFFF" stroke-width="1"/>
+</svg>

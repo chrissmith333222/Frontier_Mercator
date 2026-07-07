@@ -1,0 +1,10 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Two offset angular planes suggesting a shift in vantage point (parallax) -->
+  <polygon points="30,10 78,28 78,68 30,50" fill="none" stroke="#9AA5B4" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="22,32 70,50 70,90 22,72" fill="none" stroke="#D4AA04" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="30" y1="10" x2="22" y2="32" stroke="#FFFFFF" stroke-width="2"/>
+  <line x1="78" y1="28" x2="70" y2="50" stroke="#FFFFFF" stroke-width="2"/>
+  <line x1="78" y1="68" x2="70" y2="90" stroke="#FFFFFF" stroke-width="2"/>
+  <line x1="30" y1="50" x2="22" y2="72" stroke="#FFFFFF" stroke-width="2"/>
+  <circle cx="50" cy="50" r="4" fill="#FFFFFF"/>
+</svg>

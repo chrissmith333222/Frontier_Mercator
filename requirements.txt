@@ -15,3 +15,4 @@ anthropic==0.115.1
 voyageai==0.4.1
 networkx==3.6.1
 yfinance==1.5.1
+py7zr==1.1.3

@@ -21,6 +21,7 @@ from scripts.lib.imf_indicators import INDICATORS as IMF_INDICATOR_LABELS
 from scripts.lib.world_countries import ALL_COUNTRIES, get_centroid
 from scripts.lib.market_data import fetch_market_snapshot
 from scripts.lib.commodity_data import fetch_commodity_snapshot
+from scripts.ingestion.unctad_maritime_fetch import load_maritime_stats
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
     compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier, top_n_badges,
@@ -819,6 +820,148 @@ def render_commodity_ticker():
                 )
 
 
+@st.cache_data
+def _load_maritime_stats() -> dict:
+    """Reads the cached UNCTAD maritime stats file (generated offline by
+    scripts/ingestion/unctad_maritime_fetch.py, read statically here --
+    same pattern as every other pre-generated artifact)."""
+    return load_maritime_stats()
+
+
+def render_maritime_dashboard():
+    """Shipping & Maritime tab -- UNCTAD aggregate country-level shipping
+    statistics: liner shipping connectivity (quarterly), container port
+    throughput, and seaborne trade volumes. This is trade-flow context per
+    country, NOT live vessel/AIS tracking (no free source exists for that
+    -- documented gap, Chris approved this scope 2026-07-07)."""
+    stats = _load_maritime_stats()
+    if not stats or not stats.get("lsci"):
+        st.info(
+            "No maritime data loaded yet -- run "
+            "`python scripts/ingestion/unctad_maritime_fetch.py` to generate it."
+        )
+        return
+
+    st.markdown(
+        "Country-level shipping and port statistics ([UNCTAD](https://unctadstat.unctad.org/)) — "
+        "how connected each economy is to global container networks, how much cargo moves through "
+        "its ports, and which direction trade flows. Aggregate trade-flow context, not live vessel tracking."
+    )
+    fetched = stats.get("fetched_at", "")[:10]
+    if fetched:
+        st.caption(f"Data current as of UNCTAD's latest published statistics (fetched {fetched}).")
+
+    countries = sorted(
+        set(stats.get("lsci", {})) | set(stats.get("container_throughput", {}))
+        | set(stats.get("seaborne_trade", {}))
+    )
+    # Default to a coastal core-mandate country with full coverage rather
+    # than whatever sorts first alphabetically (Afghanistan -- landlocked,
+    # sparse data, a bad first impression of the tab).
+    default_index = countries.index("Kenya") if "Kenya" in countries else 0
+    country_choice = st.selectbox("Country", options=countries, index=default_index, key="maritime_country")
+
+    # --- Liner Shipping Connectivity Index (quarterly) ---
+    lsci_series = stats.get("lsci", {}).get(country_choice, {})
+    if lsci_series:
+        quarters = sorted(lsci_series)
+        values = [lsci_series[q] for q in quarters]
+        st.markdown(f"#### Liner Shipping Connectivity — {country_choice}")
+        st.caption(
+            "UNCTAD's headline indicator of how well-integrated a country is into global container "
+            "shipping networks (index, average of Q1 2023 = 100). Higher = better connected."
+        )
+        if len(values) > 4:
+            yoy = values[-1] - values[-5]
+            arrow = "▲" if yoy > 0 else ("▼" if yoy < 0 else "▬")
+            trend_color = b.GOLD if abs(yoy) > 1e-9 else b.TEXT_MUTED
+            st.markdown(
+                f'<div style="border-left:3px solid {trend_color};padding:0.5rem 0.9rem;'
+                f'margin-bottom:0.8rem;background:rgba(255,255,255,0.03);">'
+                f'<span style="color:{trend_color};font-size:1.1rem;font-weight:600;">{arrow} {yoy:+.1f} pts</span>'
+                f'<span style="color:{b.TEXT_MUTED};"> year-on-year '
+                f'({quarters[-5]}: {values[-5]:.1f} → {quarters[-1]}: {values[-1]:.1f})</span></div>',
+                unsafe_allow_html=True,
+            )
+        fig = go.Figure(data=[go.Scatter(
+            x=quarters, y=values, mode="lines",
+            line=dict(color=b.SLATE, width=2),
+            hovertemplate="<b>%{x}</b><br>%{y:.1f}<extra></extra>",
+        )])
+        fig.update_layout(
+            template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+            height=320, margin=dict(l=40, r=40, t=20, b=40),
+        )
+        st.plotly_chart(fig, use_container_width=True, key="maritime_lsci_chart")
+
+    chart_col1, chart_col2 = st.columns(2)
+
+    # --- Container throughput (yearly) ---
+    teu_series = stats.get("container_throughput", {}).get(country_choice, {})
+    with chart_col1:
+        if teu_series:
+            years = sorted(teu_series)
+            st.markdown("##### Container Port Throughput (TEU)")
+            fig = go.Figure(data=[go.Bar(
+                x=years, y=[teu_series[y] for y in years],
+                marker_color=b.SLATE,
+                hovertemplate="<b>%{x}</b><br>%{y:,.0f} TEU<extra></extra>",
+            )])
+            fig.update_layout(
+                template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+                height=300, margin=dict(l=40, r=20, t=20, b=40),
+            )
+            st.plotly_chart(fig, use_container_width=True, key="maritime_teu_chart")
+        else:
+            st.info("No container throughput data for this country (landlocked, or not covered by UNCTAD).")
+
+    # --- Seaborne trade (yearly, loaded vs discharged) ---
+    trade_series = stats.get("seaborne_trade", {}).get(country_choice, {})
+    with chart_col2:
+        if trade_series:
+            years = sorted(trade_series)
+            st.markdown("##### Seaborne Trade (thousand tons)")
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=years, y=[trade_series[y].get("loaded_kt") for y in years],
+                mode="lines+markers", name="Exports (loaded)",
+                line=dict(color=b.LOW, width=2), marker=dict(size=5),
+            ))
+            fig.add_trace(go.Scatter(
+                x=years, y=[trade_series[y].get("discharged_kt") for y in years],
+                mode="lines+markers", name="Imports (discharged)",
+                line=dict(color=b.HIGH, width=2), marker=dict(size=5),
+            ))
+            fig.update_layout(
+                template="plotly_dark", paper_bgcolor=b.PANEL, plot_bgcolor=b.PANEL,
+                height=300, margin=dict(l=40, r=20, t=20, b=40),
+                legend=dict(orientation="h", y=1.12),
+            )
+            st.plotly_chart(fig, use_container_width=True, key="maritime_trade_chart")
+        else:
+            st.info("No seaborne trade data for this country.")
+
+    # --- Cross-country snapshot ---
+    st.markdown("#### Connectivity Snapshot Across Tracked Countries")
+    st.caption("Latest liner shipping connectivity reading per country, with latest container throughput where available.")
+    rows = []
+    for c in countries:
+        c_lsci = stats.get("lsci", {}).get(c, {})
+        c_teu = stats.get("container_throughput", {}).get(c, {})
+        if not c_lsci:
+            continue
+        latest_q = sorted(c_lsci)[-1]
+        latest_teu_year = sorted(c_teu)[-1] if c_teu else None
+        rows.append({
+            "Country": c,
+            "LSCI": c_lsci[latest_q],
+            "As of": latest_q,
+            "Container TEU": f"{c_teu[latest_teu_year]:,.0f} ({latest_teu_year})" if latest_teu_year else "—",
+        })
+    snapshot_df = pd.DataFrame(rows).sort_values("LSCI", ascending=False)
+    st.dataframe(snapshot_df, use_container_width=True, hide_index=True)
+
+
 def render_header():
     """Large centered emblem (the new brand mark) above the wordmark --
     replaces the old photographic logo entirely per Chris's direction. Built
@@ -1066,8 +1209,9 @@ def render_markets_dashboard(econ_df):
         st.info("No economic/investment data loaded yet.")
         return
 
-    indicators_tab, investment_tab, commodities_tab, demographics_tab, insights_tab = st.tabs(
-        ["Macro Indicators", "Investment Projects", "Commodities", "Demographics", "Discovered Insights"]
+    indicators_tab, investment_tab, commodities_tab, maritime_tab, demographics_tab, insights_tab = st.tabs(
+        ["Macro Indicators", "Investment Projects", "Commodities", "Shipping & Maritime",
+         "Demographics", "Discovered Insights"]
     )
 
     with commodities_tab:
@@ -1076,6 +1220,9 @@ def render_markets_dashboard(econ_df):
             "supply chains -- metals, energy, and agriculture, grouped by theme."
         )
         render_commodity_ticker()
+
+    with maritime_tab:
+        render_maritime_dashboard()
 
     with insights_tab:
         st.markdown(
