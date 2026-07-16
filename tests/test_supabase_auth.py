@@ -103,6 +103,24 @@ def test_fetch_profiles_hints_at_setup_sql_on_error():
     print("✓ test_fetch_profiles_hints_at_setup_sql_on_error passed")
 
 
+def test_record_visit_posts_to_site_visits():
+    with patch.object(auth.requests, "post", return_value=_response(201, {})) as mock_post:
+        auth.record_visit(CONFIG)
+    assert mock_post.call_args.args[0].endswith("/rest/v1/site_visits")
+    # Timestamp-only counter: the row body must carry no personal data.
+    assert mock_post.call_args.kwargs["json"] == {}
+    print("✓ test_record_visit_posts_to_site_visits passed")
+
+
+def test_record_visit_noop_without_config_and_swallows_errors():
+    with patch.object(auth.requests, "post") as mock_post:
+        auth.record_visit(None)
+    assert mock_post.call_count == 0
+    with patch.object(auth.requests, "post", side_effect=auth.requests.RequestException("boom")):
+        auth.record_visit(CONFIG)  # must not raise
+    print("✓ test_record_visit_noop_without_config_and_swallows_errors passed")
+
+
 def test_network_errors_degrade_to_message_not_exception():
     with patch.object(auth.requests, "post", side_effect=auth.requests.RequestException("boom")):
         assert not auth.sign_in(CONFIG, "a@b.com", "pw")["ok"]

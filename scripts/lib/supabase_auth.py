@@ -141,6 +141,27 @@ def upsert_own_profile(config: dict, access_token: str, user_id: str,
         pass
 
 
+def record_visit(config: dict | None) -> None:
+    """Fire-and-forget anonymous visit counter: one row per browser session
+    into public.site_visits (Chris, 2026-07-08: 'Is there a way to track how
+    much traffic the website gets and how many people are visiting?').
+    Complements Streamlit Cloud's built-in viewer analytics with data Chris
+    owns and can query. Stores NO personal data -- just a timestamp.
+    Graceful no-op if Supabase isn't configured or the table doesn't exist
+    yet (see supabase_setup.sql), and never blocks or breaks a page load."""
+    if config is None:
+        return
+    try:
+        requests.post(
+            f"{config['url']}/rest/v1/site_visits",
+            headers=_auth_headers(config),
+            json={},  # created_at defaults server-side; nothing else stored
+            timeout=5,
+        )
+    except requests.RequestException:
+        pass
+
+
 def fetch_profiles(config: dict, access_token: str) -> dict:
     """Fetches the member list (admin only -- enforced by RLS, not by this
     client). Returns {"ok", "message"} plus {"profiles": [...]} on success;

@@ -1,44 +1,36 @@
--- supabase_setup.sql  (v3 -- zero references to the auth schema)
+-- supabase_setup.sql  (v4 -- visit counter; login gate retired 2026-07-08)
 --
--- One-time setup for Frontier Mercator's member auth. Paste this whole file
--- into the Supabase dashboard's SQL Editor (left sidebar -> SQL Editor ->
--- New query -> paste -> Run) for project bfushelwyvkznaagqqdu.
+-- Chris removed the member login from the site (the chatbot is open again;
+-- runaway-cost protection now comes from the monthly spend limit on his
+-- Anthropic console account). What remains is an OPTIONAL anonymous visit
+-- counter so he can see how much traffic frontiermercator.com gets with
+-- data he owns (complementing Streamlit Cloud's built-in viewer stats).
 --
--- v3 note: v1 failed on a trigger on auth.users; v2 removed the trigger
--- but still had a foreign key REFERENCING auth.users, which can also hit
--- the locked-down auth schema on newer projects. This version touches
--- ONLY the public schema -- nothing here can fail on auth-schema
--- permissions. The id column still holds the Supabase auth user's uuid
--- (the dashboard supplies it on login); it's just no longer a declared
--- foreign key, which costs us nothing except automatic cascade-delete.
+-- To activate: copy everything below into the Supabase dashboard's SQL
+-- Editor (SQL Editor -> New query -> paste the SQL TEXT, not a filename ->
+-- Run) for project bfushelwyvkznaagqqdu. Until this runs, the site's
+-- visit logging is a silent no-op -- nothing breaks either way.
+--
+-- Privacy: one row per visitor session, timestamp only. No IP, no name,
+-- no email, nothing identifying.
 
-create table if not exists public.profiles (
-    id uuid primary key,
-    full_name text,
-    email text,
+create table if not exists public.site_visits (
+    id bigint generated always as identity primary key,
     created_at timestamptz not null default now()
 );
 
-alter table public.profiles enable row level security;
+alter table public.site_visits enable row level security;
 
--- Members may create/update ONLY their own row (the dashboard does this
--- automatically on each login). auth.uid() reads the caller's verified
--- JWT -- a member cannot forge someone else's id.
-drop policy if exists "users insert own profile" on public.profiles;
-create policy "users insert own profile"
-    on public.profiles for insert
-    with check (auth.uid() = id);
+-- The site (anon key) may INSERT rows but never read, change, or delete
+-- them -- a write-only counter. Even someone who extracts the public anon
+-- key from the site can only add a row, same as visiting the page.
+drop policy if exists "anyone can log a visit" on public.site_visits;
+create policy "anyone can log a visit"
+    on public.site_visits for insert
+    to anon
+    with check (true);
 
-drop policy if exists "users update own profile" on public.profiles;
-create policy "users update own profile"
-    on public.profiles for update
-    using (auth.uid() = id)
-    with check (auth.uid() = id);
-
--- ONLY the admin email may read the member list. Enforced by Postgres
--- itself -- even someone who extracts the public anon key from the site
--- cannot read it.
-drop policy if exists "admin can read all profiles" on public.profiles;
-create policy "admin can read all profiles"
-    on public.profiles for select
-    using (auth.jwt() ->> 'email' = 'chrissmith333222@gmail.com');
+-- Read the counts in the Supabase dashboard (Table Editor -> site_visits),
+-- or run e.g.:
+--   select date_trunc('day', created_at) as day, count(*) as visits
+--   from site_visits group by 1 order by 1 desc;
