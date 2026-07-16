@@ -369,6 +369,20 @@ def main():
     args = parser.parse_args()
 
     output = generate_theses(max_theses=args.max_theses)
+    if not output["theses"]:
+        # One retry -- a malformed tool payload (unparseable object-array)
+        # normalizes to zero theses, and a fresh sample usually conforms.
+        print("Zero theses survived normalization -- retrying once.", file=sys.stderr)
+        output = generate_theses(max_theses=args.max_theses)
+
+    # NEVER overwrite a good artifact with an empty one (a zero-thesis file
+    # shipped live on 2026-07-16 and blanked the Investment Insights tab
+    # until git-restored). Failing loudly beats failing silently here.
+    if not output["theses"]:
+        print(f"ERROR: still zero theses after retry -- leaving the existing "
+              f"{OUTPUT_PATH.name} untouched.", file=sys.stderr)
+        sys.exit(1)
+
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(output, indent=2), encoding="utf-8")
     print(f"Wrote {len(output['theses'])} theses to {OUTPUT_PATH}", file=sys.stderr)

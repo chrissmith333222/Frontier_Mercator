@@ -248,6 +248,7 @@ def _normalize_tool_output(analysis: dict, schema: dict) -> dict:
     for field_name, field_schema in schema["input_schema"]["properties"].items():
         value = normalized.get(field_name)
         if field_schema["type"] == "array":
+            items_are_objects = (field_schema.get("items", {}).get("type") == "object")
             if value is None:
                 normalized[field_name] = []
             elif isinstance(value, str):
@@ -259,10 +260,28 @@ def _normalize_tool_output(analysis: dict, schema: dict) -> dict:
                 try:
                     parsed = json.loads(stripped)
                     if isinstance(parsed, list):
-                        normalized[field_name] = [str(item) for item in parsed]
+                        # Preserve dicts for object-typed arrays -- str()ing
+                        # them (the old behavior) forced every downstream
+                        # consumer to re-parse JSON-stringified dicts
+                        # (observed live in investment_theses, 2026-07-07).
+                        if items_are_objects:
+                            normalized[field_name] = parsed
+                        else:
+                            normalized[field_name] = [str(item) for item in parsed]
                         continue
                 except (json.JSONDecodeError, ValueError):
                     pass
+                if items_are_objects:
+                    # Newline/tag splitting can only ever shred an array of
+                    # OBJECTS into garbage fragments like '}' (observed live
+                    # 2026-07-16, which then wrote a zero-item output file).
+                    # An unparseable object-array is unrecoverable -- return
+                    # it empty so the caller can detect the failure and
+                    # retry/abort instead of shipping fragments.
+                    print(f"WARNING: {field_name} arrived as an unparseable string for an "
+                          f"object-array field; returning empty.", file=sys.stderr)
+                    normalized[field_name] = []
+                    continue
                 items = re.findall(r"<item>(.*?)</item>", stripped, re.DOTALL)
                 if not items:
                     items = [line.strip() for line in stripped.splitlines() if line.strip()]
@@ -342,14 +361,33 @@ def _call_with_forced_tool(client, model: str, system_prompt: str, tool: dict, u
     JSON.loads/markdown-fence-stripping of free-form text needed, which
     is what caused intermittent malformed-JSON failures (unescaped
     characters in Claude's raw text output) before this was added."""
-    response = client.messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        tools=[tool],
-        tool_choice={"type": "tool", "name": tool["name"]},
-        messages=[{"role": "user", "content": user_message}],
-    )
+    # Streaming, not a single blocking create(): long structured generations
+    # (8k-16k output tokens) hold a socket open for minutes, and Chris's
+    # network (VPN toggling) was observed killing those idle reads with
+    # APIConnectionError (2026-07-16) while short calls succeeded. Streaming
+    # keeps bytes flowing on the connection -- the SDK-recommended path for
+    # long requests -- and get_final_message() reassembles the same response
+    # object the rest of this function already expects. Fakes in tests that
+    # only implement .create() keep working via the hasattr fallback.
+    if hasattr(client.messages, "stream"):
+        with client.messages.stream(
+            model=model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            tools=[tool],
+            tool_choice={"type": "tool", "name": tool["name"]},
+            messages=[{"role": "user", "content": user_message}],
+        ) as stream_response:
+            response = stream_response.get_final_message()
+    else:
+        response = client.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            tools=[tool],
+            tool_choice={"type": "tool", "name": tool["name"]},
+            messages=[{"role": "user", "content": user_message}],
+        )
     if response.stop_reason == "max_tokens":
         raise RuntimeError(
             f"Claude response for {context_label} was truncated (hit max_tokens) -- "

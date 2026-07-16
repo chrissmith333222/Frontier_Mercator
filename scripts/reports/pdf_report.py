@@ -777,3 +777,74 @@ def generate_custom_report(assessment: dict) -> bytes:
 
     doc.build(story, onFirstPage=_paint_dark_background, onLaterPages=_paint_dark_background)
     return buffer.getvalue()
+
+
+def generate_regional_outlook_pdf(outlook: dict) -> bytes:
+    """Renders the Regional Economic Outlook (scripts/analytics/
+    regional_outlook.py output) as a branded executive PDF -- Chris's
+    big-picture macro/regional product: narrative-first, with the
+    quantitative anchors rendered as crisp data-point bullets under each
+    opportunity. Like generate_custom_report, this renders entirely from
+    the cached artifact -- no AI/API call happens at PDF-render time."""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=LETTER,
+        topMargin=0.6 * inch, bottomMargin=0.6 * inch,
+        leftMargin=0.7 * inch, rightMargin=0.7 * inch,
+    )
+
+    story = _header_flowables(
+        "Regional Economic Outlook",
+        "Frontier Mercator Group | Emerging Market Intelligence",
+    )
+    story.append(Paragraph(
+        f"Generated {outlook.get('generated_at', '')[:10]}. Executive synthesis of "
+        f"Frontier Mercator's multi-source intelligence -- macroeconomic indicators, "
+        f"development-finance flows, security reporting, commodity and shipping data -- "
+        f"by region. Research product, not investment advice.",
+        DISCLAIMER_STYLE,
+    ))
+    story.append(Spacer(1, 10))
+
+    region_heading = ParagraphStyle(
+        "OutlookRegion", parent=SECTION_STYLE, fontSize=15, spaceBefore=18,
+        textColor=colors.HexColor(b.GOLD),
+    )
+    opportunity_heading = ParagraphStyle(
+        "OutlookOpportunity", parent=SECTION_STYLE, fontSize=11, spaceBefore=8, spaceAfter=3,
+    )
+
+    for i, (region, section) in enumerate(sorted(outlook.get("regions", {}).items())):
+        if i > 0:
+            story.append(Spacer(1, 6))
+        story.append(Paragraph(region, region_heading))
+
+        for para in (section.get("regional_narrative") or "").split("\n\n"):
+            if para.strip():
+                story.append(Paragraph(para.strip(), BODY_STYLE))
+                story.append(Spacer(1, 5))
+
+        for opp in section.get("opportunities", []):
+            story.append(Paragraph(f"Opportunity: {opp.get('title', '')}", opportunity_heading))
+            story.append(Paragraph(opp.get("narrative", ""), BODY_STYLE))
+            story.append(Spacer(1, 3))
+            for point in opp.get("key_data_points", []):
+                story.append(Paragraph(f"&bull; {_bullet_text(str(point))}", BODY_STYLE))
+            story.append(Spacer(1, 5))
+
+        if section.get("risk_outlook"):
+            story.append(Paragraph("Risk Outlook", opportunity_heading))
+            story.append(Paragraph(section["risk_outlook"], BODY_STYLE))
+
+    story.append(Spacer(1, 14))
+    story.append(Paragraph(
+        "Prepared by Frontier Mercator Group from the firm's multi-source intelligence platform. "
+        "All figures as attributed in text (World Bank, IMF, UNCTAD, AidData, DFC, ACLED, and "
+        "open reporting). This document describes regional dynamics and where opportunities and "
+        "risks sit; it does not constitute investment advice or a recommendation to buy or sell "
+        "any security.",
+        DISCLAIMER_STYLE,
+    ))
+
+    doc.build(story, onFirstPage=_paint_dark_background, onLaterPages=_paint_dark_background)
+    return buffer.getvalue()

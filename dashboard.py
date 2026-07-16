@@ -27,6 +27,8 @@ from scripts.lib.commodity_data import fetch_commodity_snapshot, COMMODITIES as 
 from scripts.lib.instrument_universe import INSTRUMENTS as INVESTMENT_INSTRUMENTS
 from scripts.ingestion.unctad_maritime_fetch import load_maritime_stats
 from scripts.lib.supabase_auth import get_config as get_auth_config, record_visit
+from scripts.analytics.regional_outlook import load_regional_outlook
+from scripts.reports.pdf_report import generate_regional_outlook_pdf
 from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
     compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier, top_n_badges,
@@ -942,6 +944,13 @@ def render_price_history_explorer():
     )
     st.plotly_chart(fig, use_container_width=True, key="price_history_chart")
     st.caption("Yahoo Finance data, ~15-min delayed; interval scales with range (5-minute bars for 1D, monthly for 10Y/Max).")
+
+
+@st.cache_data(ttl=3600)
+def _load_regional_outlook() -> dict:
+    """Reads the cached Regional Economic Outlook (scripts/analytics/
+    regional_outlook.py -- generated offline, rendered statically here)."""
+    return load_regional_outlook()
 
 
 @st.cache_data(ttl=3600)
@@ -2332,6 +2341,31 @@ with dash5:
                 file_name=f"Frontier_Mercator_{region_choice.replace(' ', '_').replace('/', '-')}_Brief.pdf",
                 mime="application/pdf", key="dl_regional_brief",
             )
+
+        _divider()
+        st.markdown("#### Regional Economic Outlook")
+        st.markdown(
+            "The firm's flagship executive product: big-picture macro takeaways and investment "
+            "opportunities for every core region — narrative-first, with the quantitative "
+            "evidence (GDP growth, FDI, inflation, financing flows) woven into each opportunity."
+        )
+        outlook_data = _load_regional_outlook()
+        if not outlook_data or not outlook_data.get("regions"):
+            st.info("No outlook generated yet -- run "
+                    "`python scripts/analytics/regional_outlook.py` to generate it.")
+        else:
+            st.caption(
+                f"Current edition generated {outlook_data['generated_at'][:10]} — "
+                f"{len(outlook_data['regions'])} regions. Regenerated weekly."
+            )
+            if st.button("Generate Outlook PDF", key="gen_regional_outlook"):
+                pdf_bytes = generate_regional_outlook_pdf(outlook_data)
+                archive_report(pdf_bytes, report_type="outlook", label="Regional Economic Outlook")
+                st.download_button(
+                    "Download PDF", data=pdf_bytes,
+                    file_name="Frontier_Mercator_Regional_Economic_Outlook.pdf",
+                    mime="application/pdf", key="dl_regional_outlook",
+                )
 
     custom_analyses = load_custom_analyses()
     if custom_analyses:

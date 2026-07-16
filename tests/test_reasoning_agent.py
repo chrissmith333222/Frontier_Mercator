@@ -287,6 +287,29 @@ def test_normalize_tool_output_parses_json_stringified_array_with_parameter_wrap
     print("✓ test_normalize_tool_output_parses_json_stringified_array_with_parameter_wrapper passed")
 
 
+def test_normalize_tool_output_preserves_dicts_in_object_arrays():
+    """Third real malformed shape (investment_theses, 2026-07-16): an
+    object-typed array field arrived as a JSON string. The old repair
+    str()'d each parsed dict (forcing downstream re-parsing), and its
+    newline-split fallback shredded unparseable payloads into fragments
+    like '}' -- which normalized to zero theses and blanked a live tab."""
+    object_array_tool = {
+        "name": "t",
+        "input_schema": {"type": "object", "properties": {
+            "theses": {"type": "array", "items": {"type": "object"}},
+        }},
+    }
+    # Valid JSON string of dicts -> dicts preserved, not stringified
+    normalized = _normalize_tool_output(
+        {"theses": '[{"headline": "H1"}, {"headline": "H2"}]'}, object_array_tool)
+    assert normalized["theses"] == [{"headline": "H1"}, {"headline": "H2"}]
+    # Unparseable string -> empty list, NEVER garbage fragments
+    normalized = _normalize_tool_output(
+        {"theses": '{"broken": [}'}, object_array_tool)
+    assert normalized["theses"] == []
+    print("✓ test_normalize_tool_output_preserves_dicts_in_object_arrays passed")
+
+
 def test_normalize_tool_output_leaves_well_formed_response_unchanged():
     well_formed = {
         "answer": "A clean answer.",
