@@ -1,39 +1,50 @@
 {
-  "generated_at": "2026-07-06T13:09:53.162410+00:00",
-  "total_hits_screened": 15,
+  "generated_at": "2026-07-16T13:55:24.315425+00:00",
+  "total_hits_screened": 32,
   "insights": [
     {
-      "headline": "Kenya's unrest cycle appears to precede, not follow, spikes in investment activity",
-      "detail": "Conflict, protest, and political-violence events in Kenya each show a fairly strong positive correlation with investment_events three months later (r\u22480.58, n=62, the most data-rich series in the set). A plausible story is reverse causality or a shared driver: election cycles and policy announcements often trigger both a wave of protest/political activity and a subsequent burst of development-finance or private investment deals tied to the same political calendar (e.g. post-election stabilization funding, or announced reforms drawing capital after unrest subsides). For an investor this is a timing signal worth monitoring, not a 'unrest causes investment' story.",
-      "caveat": "Both series are likely driven by a common third factor -- the electoral/political calendar or a donor funding cycle -- so events months apart could simply reflect scheduled political and financial activity rather than conflict causing investment. Reverse causality is also plausible: anticipated investment announcements could themselves provoke protest activity (e.g. land or labor disputes tied to project rollout).",
-      "country": "Kenya",
-      "series_x": "conflict_events",
-      "series_y": "investment_events",
-      "r": 0.577,
-      "lag_months": 3,
-      "n_months": 62
-    },
-    {
-      "headline": "South Sudan conflict intensity moves with copper, silver, and gold prices in the same month",
-      "detail": "In South Sudan, conflict events, severity, protests, and political violence all correlate contemporaneously with copper (r\u22480.50-0.59), silver (r\u22480.52-0.54), and gold (r\u22480.48) despite the small direct role these specific metals play in South Sudan's own economy (oil-dominated). A plausible shared mechanism: global industrial-metal and safe-haven price cycles track broader emerging-market risk sentiment and commodity supercycles, and South Sudan's internal conflict dynamics (often tied to oil-revenue disputes) may covary with the same global risk-on/risk-off cycles that move metals -- not because metals cause conflict, but because both are riding a common global commodity/EM cycle. This is useful as a risk-monitoring co-indicator: rising conflict readings in South Sudan alongside a metals rally could flag a period where frontier-market risk premia are compressing broadly, potentially masking country-specific danger.",
-      "caveat": "With only 34 monthly observations and multiple near-identical series (conflict_events, severity, protest_events, political_violence_events) all correlating with multiple metals at similar magnitudes, this strongly resembles a common global trend or business-cycle confound (e.g., a multi-year global commodity upswing coinciding coincidentally with a multi-year conflict escalation), rather than any direct economic link between South Sudanese unrest and copper/silver/gold pricing.",
+      "headline": "South Sudan conflict intensity tracks global copper prices, not the other way around",
+      "detail": "Conflict events, protest events, and severity in South Sudan all correlate strongly (r ~0.5-0.7) with copper, silver, gold, platinum, and aluminum prices, with zero lag and consistent across nearly every conflict metric. This pattern looks less like conflict driving metal prices and more like both being driven by a common global commodity super-cycle or dollar-liquidity regime that also finances armed groups and state security spending in resource-linked economies. For investors, a broad-based global metals rally could be a leading indicator to tighten risk monitoring on South Sudan exposure, since periods of high commodity prices historically coincide with elevated internal conflict there.",
+      "caveat": "The most likely confounder is a common global macro factor (dollar weakness, global growth, China demand) driving all base/precious metal prices simultaneously, which would produce this same correlation pattern across every metal regardless of any real causal link to South Sudan's conflict; it is not evidence that South Sudanese conflict moves world copper markets.",
       "country": "South Sudan",
-      "series_x": "mean_conflict_severity",
+      "series_x": "conflict_events",
       "series_y": "Copper",
-      "r": 0.528,
+      "r": 0.712,
       "lag_months": 0,
       "n_months": 34
     },
     {
-      "headline": "Mozambican and Kenyan conflict readings lead copper prices by one month",
-      "detail": "Conflict events and severity in Mozambique, and conflict/political-violence events in Kenya, show r of 0.65-0.70 with copper prices one month later. Mozambique has real copper/mineral-belt exposure (and is adjacent to the Central African Copperbelt supply chain via transport corridors), so a plausible mechanism is that copper-linked investment or resource-corridor activity provokes localized friction (land disputes, artisanal mining conflicts, protests over royalties) that shows up in conflict data before global copper price moves reported with a lag, or alternatively that a copper price rally spurs increased mining activity and associated local conflict a month later.",
-      "caveat": "With only 18-19 monthly observations, this is a very short sample and highly susceptible to a handful of coincident outlier months driving the whole correlation; also copper is a globally priced commodity whose swings are dominated by China demand and macro factors entirely unrelated to Mozambican or Kenyan local conflict, making a coincidental co-trend during the sample window the more likely explanation than any causal link.",
+      "headline": "Mozambique conflict/violence leads copper prices by up to a month",
+      "detail": "Mozambique's conflict events, political violence, and severity metrics correlate with copper both contemporaneously and with a 1-month lag (r ~0.69-0.72). Mozambique has real copper-adjacent mining and gas infrastructure exposure (Cabo Delgado insurgency near gas projects), so this could reflect investor risk repricing of regional supply disruption, or simply mirror the same global copper cycle seen elsewhere. Still, if the lagged relationship holds out-of-sample, a spike in Mozambican political violence could be a short-horizon signal to watch regional mining/gas equities and country risk premia.",
+      "caveat": "With only 18-19 monthly observations, this could easily be a chance alignment of two series that both moved during the same global commodity upswing; reverse causality is also plausible if rising copper prices increase the value of contested resource areas and thereby fuel local conflict, rather than conflict driving price.",
       "country": "Mozambique",
       "series_x": "mean_conflict_severity",
       "series_y": "Copper",
-      "r": 0.703,
-      "lag_months": 0,
-      "n_months": 18
+      "r": 0.696,
+      "lag_months": 1,
+      "n_months": 19
+    },
+    {
+      "headline": "Kenyan conflict, protest, and political violence all predict a rise in investment activity three months later",
+      "detail": "Three separate Kenyan instability measures (conflict events, protest events, political violence events) each correlate at r=0.575 with investment_events three months later, over a much larger sample (63 months) than most other findings here. A plausible story: instability spikes trigger post-crisis stabilization and reconstruction financing, or election-cycle unrest is followed by renewed donor/investor confidence once the cycle resolves, both of which are common in Kenya's political calendar. This is genuinely useful for entry-timing: rather than treating unrest as a pure risk-off signal, the data suggest development-finance flows into Kenya often resume a quarter after unrest, which could inform re-entry timing for frontier-market allocators.",
+      "caveat": "The three instability series are highly collinear with each other (identical r and lag), so this is really one signal, not three independent confirmations; election-cycle seasonality is a likely confounder, since both unrest and investment announcements may cluster around Kenya's fixed election calendar rather than being causally linked.",
+      "country": "Kenya",
+      "series_x": "political_violence_events",
+      "series_y": "investment_events",
+      "r": 0.575,
+      "lag_months": 3,
+      "n_months": 63
+    },
+    {
+      "headline": "South Sudan investment activity leads aluminum prices by three months",
+      "detail": "South Sudan's investment_events series correlates with aluminum prices at r=0.615 with a 3-month lag, distinct from the contemporaneous conflict-metal correlations. Because South Sudan is not a major aluminum producer, this is more likely investment activity responding to (or co-moving with) the same global capital-flow/risk-appetite cycle that later shows up in industrial metal prices, rather than a direct local supply link. It's a marginal, secondary signal worth tracking only in combination with broader emerging-market capital flow data, not as a standalone aluminum trade idea.",
+      "caveat": "A global risk-on/risk-off cycle in emerging-market capital flows could independently drive both frontier-market investment announcements and industrial metal demand, producing this lagged correlation without any direct causal channel between South Sudanese investment and aluminum specifically.",
+      "country": "South Sudan",
+      "series_x": "investment_events",
+      "series_y": "Aluminum",
+      "r": 0.615,
+      "lag_months": 3,
+      "n_months": 31
     }
   ]
 }
