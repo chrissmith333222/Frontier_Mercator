@@ -1870,29 +1870,33 @@ def render_research_assistant(df):
     # national strategy document... and ask the chat bot to formulate a
     # report"). Extracted text rides along with every subsequent message in
     # this session, so the assistant can weigh it against the platform's
-    # own data and web search.
-    with st.expander("📎 Upload reference documents", expanded=False):
-        uploads = st.file_uploader(
-            "PDF or text files the assistant should use as source material this session",
-            type=["pdf", "txt", "md", "csv"], accept_multiple_files=True, key="chat_uploads",
-        )
-        for upload in uploads or []:
-            if upload.name in st.session_state.chat_documents:
-                continue
-            text = extract_document_text(upload.name, upload.getvalue())
-            if text:
-                st.session_state.chat_documents[upload.name] = text
-            else:
-                st.warning(f"Couldn't extract any text from {upload.name} -- if it's a "
-                           f"scanned/image-only PDF, it needs OCR before uploading.")
-        if st.session_state.chat_documents:
-            loaded = ", ".join(st.session_state.chat_documents)
-            st.caption(f"Loaded this session: {loaded}. The assistant will cite these as "
-                       f"'(uploaded document)'. Note: documents travel with every message, "
-                       f"so long documents make each reply cost more.")
-            if st.button("Clear uploaded documents", key="chat_docs_clear"):
-                st.session_state.chat_documents = {}
-                st.rerun()
+    # own data and web search. Rendered INLINE, not in an expander: this
+    # function is itself called inside the sidebar's "Open chat" expander,
+    # and Streamlit 1.38 (the deployed pin) hard-rejects nested expanders
+    # -- shipping one took the whole site down on 2026-07-16. The local dev
+    # Streamlit is newer and tolerates nesting, which is why preview didn't
+    # catch it; anything added inside this function must stay expander-free.
+    uploads = st.file_uploader(
+        "📎 Reference documents (PDF/text) for this session",
+        type=["pdf", "txt", "md", "csv"], accept_multiple_files=True, key="chat_uploads",
+    )
+    for upload in uploads or []:
+        if upload.name in st.session_state.chat_documents:
+            continue
+        text = extract_document_text(upload.name, upload.getvalue())
+        if text:
+            st.session_state.chat_documents[upload.name] = text
+        else:
+            st.warning(f"Couldn't extract any text from {upload.name} -- if it's a "
+                       f"scanned/image-only PDF, it needs OCR before uploading.")
+    if st.session_state.chat_documents:
+        loaded = ", ".join(st.session_state.chat_documents)
+        st.caption(f"Loaded this session: {loaded}. The assistant will cite these as "
+                   f"'(uploaded document)'. Note: documents travel with every message, "
+                   f"so long documents make each reply cost more.")
+        if st.button("Clear uploaded documents", key="chat_docs_clear"):
+            st.session_state.chat_documents = {}
+            st.rerun()
 
     for msg in st.session_state.chat_history:
         if msg["role"] == "user" and isinstance(msg["content"], str):
