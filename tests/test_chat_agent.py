@@ -257,3 +257,48 @@ if __name__ == "__main__":
     print(f"\n{len(test_functions) - failures}/{len(test_functions)} tests passed.")
     if failures:
         sys.exit(1)
+
+
+def test_extract_document_text_pdf_and_txt():
+    from scripts.analysis.chat_agent import extract_document_text, MAX_DOCUMENT_CHARS
+    # plain text passes through
+    assert extract_document_text("notes.txt", b"National strategy: ports.") == "National strategy: ports."
+    # unknown extension -> empty (UI warns)
+    assert extract_document_text("deck.pptx", b"whatever") == ""
+    # oversized text is capped
+    big = ("x" * (MAX_DOCUMENT_CHARS + 5000)).encode()
+    assert len(extract_document_text("big.txt", big)) == MAX_DOCUMENT_CHARS
+    # corrupt PDF degrades to empty, not an exception
+    assert extract_document_text("bad.pdf", b"not a real pdf") == ""
+    print("ok test_extract_document_text_pdf_and_txt")
+
+
+def test_run_chat_turn_appends_document_context_to_system_prompt():
+    from scripts.analysis.chat_agent import run_chat_turn
+    import pandas as pd
+
+    captured = {}
+
+    class _FakeResponse:
+        stop_reason = "end_turn"
+        content = [type("B", (), {"model_dump": lambda self: {"type": "text", "text": "hi"}})()]
+
+    class _FakeMessages:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            return _FakeResponse()
+
+    class _FakeClient:
+        messages = _FakeMessages()
+
+    df = pd.DataFrame([{"country": "Kenya", "narrative_summary": "x", "actors": [],
+                         "event_category": "other", "severity_score": 1, "event_date": "2026-01-01",
+                         "source": "GDELT", "fatalities": None, "source_url": ""}])
+    result = run_chat_turn(df, [], "summarize the doc", client=_FakeClient(),
+                            document_context="DOCUMENT: strategy.pdf\nCashew exports to triple.")
+    assert "Cashew exports to triple." in captured["system"]
+    assert "uploaded" in captured["system"].lower()
+    # without a document, the system prompt stays clean
+    run_chat_turn(df, [], "hello", client=_FakeClient(), document_context=None)
+    assert "Cashew exports" not in captured["system"]
+    print("ok test_run_chat_turn_appends_document_context_to_system_prompt")

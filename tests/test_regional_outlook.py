@@ -91,6 +91,69 @@ def test_pdf_renders_even_when_sections_sparse():
     print("✓ test_pdf_renders_even_when_sections_sparse passed")
 
 
+
+
+def test_single_region_pdf_renders_with_charts():
+    """Standalone per-region outlook: narrative + charts from real-shaped
+    fixture data (GDP/inflation readings for 3 countries, 12 months of
+    conflict events, investment mix) -- all four chart types exercised."""
+    import pandas as pd
+    from scripts.reports.pdf_report import generate_single_region_outlook_pdf
+
+    rows = []
+    for country, gdp, cpi in [("Kenya", 4.5, 6.4), ("Tanzania", 5.2, 3.1), ("Uganda", 6.0, 4.0)]:
+        rows.append({"region": "East Africa / Horn", "country": country,
+                      "event_category": "economic_indicator", "event_subtype": "NY.GDP.MKTP.KD.ZG",
+                      "event_date": "2025-12-31", "source": "WorldBank",
+                      "narrative_summary": f"GDP growth (annual %): {gdp}% (2025)"})
+        rows.append({"region": "East Africa / Horn", "country": country,
+                      "event_category": "economic_indicator", "event_subtype": "FP.CPI.TOTL.ZG",
+                      "event_date": "2025-12-31", "source": "WorldBank",
+                      "narrative_summary": f"Inflation, consumer prices (annual %): {cpi}% (2025)"})
+    for month in range(1, 13):
+        for _ in range(3):
+            rows.append({"region": "East Africa / Horn", "country": "Kenya",
+                          "event_category": "conflict", "event_subtype": "battle",
+                          "event_date": f"2025-{month:02d}-15", "source": "ACLED",
+                          "narrative_summary": "clash"})
+    for source in ["AidData"] * 5 + ["DFC"] * 3 + ["WorldBankPPI"] * 2:
+        rows.append({"region": "East Africa / Horn", "country": "Kenya",
+                      "event_category": "investment", "event_subtype": "energy",
+                      "event_date": "2024-01-01", "source": source,
+                      "narrative_summary": "project"})
+    df = pd.DataFrame(rows)
+
+    section = {
+        "regional_narrative": "Growth holds.\n\nCapital flows continue.",
+        "opportunities": [{"title": "Logistics", "narrative": "Ports rising.",
+                            "key_data_points": ["Kenya GDP 4.5% (IMF)"]}],
+        "risk_outlook": "Election unrest is the watch item.",
+    }
+    from scripts.reports.outlook_charts import region_chart_flowables
+    charts = region_chart_flowables(df)
+    assert len(charts) == 4  # GDP bar, inflation bar, security line, financing pie
+
+    pdf = generate_single_region_outlook_pdf("East Africa / Horn", section,
+                                              "2026-07-16T12:00:00+00:00", df)
+    assert pdf[:5] == b"%PDF-"
+    assert len(pdf) > 5000  # charts add real weight vs the ~3KB text-only render
+    print("ok test_single_region_pdf_renders_with_charts")
+
+
+def test_region_chart_flowables_skip_sparse_data():
+    import pandas as pd
+    from scripts.reports.outlook_charts import region_chart_flowables
+    # A region with only one country of macro data and no conflict/investment
+    # volume gets NO charts -- never empty axes.
+    df = pd.DataFrame([{"region": "Mexico", "country": "Mexico",
+                         "event_category": "economic_indicator", "event_subtype": "NY.GDP.MKTP.KD.ZG",
+                         "event_date": "2025-12-31", "source": "WorldBank",
+                         "narrative_summary": "GDP growth (annual %): 1.9% (2025)"}])
+    charts = region_chart_flowables(df)
+    assert charts == []
+    print("ok test_region_chart_flowables_skip_sparse_data")
+
+
 if __name__ == "__main__":
     import tempfile
     test_functions = [v for k, v in list(globals().items()) if k.startswith("test_") and callable(v)]

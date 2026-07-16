@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 import streamlit.components.v1 as components
 from pathlib import Path
 
-from scripts.reports.pdf_report import generate_country_brief, generate_regional_brief, generate_custom_report
+from scripts.reports.pdf_report import generate_country_brief, generate_custom_report
 from scripts.reports.report_archive import archive_report, list_archived_reports
 from scripts.knowledge.relationship_graph import build_country_graph, build_plotly_figure
 from scripts import branding as b
@@ -28,8 +28,8 @@ from scripts.lib.instrument_universe import INSTRUMENTS as INVESTMENT_INSTRUMENT
 from scripts.ingestion.unctad_maritime_fetch import load_maritime_stats
 from scripts.lib.supabase_auth import get_config as get_auth_config, record_visit
 from scripts.analytics.regional_outlook import load_regional_outlook
-from scripts.reports.pdf_report import generate_regional_outlook_pdf
-from scripts.analysis.chat_agent import run_chat_turn, MAX_TURNS_PER_SESSION
+from scripts.reports.pdf_report import generate_single_region_outlook_pdf
+from scripts.analysis.chat_agent import run_chat_turn, extract_document_text, MAX_TURNS_PER_SESSION
 from scripts.analytics.significance import (
     compute_significance_score, diversify_top_n, compute_tier_thresholds, significance_tier, top_n_badges,
 )
@@ -1863,6 +1863,36 @@ def render_research_assistant(df):
         st.session_state.chat_turns_used = 0
     if "chat_files" not in st.session_state:
         st.session_state.chat_files = []
+    if "chat_documents" not in st.session_state:
+        st.session_state.chat_documents = {}  # filename -> extracted text
+
+    # Reference-document upload (Chris, 2026-07-16: "upload a newly released
+    # national strategy document... and ask the chat bot to formulate a
+    # report"). Extracted text rides along with every subsequent message in
+    # this session, so the assistant can weigh it against the platform's
+    # own data and web search.
+    with st.expander("📎 Upload reference documents", expanded=False):
+        uploads = st.file_uploader(
+            "PDF or text files the assistant should use as source material this session",
+            type=["pdf", "txt", "md", "csv"], accept_multiple_files=True, key="chat_uploads",
+        )
+        for upload in uploads or []:
+            if upload.name in st.session_state.chat_documents:
+                continue
+            text = extract_document_text(upload.name, upload.getvalue())
+            if text:
+                st.session_state.chat_documents[upload.name] = text
+            else:
+                st.warning(f"Couldn't extract any text from {upload.name} -- if it's a "
+                           f"scanned/image-only PDF, it needs OCR before uploading.")
+        if st.session_state.chat_documents:
+            loaded = ", ".join(st.session_state.chat_documents)
+            st.caption(f"Loaded this session: {loaded}. The assistant will cite these as "
+                       f"'(uploaded document)'. Note: documents travel with every message, "
+                       f"so long documents make each reply cost more.")
+            if st.button("Clear uploaded documents", key="chat_docs_clear"):
+                st.session_state.chat_documents = {}
+                st.rerun()
 
     for msg in st.session_state.chat_history:
         if msg["role"] == "user" and isinstance(msg["content"], str):
@@ -1896,7 +1926,12 @@ def render_research_assistant(df):
         with st.chat_message("assistant"):
             with st.spinner("Researching..."):
                 try:
-                    result = run_chat_turn(df, st.session_state.chat_history, user_input)
+                    document_context = "\n\n---\n\n".join(
+                        f"DOCUMENT: {name}\n{text}"
+                        for name, text in st.session_state.chat_documents.items()
+                    ) or None
+                    result = run_chat_turn(df, st.session_state.chat_history, user_input,
+                                            document_context=document_context)
                 except Exception as e:
                     st.error(f"Something went wrong: {e}")
                     return
@@ -2266,9 +2301,6 @@ with dash5:
     )
     country_name_options = [name for _iso3, (name, _region, _mandate) in country_options]
 
-    region_mandate = df.drop_duplicates("region").set_index("region")["in_core_mandate"]
-    region_options = sorted(region_mandate.index, key=lambda r: (not region_mandate[r], r))
-
     report_col1, report_col2 = st.columns(2)
     with report_col1:
         st.markdown("#### Country Intelligence Brief")
@@ -2331,39 +2363,42 @@ with dash5:
             )
             st.plotly_chart(build_plotly_figure(country_graph), use_container_width=True, key="country_relationship_graph")
     with report_col2:
-        st.markdown("#### Regional Executive Summary")
-        region_choice = st.selectbox("Region", options=region_options, key="region_brief_select")
-        if st.button("Generate Regional Brief", key="gen_regional_brief"):
-            pdf_bytes = generate_regional_brief(df, region_choice)
-            archive_report(pdf_bytes, report_type="regional", label=region_choice)
-            st.download_button(
-                "Download PDF", data=pdf_bytes,
-                file_name=f"Frontier_Mercator_{region_choice.replace(' ', '_').replace('/', '-')}_Brief.pdf",
-                mime="application/pdf", key="dl_regional_brief",
-            )
-
-        _divider()
+        # Standalone per-region outlook (Chris, 2026-07-16: "each region's
+        # economic outlook report stand alone... select a region, generate a
+        # regional economic outlook report" -- replaces BOTH the old
+        # chart-only Regional Executive Summary and the all-regions compiled
+        # outlook PDF). Narrative + opportunities + risk from the weekly
+        # outlook artifact, interleaved with the region's most relevant
+        # economic/security charts.
         st.markdown("#### Regional Economic Outlook")
         st.markdown(
-            "The firm's flagship executive product: big-picture macro takeaways and investment "
-            "opportunities for every core region — narrative-first, with the quantitative "
-            "evidence (GDP growth, FDI, inflation, financing flows) woven into each opportunity."
+            "The firm's flagship executive product, one region at a time: big-picture macro "
+            "takeaways and investment opportunities — narrative-first, with the quantitative "
+            "evidence (GDP growth, inflation, financing flows, security trends) woven in and "
+            "illustrated with the region's most relevant charts."
         )
         outlook_data = _load_regional_outlook()
         if not outlook_data or not outlook_data.get("regions"):
             st.info("No outlook generated yet -- run "
                     "`python scripts/analytics/regional_outlook.py` to generate it.")
         else:
+            outlook_regions = sorted(outlook_data["regions"])
+            outlook_region_choice = st.selectbox(
+                "Region", options=outlook_regions, key="outlook_region_select")
             st.caption(
-                f"Current edition generated {outlook_data['generated_at'][:10]} — "
-                f"{len(outlook_data['regions'])} regions. Regenerated weekly."
+                f"Current edition generated {outlook_data['generated_at'][:10]}. "
+                f"Regenerated weekly as new data lands."
             )
-            if st.button("Generate Outlook PDF", key="gen_regional_outlook"):
-                pdf_bytes = generate_regional_outlook_pdf(outlook_data)
-                archive_report(pdf_bytes, report_type="outlook", label="Regional Economic Outlook")
+            if st.button("Generate Regional Economic Outlook", key="gen_regional_outlook"):
+                pdf_bytes = generate_single_region_outlook_pdf(
+                    outlook_region_choice,
+                    outlook_data["regions"][outlook_region_choice],
+                    outlook_data["generated_at"], df,
+                )
+                archive_report(pdf_bytes, report_type="outlook", label=outlook_region_choice)
                 st.download_button(
                     "Download PDF", data=pdf_bytes,
-                    file_name="Frontier_Mercator_Regional_Economic_Outlook.pdf",
+                    file_name=f"Frontier_Mercator_{outlook_region_choice.replace(' ', '_').replace('/', '-')}_Economic_Outlook.pdf",
                     mime="application/pdf", key="dl_regional_outlook",
                 )
 

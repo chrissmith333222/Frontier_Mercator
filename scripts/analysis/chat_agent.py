@@ -405,6 +405,34 @@ def _execute_tool(name: str, tool_input: dict, df: pd.DataFrame, generated_files
     return f"Unknown tool: {name}"
 
 
+# Uploaded reference documents are capped so a 200-page PDF can't silently
+# turn every subsequent chat turn into a maximum-context API call -- the
+# whole document rides along with EVERY message in the conversation once
+# uploaded. ~60k chars ~= 15k tokens, plenty for a national strategy
+# document's substance.
+MAX_DOCUMENT_CHARS = 60_000
+
+
+def extract_document_text(filename: str, file_bytes: bytes) -> str:
+    """Extracts plain text from an uploaded reference document (PDF or
+    plain text). Returns "" for anything unextractable rather than raising
+    -- the UI reports that to the user."""
+    name = filename.lower()
+    try:
+        if name.endswith(".pdf"):
+            from io import BytesIO
+            from pypdf import PdfReader
+            reader = PdfReader(BytesIO(file_bytes))
+            text = "\n".join((page.extract_text() or "") for page in reader.pages)
+        elif name.endswith((".txt", ".md", ".csv")):
+            text = file_bytes.decode("utf-8", errors="replace")
+        else:
+            return ""
+    except Exception:
+        return ""
+    return text.strip()[:MAX_DOCUMENT_CHARS]
+
+
 def run_chat_turn(
     df: pd.DataFrame,
     history: list[dict],
@@ -412,14 +440,30 @@ def run_chat_turn(
     client=None,
     api_key: str | None = None,
     model: str = DEFAULT_MODEL,
+    document_context: str | None = None,
 ) -> dict:
     """Runs one user turn of the chat loop to completion (including any
     tool-calling round-trips), returning the updated message history, the
     assistant's final text reply, and any files generated along the way.
-    `client` is injectable for tests (a fake with a matching
-    `.messages.create(...)` surface)."""
+    `document_context` is the extracted text of any analyst-uploaded
+    reference documents (Chris, 2026-07-16: "upload a newly released
+    national strategy document... and ask the chat bot to formulate a
+    report") -- appended to the system prompt so the assistant can weigh
+    it alongside the platform's own data and web search. `client` is
+    injectable for tests (a fake with a matching `.messages.create(...)`
+    surface)."""
     if client is None:
         client = _get_client(api_key)
+
+    system_prompt = SYSTEM_PROMPT
+    if document_context:
+        system_prompt = (
+            SYSTEM_PROMPT
+            + "\n\nThe analyst has uploaded the following reference document(s) for this "
+              "conversation. Treat them as primary source material alongside the platform's "
+              "own data and web search -- cite them as '(uploaded document)' when drawing on "
+              "them:\n\n" + document_context
+        )
 
     messages = list(history) + [{"role": "user", "content": user_message}]
     generated_files: list[dict] = []
@@ -428,7 +472,7 @@ def run_chat_turn(
         response = client.messages.create(
             model=model,
             max_tokens=3000,
-            system=SYSTEM_PROMPT,
+            system=system_prompt,
             tools=TOOLS,
             messages=messages,
         )
