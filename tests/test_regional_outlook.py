@@ -125,33 +125,67 @@ def test_single_region_pdf_renders_with_charts():
 
     section = {
         "regional_narrative": "Growth holds.\n\nCapital flows continue.",
-        "opportunities": [{"title": "Logistics", "narrative": "Ports rising.",
-                            "key_data_points": ["Kenya GDP 4.5% (IMF)"]}],
+        "opportunities": [{
+            "title": "Logistics", "narrative": "Ports rising.",
+            "key_data_points": ["Kenya GDP 4.5% (IMF)"],
+            "timing_case": "As of Q3 2026, port financing reaches close this quarter.",
+            "expression": [{"ticker": "SEA", "name": "U.S. Global Sea to Sky Cargo ETF",
+                             "note": "shipping exposure, diluted"}],
+        }],
         "risk_outlook": "Election unrest is the watch item.",
+        "visuals": [
+            {"takeaway_headline": "Uganda leads the region's growth pack",
+             "metric": "gdp_growth", "highlight_country": "Uganda", "section": "narrative"},
+            {"takeaway_headline": "Cocoa prices are still working for exporters",
+             "metric": "commodity_trend", "commodity": "Cocoa", "section": "risk"},
+        ],
     }
-    from scripts.reports.outlook_charts import region_chart_flowables
-    charts = region_chart_flowables(df)
-    assert len(charts) == 4  # GDP bar, inflation bar, security line, financing pie
+    # Both nominated visuals must actually render from this fixture data
+    # (asserted directly -- byte size is a poor proxy for chart presence).
+    from scripts.reports.outlook_charts import render_nominated_visual
+    for visual in section["visuals"]:
+        assert render_nominated_visual(visual, df) is not None, visual["metric"]
 
     pdf = generate_single_region_outlook_pdf("East Africa / Horn", section,
                                               "2026-07-16T12:00:00+00:00", df)
     assert pdf[:5] == b"%PDF-"
-    assert len(pdf) > 5000  # charts add real weight vs the ~3KB text-only render
     print("ok test_single_region_pdf_renders_with_charts")
 
 
-def test_region_chart_flowables_skip_sparse_data():
+def test_nominated_visuals_render_or_skip_on_data():
     import pandas as pd
-    from scripts.reports.outlook_charts import region_chart_flowables
-    # A region with only one country of macro data and no conflict/investment
-    # volume gets NO charts -- never empty axes.
+    from scripts.reports.outlook_charts import render_nominated_visual
+    # Sparse region: a one-country GDP bar can't render (needs >= 2), an
+    # unknown metric never renders -- silence, not empty axes.
     df = pd.DataFrame([{"region": "Mexico", "country": "Mexico",
                          "event_category": "economic_indicator", "event_subtype": "NY.GDP.MKTP.KD.ZG",
                          "event_date": "2025-12-31", "source": "WorldBank",
                          "narrative_summary": "GDP growth (annual %): 1.9% (2025)"}])
-    charts = region_chart_flowables(df)
-    assert charts == []
-    print("ok test_region_chart_flowables_skip_sparse_data")
+    assert render_nominated_visual(
+        {"takeaway_headline": "H", "metric": "gdp_growth", "section": "narrative"}, df) is None
+    assert render_nominated_visual(
+        {"takeaway_headline": "H", "metric": "not_a_metric", "section": "narrative"}, df) is None
+    # A missing headline is also a skip -- the title IS the takeaway.
+    assert render_nominated_visual({"metric": "gdp_growth", "section": "narrative"}, df) is None
+    print("ok test_nominated_visuals_render_or_skip_on_data")
+
+
+def test_expression_tickers_validated_against_universe():
+    from scripts.analytics.regional_outlook import _coerce_opportunities
+    instruments = {"COPX": ("Global X Copper Miners ETF", "sector_etf", "copper")}
+    section = {
+        "opportunities": [{"title": "T", "narrative": "N", "key_data_points": [],
+                            "timing_case": "now",
+                            "expression": [{"ticker": "COPX", "note": "fits"},
+                                            {"ticker": "FAKE", "note": "hallucinated"}]}],
+        "visuals": [],
+    }
+    result = _coerce_opportunities(section, instruments)
+    expr = result["opportunities"][0]["expression"]
+    assert len(expr) == 1
+    assert expr[0]["ticker"] == "COPX"
+    assert expr[0]["name"] == "Global X Copper Miners ETF"
+    print("ok test_expression_tickers_validated_against_universe")
 
 
 if __name__ == "__main__":

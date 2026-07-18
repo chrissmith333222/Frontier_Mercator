@@ -80,8 +80,25 @@ divergences between neighbors, where the region fits in global flows. Don't just
 country in sequence.
 3. Each opportunity is a self-contained executive narrative (a strong paragraph), quantitative \
 anchors included, naming the countries where the opportunity is concentrated.
-4. Be honest about risks -- one clear-eyed paragraph, not boilerplate.
-5. No buy/sell directives; describe where the opportunities and risks sit.
+4. TIMING: every opportunity must answer "why NOW" -- state the current quarter explicitly (e.g. \
+"as of Q3 2026") and name the concrete catalysts that make it time-sensitive: announced financing \
+reaching close, seasonal/agricultural windows, momentum from other investors entering, a price or \
+policy inflection, an election passing. An opportunity with no timing case is just a theme -- cut \
+it or find the catalyst in the supplied material.
+5. EXPRESSION: where the supplied verified-instrument list contains a genuine way to express an \
+opportunity (an ETF, ADR, or listed company), name 1-3 of them by ticker in the opportunity's \
+expression field with one clause on the fit and the compromise. Only use tickers from the \
+supplied list -- anything else is discarded. If no listed instrument genuinely fits, leave \
+expression empty rather than stretching.
+6. VISUALS: nominate at most 3 charts, and ONLY where a visual genuinely lands the punchiest \
+point of your analysis -- a stark divergence between neighbours, a rapid deterioration or \
+acceleration, an outlier worth staring at. No quota exists; zero visuals is a legitimate answer \
+for a region whose story is better told in prose. For each, write the takeaway headline AS A \
+SENTENCE (the chart's title, e.g. "Guinea is pulling away from its neighbours"), pick the metric \
+from the allowed list, optionally name the one country the story is about (it gets the highlight \
+color), and say which section the chart belongs with.
+7. Be honest about risks -- one clear-eyed paragraph, not boilerplate.
+8. No buy/sell directives; describe where the opportunities and risks sit.
 
 Record your outlook using the record_regional_outlook tool."""
 
@@ -117,8 +134,29 @@ _OUTLOOK_TOOL = {
                             "description": "2-4 crisp quantitative anchors backing the narrative, each "
                                             "with source (e.g. 'Kenya real GDP growth 4.5% (IMF, 2026)').",
                         },
+                        "timing_case": {
+                            "type": "string",
+                            "description": "2-4 sentences on why NOW, quarter-stamped ('as of Q3 "
+                                            "2026...'): the concrete catalysts making this "
+                                            "time-sensitive (financing reaching close, seasonal "
+                                            "windows, investor momentum, price/policy inflections), "
+                                            "each traceable to the supplied material.",
+                        },
+                        "expression": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "ticker": {"type": "string", "description": "Exactly as it appears in the supplied verified-instrument list."},
+                                    "note": {"type": "string", "description": "One clause: the fit and the compromise."},
+                                },
+                                "required": ["ticker", "note"],
+                            },
+                            "description": "0-3 listed instruments from the supplied verified list "
+                                            "that genuinely express this opportunity. Empty if none fit.",
+                        },
                     },
-                    "required": ["title", "narrative", "key_data_points"],
+                    "required": ["title", "narrative", "key_data_points", "timing_case", "expression"],
                 },
                 "description": "2-4 region-level opportunities.",
             },
@@ -127,8 +165,51 @@ _OUTLOOK_TOOL = {
                 "description": "One clear-eyed paragraph on what could derail the regional picture, "
                                 "grounded in the security/political findings supplied.",
             },
+            "visuals": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "takeaway_headline": {
+                            "type": "string",
+                            "description": "The chart title AS A SENTENCE stating the takeaway, "
+                                            "e.g. 'Guinea is pulling away from its neighbours'.",
+                        },
+                        "metric": {
+                            "type": "string",
+                            "enum": ["gdp_growth", "inflation", "fdi_pct_gdp", "govt_debt",
+                                      "current_account", "commodity_trend"],
+                            "description": "Which platform metric the chart draws (the renderer "
+                                            "computes the numbers from the platform's own data). "
+                                            "commodity_trend REQUIRES the commodity field.",
+                        },
+                        "commodity": {
+                            "type": "string",
+                            "description": "For commodity_trend only: the tracked commodity whose "
+                                            "24-month price line tells the story -- exactly one of: "
+                                            "Copper, Gold, Silver, Platinum, Palladium, Aluminum, "
+                                            "Iron Ore, Crude Oil (WTI), Crude Oil (Brent), "
+                                            "Natural Gas, Coffee, Cocoa, Sugar, Wheat, Corn, "
+                                            "Soybeans, Rice, Cotton, Live Cattle, Orange Juice.",
+                        },
+                        "highlight_country": {
+                            "type": "string",
+                            "description": "Optional: the one country the story is about -- its bar "
+                                            "gets the highlight color. Omit for region-wide stories.",
+                        },
+                        "section": {
+                            "type": "string",
+                            "enum": ["narrative", "opportunities", "risk"],
+                            "description": "Which part of the report this visual belongs with.",
+                        },
+                    },
+                    "required": ["takeaway_headline", "metric", "section"],
+                },
+                "description": "0-3 visuals, ONLY where a chart genuinely lands the analysis's "
+                                "punchiest point. Zero is a legitimate answer.",
+            },
         },
-        "required": ["regional_narrative", "opportunities", "risk_outlook"],
+        "required": ["regional_narrative", "opportunities", "risk_outlook", "visuals"],
     },
 }
 
@@ -203,7 +284,8 @@ def _cross_cutting_material(region: str, region_country_names: set[str]) -> list
     return material
 
 
-def _build_user_message(region: str, region_countries: list, events: list[dict]) -> str:
+def _build_user_message(region: str, region_countries: list, events: list[dict],
+                         instruments: dict | None = None) -> str:
     names = {name for _iso3, name in region_countries}
     macro = _latest_macro_by_country(events, names)
     macro_lines = []
@@ -211,8 +293,22 @@ def _build_user_message(region: str, region_countries: list, events: list[dict])
         readings = "; ".join(f"{k}: {v}" for k, v in sorted(macro[country].items()))
         macro_lines.append(f"- {country}: {readings}")
 
+    from datetime import date
+    today = date.today()
+    quarter = f"Q{(today.month - 1) // 3 + 1} {today.year}"
+
+    instrument_block = ""
+    if instruments:
+        lines = [f"{ticker} | {name} | {layer} | {note}"
+                  for ticker, (name, layer, note) in sorted(instruments.items())]
+        instrument_block = (
+            "\n\nVERIFIED INSTRUMENT LIST (the only tickers allowed in expression fields):\n"
+            + "\n".join(lines)
+        )
+
     return (
         f"REGION: {region}\n"
+        f"CURRENT QUARTER: {quarter}\n"
         f"Countries: {', '.join(sorted(names))}\n\n"
         f"LATEST MACRO READINGS (World Bank/IMF, latest available per indicator):\n"
         + ("\n".join(macro_lines) or "- none on file") + "\n\n"
@@ -220,17 +316,18 @@ def _build_user_message(region: str, region_countries: list, events: list[dict])
         + ("\n".join(f"- {m}" for m in _assessment_material(region_countries)) or "- none") + "\n\n"
         f"CROSS-CUTTING SIGNALS:\n"
         + ("\n".join(f"- {m}" for m in _cross_cutting_material(region, names)) or "- none")
+        + instrument_block
     )
 
 
-def _coerce_opportunities(section: dict) -> dict:
+def _coerce_dict_list(items: list) -> list[dict]:
     """Repairs the malformed-tool-output variant observed live 2026-07-16:
-    `opportunities` arriving as a LIST whose single item is the JSON string
+    an object array arriving as a LIST whose single item is the JSON string
     of the real array (the normalizer only repairs string-valued fields, so
     a list-wrapping-a-string sails through). Same defensive family as
     investment_theses._coerce_thesis_dicts."""
     coerced = []
-    for item in section.get("opportunities", []) or []:
+    for item in items or []:
         if isinstance(item, dict):
             coerced.append(item)
         elif isinstance(item, str):
@@ -242,7 +339,26 @@ def _coerce_opportunities(section: dict) -> dict:
                 coerced.extend(p for p in parsed if isinstance(p, dict))
             elif isinstance(parsed, dict):
                 coerced.append(parsed)
-    section["opportunities"] = coerced
+    return coerced
+
+
+def _coerce_opportunities(section: dict, instruments: dict | None = None) -> dict:
+    """Normalizes opportunities + visuals to dict lists, and drops any
+    expression ticker not in the verified instrument set -- the model is
+    instructed to stay on-list, but a hallucinated ticker must never reach
+    a client-facing report."""
+    section["opportunities"] = _coerce_dict_list(section.get("opportunities"))
+    section["visuals"] = _coerce_dict_list(section.get("visuals"))
+    for opp in section["opportunities"]:
+        validated = []
+        for expr in _coerce_dict_list(opp.get("expression")):
+            ticker = str(expr.get("ticker", "")).strip()
+            if instruments and ticker in instruments:
+                name, _layer, _note = instruments[ticker]
+                validated.append({"ticker": ticker, "name": name, "note": expr.get("note", "")})
+            elif instruments:
+                print(f"    dropped unverified expression ticker {ticker!r}", file=sys.stderr)
+        opp["expression"] = validated
     return section
 
 
@@ -253,13 +369,18 @@ def generate_outlook(regions: list[str] | None = None, model: str = DEFAULT_MODE
     all_regions = _core_regions()
     targets = {r: all_regions[r] for r in (regions or sorted(all_regions))}
 
+    print("Verifying instrument universe for expression fields...", file=sys.stderr)
+    from scripts.lib.instrument_universe import verify_universe
+    instruments = verify_universe()
+    print(f"  {len(instruments)} instruments verified", file=sys.stderr)
+
     print("Loading merged dataset for macro readings...", file=sys.stderr)
     events = json.loads(MERGED_PATH.read_text(encoding="utf-8"))
 
     sections = {}
     for region, region_countries in targets.items():
         print(f"  generating outlook: {region} ({len(region_countries)} countries)", file=sys.stderr)
-        user_message = _build_user_message(region, region_countries, events)
+        user_message = _build_user_message(region, region_countries, events, instruments)
         try:
             sections[region] = _coerce_opportunities(_call_with_forced_tool(
                 client, model, SYSTEM_PROMPT, _OUTLOOK_TOOL, user_message,
@@ -268,7 +389,7 @@ def generate_outlook(regions: list[str] | None = None, model: str = DEFAULT_MODE
                 # 8k -- consistent with the emission being squeezed at the
                 # ceiling even when stop_reason doesn't report truncation.
                 context_label=f"regional outlook: {region}", max_tokens=12000,
-            ))
+            ), instruments)
         except Exception as e:
             print(f"    FAILED for {region}: {e}", file=sys.stderr)
             if "credit balance is too low" in str(e):

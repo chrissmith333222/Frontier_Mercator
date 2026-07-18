@@ -849,20 +849,29 @@ def generate_regional_outlook_pdf(outlook: dict) -> bytes:
     doc.build(story, onFirstPage=_paint_dark_background, onLaterPages=_paint_dark_background)
     return buffer.getvalue()
 
-
 def generate_single_region_outlook_pdf(region: str, section: dict, generated_at: str,
                                         df: pd.DataFrame) -> bytes:
-    """Standalone Regional Economic Outlook for ONE region (Chris,
-    2026-07-16: "each region's economic outlook report stand alone...
-    with some more charts and visuals mixed in"): the narrative/
-    opportunities/risk content from the outlook artifact, interleaved with
-    the region's most relevant data charts (see outlook_charts.py).
-    Replaces the old chart-only Regional Executive Summary. Renders
-    entirely from cached artifacts + the already-loaded dataset -- no API
-    call at render time."""
-    from scripts.reports.outlook_charts import region_chart_flowables
+    """Standalone Regional Economic Outlook for ONE region. Visuals are
+    MODEL-NOMINATED (see regional_outlook.py: at most a few charts, only
+    where one lands the analysis's punchiest point -- no quota) and
+    rendered to publication-grade anatomy by outlook_charts.py from real
+    platform data, placed with the section each belongs to. Opportunities
+    carry a quarter-stamped timing case ("why now") and named, verified
+    instruments ("how to express it"). Renders entirely from cached
+    artifacts + the already-loaded dataset -- no API call at render time."""
+    from scripts.reports.outlook_charts import render_nominated_visual
 
     region_scope = df[df["region"] == region]
+
+    def _visuals_for(section_name: str) -> list:
+        rendered = []
+        for visual in section.get("visuals", []) or []:
+            if not isinstance(visual, dict) or visual.get("section") != section_name:
+                continue
+            drawing = render_nominated_visual(visual, region_scope)
+            if drawing is not None:
+                rendered.append(drawing)
+        return rendered
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -882,24 +891,25 @@ def generate_single_region_outlook_pdf(region: str, section: dict, generated_at:
     ))
     story.append(Spacer(1, 10))
 
-    charts = region_chart_flowables(region_scope)
-
     story.append(Paragraph("Regional Assessment", SECTION_STYLE))
-    for para in (section.get("regional_narrative") or "").split(chr(10)*2):
+    for para in (section.get("regional_narrative") or "").split(chr(10) * 2):
         if para.strip():
             story.append(Paragraph(para.strip(), BODY_STYLE))
             story.append(Spacer(1, 5))
-
-    # The economic pair (GDP growth, inflation) sits directly after the
-    # macro narrative it illustrates.
-    for chart in charts[:2]:
-        story.append(Spacer(1, 4))
-        story.append(chart)
-        story.append(Spacer(1, 6))
+    for drawing in _visuals_for("narrative"):
+        story.append(Spacer(1, 10))
+        story.append(drawing)
+        story.append(Spacer(1, 12))
 
     opportunity_heading = ParagraphStyle(
         "SingleOutlookOpp", parent=SECTION_STYLE, fontSize=11, spaceBefore=8, spaceAfter=3,
         textColor=colors.HexColor(b.GOLD),
+    )
+    why_now_style = ParagraphStyle(
+        "OutlookWhyNow", parent=BODY_STYLE, leftIndent=10,
+    )
+    expression_style = ParagraphStyle(
+        "OutlookExpression", parent=BODY_STYLE, leftIndent=10, textColor=TEXT_MUTED,
     )
     if section.get("opportunities"):
         story.append(Paragraph("Opportunities", SECTION_STYLE))
@@ -911,28 +921,37 @@ def generate_single_region_outlook_pdf(region: str, section: dict, generated_at:
             story.append(Spacer(1, 3))
             for point in opp.get("key_data_points", []):
                 story.append(Paragraph(f"&bull; {_bullet_text(str(point))}", BODY_STYLE))
-            story.append(Spacer(1, 5))
-
-    # Investment-mix pie sits with the opportunities it supports.
-    for chart in charts[3:4]:
-        story.append(Spacer(1, 4))
-        story.append(chart)
-        story.append(Spacer(1, 6))
+            if opp.get("timing_case"):
+                story.append(Spacer(1, 3))
+                story.append(Paragraph(f"<b>Why now:</b> {opp['timing_case']}", why_now_style))
+            expression = [e for e in opp.get("expression", []) if isinstance(e, dict)]
+            if expression:
+                parts = "; ".join(
+                    f"<b>{e.get('ticker', '')}</b> ({e.get('name', '')}) — {e.get('note', '')}"
+                    for e in expression
+                )
+                story.append(Spacer(1, 3))
+                story.append(Paragraph(f"<b>How to express it:</b> {parts}", expression_style))
+            story.append(Spacer(1, 7))
+    for drawing in _visuals_for("opportunities"):
+        story.append(Spacer(1, 10))
+        story.append(drawing)
+        story.append(Spacer(1, 12))
 
     if section.get("risk_outlook"):
         story.append(Paragraph("Risk Outlook", SECTION_STYLE))
         story.append(Paragraph(section["risk_outlook"], BODY_STYLE))
-        # The security-trend line illustrates the risk section.
-        for chart in charts[2:3]:
-            story.append(Spacer(1, 6))
-            story.append(chart)
+        for drawing in _visuals_for("risk"):
+            story.append(Spacer(1, 10))
+            story.append(drawing)
+            story.append(Spacer(1, 12))
 
     story.append(Spacer(1, 14))
     story.append(Paragraph(
         "Prepared by Frontier Mercator Group from the firm's multi-source intelligence "
         "platform. All figures as attributed (World Bank, IMF, UNCTAD, AidData, DFC, ACLED, "
-        "and open reporting). This document describes regional dynamics and where "
-        "opportunities and risks sit; it does not constitute investment advice.",
+        "and open reporting). Named instruments describe how a view could be expressed and "
+        "are not recommendations to buy or sell any security.",
         DISCLAIMER_STYLE,
     ))
 
